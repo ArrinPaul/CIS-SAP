@@ -18,13 +18,15 @@ import {
   Target,
   Check,
   X,
-  UserMinus
+  UserMinus,
+  Coffee
 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { getMatchmakingRecommendations, MatchmakingResult } from '@/app/actions/matchmaking';
 import { MatchmakingCard } from './matchmaking-card';
 import { MatchmakingSection } from './matchmaking-section';
+import { MeetingSchedulePanel } from './meeting-schedule-panel';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/core/utils/utils';
@@ -55,7 +57,7 @@ export default function NetworkingClient() {
 
         setPublicUsers(snapshot.publicUsers);
         setConnections(
-          snapshot.acceptedConnections.map((c) => ({
+          snapshot.acceptedConnections.map((c: any) => ({
             id: c.otherUser.id,
             status: c.status,
             direction: c.direction,
@@ -125,8 +127,12 @@ export default function NetworkingClient() {
         </div>
       </div>
 
-      <Tabs defaultValue="ai-matches" className="w-full">
+      <Tabs defaultValue="1on1-meetings" className="w-full">
         <TabsList className="bg-card border border-border p-1 mb-8">
+          <TabsTrigger value="1on1-meetings" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <Coffee className="w-4 h-4 mr-2 text-amber-500" />
+            1-on-1 Schedule
+          </TabsTrigger>
           <TabsTrigger value="ai-matches" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
             <Sparkles className="w-4 h-4 mr-2" />
             {t('aiMatchmaking')}
@@ -140,6 +146,10 @@ export default function NetworkingClient() {
             {t('myConnections')}
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="1on1-meetings" className="space-y-6">
+          <MeetingSchedulePanel />
+        </TabsContent>
 
         <TabsContent value="ai-matches" className="space-y-8">
           <MatchmakingSection />

@@ -851,3 +851,46 @@ export const promoCodesRelations = relations(promoCodes, ({ one }) => ({
   }),
 }));
 
+// --- 1-on-1 Speed Networking & Meetings ---
+
+export const networkingMeetings = pgTable('networking_meetings', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  eventId: uuid('event_id').references(() => events.id, { onDelete: 'cascade' }).notNull(),
+  requesterId: text('requester_id').references(() => users.id).notNull(),
+  recipientId: text('recipient_id').references(() => users.id).notNull(),
+  title: text('title').notNull(),
+  message: text('message'),
+  startTime: timestamp('start_time', { withTimezone: true }).notNull(),
+  endTime: timestamp('end_time', { withTimezone: true }).notNull(),
+  durationMinutes: integer('duration_minutes').default(15).notNull(),
+  status: text('status').default('pending').notNull(), // 'pending' | 'accepted' | 'declined' | 'completed' | 'cancelled'
+  meetingType: text('meeting_type').default('virtual').notNull(), // 'virtual' | 'in_person'
+  locationDetails: text('location_details'),
+  roomId: text('room_id'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => ({
+  requesterIdx: index('meetings_requester_idx').on(table.requesterId),
+  recipientIdx: index('meetings_recipient_idx').on(table.recipientId),
+  eventIdx: index('meetings_event_idx').on(table.eventId),
+  statusIdx: index('meetings_status_idx').on(table.status),
+}));
+
+export const networkingMeetingsRelations = relations(networkingMeetings, ({ one }) => ({
+  event: one(events, {
+    fields: [networkingMeetings.eventId],
+    references: [events.id],
+  }),
+  requester: one(users, {
+    fields: [networkingMeetings.requesterId],
+    references: [users.id],
+    relationName: 'meetingRequester',
+  }),
+  recipient: one(users, {
+    fields: [networkingMeetings.recipientId],
+    references: [users.id],
+    relationName: 'meetingRecipient',
+  }),
+}));
+
+

@@ -60,6 +60,32 @@ try {
   await sql`CREATE INDEX IF NOT EXISTS promo_codes_code_idx ON promo_codes(code);`;
   console.log('✓ promo_codes table synced successfully');
 
+  // 5. Create networking_meetings table if it doesn't exist
+  await sql`
+    CREATE TABLE IF NOT EXISTS networking_meetings (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      event_id uuid REFERENCES events(id) ON DELETE CASCADE NOT NULL,
+      requester_id text REFERENCES users(id) NOT NULL,
+      recipient_id text REFERENCES users(id) NOT NULL,
+      title text NOT NULL,
+      message text,
+      start_time timestamp with time zone NOT NULL,
+      end_time timestamp with time zone NOT NULL,
+      duration_minutes integer DEFAULT 15 NOT NULL,
+      status text DEFAULT 'pending' NOT NULL,
+      meeting_type text DEFAULT 'virtual' NOT NULL,
+      location_details text,
+      room_id text,
+      created_at timestamp with time zone DEFAULT now() NOT NULL,
+      updated_at timestamp with time zone DEFAULT now() NOT NULL
+    );
+  `;
+  await sql`CREATE INDEX IF NOT EXISTS meetings_requester_idx ON networking_meetings(requester_id);`;
+  await sql`CREATE INDEX IF NOT EXISTS meetings_recipient_idx ON networking_meetings(recipient_id);`;
+  await sql`CREATE INDEX IF NOT EXISTS meetings_event_idx ON networking_meetings(event_id);`;
+  await sql`CREATE INDEX IF NOT EXISTS meetings_status_idx ON networking_meetings(status);`;
+  console.log('✓ networking_meetings table synced successfully');
+
   console.log('Database synced successfully.');
   process.exit(0);
 } catch (error) {

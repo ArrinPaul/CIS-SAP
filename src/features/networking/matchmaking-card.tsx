@@ -5,8 +5,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Sparkles, MessageSquare, UserPlus, Info } from 'lucide-react';
+import { Sparkles, MessageSquare, UserPlus, Info, Coffee } from 'lucide-react';
 import { cn } from '@/core/utils/utils';
+import { MeetingRequestDialog } from './meeting-request-dialog';
 import {
   Tooltip,
   TooltipContent,
@@ -87,9 +88,22 @@ export function MatchmakingCard({ match, onConnect }: MatchmakingCardProps) {
             <UserPlus className="w-4 h-4 mr-2" />
             Connect
           </Button>
-          <Button variant="outline" className="border-border hover:bg-card text-foreground">
-            <MessageSquare className="w-4 h-4" />
-          </Button>
+
+          <MeetingRequestDialog
+            attendee={{
+              userId: match.userId,
+              name: match.name,
+              role: match.role,
+              company: match.company,
+              image: match.image,
+            }}
+            trigger={
+              <Button variant="outline" className="border-border hover:bg-card text-foreground gap-1.5">
+                <Coffee className="w-4 h-4 text-amber-500" />
+                <span className="hidden sm:inline">1-on-1</span>
+              </Button>
+            }
+          />
         </div>
       </CardContent>
     </Card>
