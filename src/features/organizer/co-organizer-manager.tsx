@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { LoadError } from '@/components/shared/load-error';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -37,26 +38,31 @@ export function CoOrganizerManager({
   const [isUpdating, setIsUpdating] = useState(false);
   const [coOrganizers, setCoOrganizers] = useState<AdminUserRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+
+  // Hoisted out of the effect so the error state can offer a retry.
+  const fetchCoOrganizers = useCallback(async () => {
+    if (!coOrganizerIds.length) {
+      setCoOrganizers([]);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    setLoadError(false);
+    try {
+      const users = await getUsersByIds(coOrganizerIds);
+      setCoOrganizers(users);
+    } catch (error) {
+      setLoadError(true);
+      console.error("Failed to fetch co-organizers:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [coOrganizerIds]);
 
   useEffect(() => {
-    async function fetchCoOrganizers() {
-      if (!coOrganizerIds.length) {
-        setCoOrganizers([]);
-        setLoading(false);
-        return;
-      }
-      setLoading(true);
-      try {
-        const users = await getUsersByIds(coOrganizerIds);
-        setCoOrganizers(users);
-      } catch (error) {
-        console.error("Failed to fetch co-organizers:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
     fetchCoOrganizers();
-  }, [coOrganizerIds]);
+  }, [fetchCoOrganizers]);
 
   const handleAddByEmail = async () => {
     if (!email.trim()) return;
@@ -157,6 +163,8 @@ export function CoOrganizerManager({
               <div className="text-center py-10">
                 <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
               </div>
+            ) : loadError ? (
+              <LoadError what="co-organizers" onRetry={fetchCoOrganizers} />
             ) : coOrganizers.length === 0 ? (
               <div className="text-center py-10 border-2 border-dashed border-border rounded-2xl bg-muted/10">
                 <p className="text-sm text-muted-foreground font-medium">

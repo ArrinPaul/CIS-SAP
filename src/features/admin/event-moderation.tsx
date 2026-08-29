@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { LoadError } from '@/components/shared/load-error';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -18,10 +19,12 @@ export default function EventModeration() {
   
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState(false);
   const [hasMore, setHasMore] = useState(true);
 
   const loadEvents = async (pageNum: number, isNewTab: boolean = false) => {
     setLoading(true);
+    setLoadError(false);
     try {
       const rows = await listModerationEvents({
         status: activeTab === 'pending' ? 'draft' : 'all',
@@ -37,6 +40,7 @@ export default function EventModeration() {
       
       setHasMore(rows.length === pageSize);
     } catch (e) {
+      setLoadError(true);
       console.error(e);
     } finally {
       setLoading(false);
@@ -84,7 +88,9 @@ export default function EventModeration() {
         </TabsList>
         
         <TabsContent value={activeTab}>
-          {events.length === 0 && !loading ? (
+          {loadError && events.length === 0 && !loading ? (
+            <LoadError what="events" onRetry={() => loadEvents(1, true)} />
+          ) : events.length === 0 && !loading ? (
             <div className="py-20 text-center text-muted-foreground border border-dashed border-border rounded-2xl bg-card">
               <Check size={48} className="mx-auto mb-4 opacity-20" />
               <p>No events found for moderation.</p>

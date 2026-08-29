@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { LoadError } from '@/components/shared/load-error';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { 
@@ -32,9 +33,11 @@ interface Activity {
 export function LiveFeedClient() {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const fetchFeed = useCallback(async (isInitial = false) => {
+    setLoadError(false);
     if (isInitial) setLoading(true);
     else setIsRefreshing(true);
     
@@ -42,6 +45,7 @@ export function LiveFeedClient() {
       const data = await getActivityFeed({ limit: 20 });
       setActivities(data as any);
     } catch (e) {
+      setLoadError(true);
       console.error(e);
     } finally {
       setLoading(false);
@@ -80,6 +84,10 @@ export function LiveFeedClient() {
         ))}
       </div>
     );
+  }
+
+  if (loadError) {
+    return <LoadError what="the feed" onRetry={fetchFeed} />;
   }
 
   return (

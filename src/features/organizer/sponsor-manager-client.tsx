@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { LoadError } from '@/components/shared/load-error';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -52,6 +53,7 @@ export function SponsorManagerClient({ eventId, eventTitle }: SponsorManagerProp
   const { toast } = useToast();
   const [sponsors, setSponsors] = useState<Sponsor[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   
   // Leads State
@@ -72,10 +74,12 @@ export function SponsorManagerClient({ eventId, eventTitle }: SponsorManagerProp
 
   const loadSponsors = useCallback(async () => {
     setLoading(true);
+    setLoadError(false);
     try {
       const data = await getSponsorsForEvent(eventId);
       setSponsors(data as any);
     } catch (e) {
+      setLoadError(true);
       console.error(e);
     } finally {
       setLoading(false);
@@ -278,6 +282,8 @@ export function SponsorManagerClient({ eventId, eventTitle }: SponsorManagerProp
               <CardContent>
                 {loading ? (
                   <div className="py-20 text-center"><Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" /></div>
+                ) : loadError ? (
+                  <LoadError what="sponsors" onRetry={loadSponsors} />
                 ) : sponsors.length > 0 ? (
                   <div className="space-y-8">
                     {TIERS.map(t => {

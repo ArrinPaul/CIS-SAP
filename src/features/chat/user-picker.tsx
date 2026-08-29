@@ -15,6 +15,7 @@ interface UserPickerProps {
 export function UserPicker({ onSelect, excludeIds = [] }: UserPickerProps) {
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState(false);
   const [users, setUsers] = useState<any[]>([]);
   const debouncedQuery = useDebounce(query, 300);
 
@@ -26,10 +27,12 @@ export function UserPicker({ onSelect, excludeIds = [] }: UserPickerProps) {
       }
 
       setLoading(true);
+      setLoadError(false);
       try {
         const results = await searchUsers(debouncedQuery);
         setUsers(results.filter((u: any) => !excludeIds.includes(u.id)));
       } catch (error) {
+        setLoadError(true);
         console.error('Search failed:', error);
       } finally {
         setLoading(false);
@@ -53,7 +56,9 @@ export function UserPicker({ onSelect, excludeIds = [] }: UserPickerProps) {
       </div>
       
       <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2">
-        {debouncedQuery && !loading && users.length === 0 ? (
+        {debouncedQuery && !loading && loadError ? (
+          <p className="text-center py-10 text-notion-ink-muted text-body-sm">Couldn&apos;t search right now. Please try again.</p>
+        ) : debouncedQuery && !loading && users.length === 0 ? (
           <p className="text-center py-10 text-muted-foreground text-sm">No users found.</p>
         ) : !debouncedQuery ? (
            <p className="text-center py-10 text-muted-foreground text-sm">Type a name to search...</p>

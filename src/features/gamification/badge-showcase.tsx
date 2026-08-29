@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { LoadError } from '@/components/shared/load-error';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Trophy, Award, Star, Shield, Zap, Loader2 } from 'lucide-react';
@@ -26,25 +27,32 @@ const rarityIcons: Record<string, React.ReactNode> = {
 export function BadgeShowcase({ userId, compact }: { userId: string; compact?: boolean }) {
   const [badges, setBadges] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
 
-  useEffect(() => {
-    async function load() {
-      if (!userId) return;
-      setLoading(true);
-      try {
-        const data = await getUserBadges(userId);
-        setBadges(data);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
+  // Hoisted out of the effect so the error state can offer a retry.
+  const load = useCallback(async () => {
+    if (!userId) return;
+    setLoading(true);
+    setLoadError(false);
+    try {
+      const data = await getUserBadges(userId);
+      setBadges(data);
+    } catch (e) {
+      setLoadError(true);
+      console.error(e);
+    } finally {
+      setLoading(false);
     }
-    load();
   }, [userId]);
+
+  useEffect(() => { load(); }, [load]);
 
   if (loading) {
     return <div className="py-10 text-center"><Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" /></div>;
+  }
+
+  if (loadError) {
+    return <LoadError what="badges" onRetry={load} />;
   }
 
   if (compact) {

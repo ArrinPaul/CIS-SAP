@@ -1,6 +1,7 @@
 'use client';
 // 
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { LoadError } from '@/components/shared/load-error';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -45,6 +46,7 @@ export default function AiRecommendationDashboard() {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('events');
   const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState(false);
   const [eventRecommendations, setEventRecommendations] = useState<EventRecommendationEnriched[]>([]);
   const [contentRecommendations, setContentRecommendations] = useState<any[]>([]);
   const [connectionRecommendations, setConnectionRecommendations] = useState<any[]>([]);
@@ -53,6 +55,7 @@ export default function AiRecommendationDashboard() {
   const loadRecommendations = useCallback(async () => {
     if (!user) return;
     setLoading(true);
+    setLoadError(false);
     try {
       const [eventsRes, contentRes, connectionsRes, allEvents] = await Promise.all([
         getAIRecommendations(user.id),
@@ -90,6 +93,7 @@ export default function AiRecommendationDashboard() {
         { title: 'Events', value: enrichedEvents.length, description: 'Top sessions', trend: 'up', icon: <Calendar className="w-4 h-4" /> }
       ]);
     } catch (error) {
+      setLoadError(true);
       console.error('Error loading recommendations:', error);
     } finally {
       setLoading(false);
@@ -113,6 +117,10 @@ export default function AiRecommendationDashboard() {
       default: return 'bg-muted/50 text-muted-foreground/60 border-border/50';
     }
   };
+
+  if (loadError && eventRecommendations.length === 0) {
+    return <LoadError what="recommendations" onRetry={loadRecommendations} />;
+  }
 
   if (loading && eventRecommendations.length === 0) {
     return (

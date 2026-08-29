@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { LoadError } from '@/components/shared/load-error';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -39,6 +40,7 @@ export function AttendeeManagement({ eventId, eventTitle }: AttendeeManagementPr
   const { toast } = useToast();
   const [attendees, setAttendees] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [exporting, setExporting] = useState(false);
   const [page, setPage] = useState(1);
@@ -50,6 +52,7 @@ export function AttendeeManagement({ eventId, eventTitle }: AttendeeManagementPr
 
   const loadAttendees = async () => {
     setLoading(true);
+    setLoadError(false);
     try {
       const regs = await getUserRegistrations();
       const eventRegs = regs.filter((r: any) => r.event?.id === eventId);
@@ -66,6 +69,7 @@ export function AttendeeManagement({ eventId, eventTitle }: AttendeeManagementPr
         verifiedAt: r.ticket?.verifiedAt,
       })));
     } catch (e) {
+      setLoadError(true);
       console.error(e);
     } finally {
       setLoading(false);
@@ -194,6 +198,8 @@ export function AttendeeManagement({ eventId, eventTitle }: AttendeeManagementPr
 
       {loading ? (
         <div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+      ) : loadError ? (
+        <LoadError what="attendees" onRetry={loadAttendees} />
       ) : paginated.length === 0 ? (
         <Card className="border-dashed"><CardContent className="py-12 text-center text-muted-foreground">No attendees found</CardContent></Card>
       ) : (

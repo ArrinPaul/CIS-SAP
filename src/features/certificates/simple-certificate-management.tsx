@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { LoadError } from '@/components/shared/load-error';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -67,6 +68,7 @@ export function SimpleCertificateManagement({ eventId, eventTitle }: SimpleCerti
   const [selectedTemplate, setSelectedTemplate] = useState('');
   const [selectedColorScheme, setSelectedColorScheme] = useState('blue');
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [distributing, setDistributing] = useState(false);
   const [attendees, setAttendees] = useState<any[]>([]);
@@ -78,6 +80,7 @@ export function SimpleCertificateManagement({ eventId, eventTitle }: SimpleCerti
 
   const loadData = async () => {
     setLoading(true);
+    setLoadError(false);
     try {
       const [tpls, atts] = await Promise.all([
         getCertificateTemplates(eventId),
@@ -87,6 +90,7 @@ export function SimpleCertificateManagement({ eventId, eventTitle }: SimpleCerti
       setAttendees(atts);
       if (tpls.length > 0) setSelectedTemplate(tpls[0].id);
     } catch (e) {
+      setLoadError(true);
       console.error(e);
     } finally {
       setLoading(false);
@@ -204,6 +208,10 @@ export function SimpleCertificateManagement({ eventId, eventTitle }: SimpleCerti
 
   if (loading) {
     return <div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
+  }
+
+  if (loadError) {
+    return <LoadError what="certificates" onRetry={loadData} />;
   }
 
   return (

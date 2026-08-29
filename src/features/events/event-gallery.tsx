@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { LoadError } from '@/components/shared/load-error';
 import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -52,6 +53,7 @@ export function EventGallery({ eventId, isRegistered, isStaff }: EventGalleryPro
 
   const [photos, setPhotos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState<any>(null);
   const [dragOver, setDragOver] = useState(false);
@@ -63,10 +65,12 @@ export function EventGallery({ eventId, isRegistered, isStaff }: EventGalleryPro
 
   const loadPhotos = useCallback(async () => {
     setLoading(true);
+    setLoadError(false);
     try {
       const data = await getEventGallery(eventId);
       setPhotos(data);
     } catch (e) {
+      setLoadError(true);
       console.error(e);
     } finally {
       setLoading(false);
@@ -216,6 +220,8 @@ export function EventGallery({ eventId, isRegistered, isStaff }: EventGalleryPro
 
         {loading ? (
           <div className="py-32 text-center"><Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" /></div>
+        ) : loadError ? (
+          <LoadError what="photos" onRetry={loadPhotos} />
         ) : photos.length === 0 ? (
           <div className="py-32 text-center border-2 border-dashed border-border/50 rounded-[2rem] bg-white/[0.02]">
             <Camera size={64} className="mx-auto mb-4 text-gray-800 opacity-20" />

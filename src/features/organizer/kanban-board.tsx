@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { LoadError } from '@/components/shared/load-error';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -57,6 +58,7 @@ export function KanbanBoard({ eventId }: KanbanBoardProps) {
   const { toast } = useToast();
   const [tasks, setTasks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [editingTask, setEditingTask] = useState<any>(null);
@@ -75,10 +77,12 @@ export function KanbanBoard({ eventId }: KanbanBoardProps) {
 
   const loadTasks = async () => {
     setLoading(true);
+    setLoadError(false);
     try {
       const data = await getEventTasks(eventId);
       setTasks(data);
     } catch (e) {
+      setLoadError(true);
       console.error(e);
     } finally {
       setLoading(false);
@@ -166,6 +170,10 @@ export function KanbanBoard({ eventId }: KanbanBoardProps) {
     return (
       <div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
     );
+  }
+
+  if (loadError) {
+    return <LoadError what="tasks" onRetry={loadTasks} />;
   }
 
   return (

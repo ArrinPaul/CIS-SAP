@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { LoadError } from '@/components/shared/load-error';
 import { useAuth } from '@/hooks/use-auth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -72,8 +73,10 @@ export default function CheckInScannerClient() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [localAttendeeList, setLocalAttendeeList] = useState<any[]>([]);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [loadError, setLoadError] = useState(false);
 
   const fetchEvents = useCallback(async () => {
+    setLoadError(false);
     try {
       const data = await getScannerEvents();
       setEvents(data);
@@ -81,6 +84,8 @@ export default function CheckInScannerClient() {
         setSelectedEventId(data[0].id);
       }
     } catch (e) {
+      // Otherwise a failed load just leaves an empty event picker.
+      setLoadError(true);
       console.error(e);
     }
   }, [selectedEventId]);
@@ -356,6 +361,9 @@ export default function CheckInScannerClient() {
 
   return (
     <div className="container py-8 max-w-4xl text-foreground">
+      {loadError && (
+        <LoadError what="your events" onRetry={fetchEvents} compact className="mb-6" />
+      )}
       <div className="flex justify-between items-center mb-8">
         <div className="flex items-center gap-4">
           <h1 className="text-3xl font-bold">Check-in Scanner</h1>

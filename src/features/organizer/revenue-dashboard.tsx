@@ -1,5 +1,6 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import { LoadError } from '@/components/shared/load-error';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
@@ -40,23 +41,24 @@ export function RevenueDashboard() {
     revenueByTier: { 'Early Bird': 4500, 'General': 6200, 'VIP': 1750 } as Record<string, number>,
   });
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
 
-  useEffect(() => {
-    let mounted = true;
-    async function load() {
-      setLoading(true);
-      try {
-        const data = await getOrganizerRevenueDashboard();
-        if (mounted && data) setStats(data as any);
-      } catch (e) {
-        console.error("Revenue dashboard load error:", e);
-      } finally {
-        if (mounted) setLoading(false);
-      }
+  // Hoisted out of the effect so the error state can offer a retry.
+  const load = useCallback(async () => {
+    setLoading(true);
+    setLoadError(false);
+    try {
+      const data = await getOrganizerRevenueDashboard();
+      if (data) setStats(data as any);
+    } catch (e) {
+      setLoadError(true);
+      console.error("Revenue dashboard load error:", e);
+    } finally {
+      setLoading(false);
     }
-    load();
-    return () => { mounted = false; };
   }, []);
+
+  useEffect(() => { load(); }, [load]);
 
   if (loading) {
     return (
@@ -64,6 +66,10 @@ export function RevenueDashboard() {
         <Loader2 className="h-8 w-8 animate-spin text-notion-primary" />
       </div>
     );
+  }
+
+  if (loadError) {
+    return <LoadError what="revenue data" onRetry={load} />;
   }
 
   return (

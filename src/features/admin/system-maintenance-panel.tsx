@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { LoadError } from '@/components/shared/load-error';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -28,6 +29,7 @@ export function SystemMaintenancePanel() {
   const [health, setHealth] = useState<SystemHealth | null>(null);
   const [settings, setSettings] = useState<SystemSettings | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [updating, setUpdating] = useState(false);
 
   useEffect(() => {
@@ -36,6 +38,7 @@ export function SystemMaintenancePanel() {
 
   const loadData = async () => {
     setLoading(true);
+    setLoadError(false);
     try {
       const [healthData, settingsData] = await Promise.all([
         getSystemHealth(),
@@ -44,6 +47,7 @@ export function SystemMaintenancePanel() {
       setHealth(healthData);
       setSettings(settingsData);
     } catch (e) {
+      setLoadError(true);
       console.error(e);
     } finally {
       setLoading(false);
@@ -82,6 +86,7 @@ export function SystemMaintenancePanel() {
 
   return (
     <div className="space-y-6 text-foreground">
+      {loadError && <LoadError what="system settings" onRetry={loadData} compact />}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Maintenance Control */}
         <Card className={cn(
