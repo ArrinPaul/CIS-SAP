@@ -522,6 +522,17 @@ export const usersRelations = relations(users, ({ many }) => ({
   // Follow/chat edges are intentionally queried via explicit joins (see notes above).
 }));
 
+export const eventFeedbackRelations = relations(eventFeedback, ({ one }) => ({
+  event: one(events, {
+    fields: [eventFeedback.eventId],
+    references: [events.id],
+  }),
+  user: one(users, {
+    fields: [eventFeedback.userId],
+    references: [users.id],
+  }),
+}));
+
 export const communitiesRelations = relations(communities, ({ one, many }) => ({
   creator: one(users, {
     fields: [communities.creatorId],
