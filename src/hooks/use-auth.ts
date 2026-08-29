@@ -1,7 +1,6 @@
 import { useUser, useAuth as useClerkAuth, useSession } from "@clerk/nextjs";
 import { User } from '@/types';
 import { updateUserDetails } from "@/app/actions/users";
-import { awardXP as awardXPServer } from "@/app/actions/gamification";
 
 export function useAuth() {
   const { user: clerkUser, isLoaded: isUserLoaded } = useUser();
@@ -35,11 +34,6 @@ export function useAuth() {
     return result.user;
   };
 
-  const awardPoints = async (points: number, reason: string = "Platform Activity") => {
-    if (!user?.id) return;
-    await awardXPServer(user.id, points, reason);
-  };
-
   const checkInUser = async (eventId: string) => {
     if (!user?.id) return;
     await updateUser({ checkedIn: true } as any);
@@ -51,7 +45,6 @@ export function useAuth() {
     isAuthenticated,
     logout,
     updateUser,
-    awardPoints,
     checkInUser,
     authErrorMessage: (error: unknown) => String(error),
   };

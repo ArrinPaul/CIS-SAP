@@ -9,7 +9,7 @@ import { validateRole, validateEventOwnership } from '@/lib/auth-utils';
 import { enforceRateLimit } from '@/lib/rate-limit';
 
 import { logActivity } from './feed';
-import { awardXP } from './gamification';
+import { awardXP } from '@/lib/gamification/awards';
 import { generateQrPayload, generateEntryCode } from '@/core/utils/crypto';
 import { sendEmail, constructConfirmationEmail } from '@/core/services/email';
 import { logger } from '@/lib/logger';
