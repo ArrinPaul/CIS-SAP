@@ -90,8 +90,6 @@ export default function CheckInScannerClient() {
     }
   }, [selectedEventId]);
 
-  // syncOfflineQueue is intentionally omitted here to avoid resubscribing online/offline listeners on every queue change.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (user && (user.role === 'organizer' || user.role === 'admin' || user.role === 'professional' || user.role === 'attendee')) {
       // For now, let everyone load, the server action will protect it.

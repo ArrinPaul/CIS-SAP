@@ -6,6 +6,14 @@ const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 const nextConfig: NextConfig = {
   output: 'standalone',
   /* config options here */
+  // `npm run dev` uses --turbopack, which ignores the `webpack` key below.
+  // Mirror the one alias that matters so dev and build resolve the same way;
+  // the ignoreWarnings entries are webpack-only and cosmetic.
+  turbopack: {
+    resolveAlias: {
+      '@opentelemetry/exporter-jaeger': './src/lib/empty-module.ts',
+    },
+  },
   webpack: (config) => {
     config.resolve.alias = {
       ...config.resolve.alias,

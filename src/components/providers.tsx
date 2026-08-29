@@ -24,10 +24,12 @@ export function Providers({ children }: { children: React.ReactNode }) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js').then(
           (registration) => {
-            console.log('SW registered: ', registration);
+            if (process.env.NODE_ENV === 'development') {
+              console.log('SW registered: ', registration);
+            }
           },
           (err) => {
-            console.log('SW registration failed: ', err);
+            console.warn('SW registration failed: ', err);
           }
         );
       });

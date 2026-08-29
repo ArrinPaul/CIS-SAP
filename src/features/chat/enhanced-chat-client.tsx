@@ -142,10 +142,12 @@ export default function EnhancedChatClient({ initialRoomId }: { initialRoomId?: 
         )
         .subscribe(async (status) => {
           if (status === 'SUBSCRIBED') {
-            console.log(`Subscribed to room:${selectedRoomId}`);
+            if (process.env.NODE_ENV === 'development') {
+              console.log(`Subscribed to room:${selectedRoomId}`);
+            }
           }
           if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
-            console.log(`Connection ${status} for room:${selectedRoomId}, retrying...`);
+            console.warn(`Connection ${status} for room:${selectedRoomId}, retrying...`);
             setTimeout(subscribeToRoom, 3000);
           }
         });
