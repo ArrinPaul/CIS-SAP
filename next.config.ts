@@ -92,7 +92,7 @@ const nextConfig: NextConfig = {
               "font-src 'self' data: https://fonts.gstatic.com",
               "img-src 'self' data: blob: https:",
               "media-src 'self' data: blob:",
-              "connect-src 'self' https://*.clerk.accounts.dev https://*.supabase.co https://api.dodopayments.com https://www.googleapis.com wss://*.supabase.co",
+              "connect-src 'self' https://*.clerk.accounts.dev https://*.clerk.com https://clerk-telemetry.com https://*.supabase.co https://api.dodopayments.com https://www.googleapis.com wss://*.supabase.co",
               "frame-src 'self' https://*.clerk.accounts.dev https://challenges.cloudflare.com",
               "worker-src 'self' blob:",
               "object-src 'none'",

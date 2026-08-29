@@ -37,8 +37,22 @@ import {
   Twitter,
   Moon,
   Sun,
-  Award
+  Award,
+  CheckCircle2,
+  Zap
 } from 'lucide-react';
+import {
+  NotionLogo,
+  SlackLogo,
+  DiscordLogo,
+  GoogleCalendarLogo,
+  FigmaLogo,
+  MiroLogo,
+  StripeLogo,
+  ZoomLogo,
+  GitHubLogo,
+  ConfluenceLogo
+} from '@/components/brand/integration-logos';
 
 const FADE_UP: Variants = {
   hidden: { opacity: 0, y: 20 },
@@ -671,97 +685,301 @@ export default function LandingPage({ featuredEvents = [] }: { featuredEvents?: 
       </section>
 
       {/* INTEGRATION VISUALIZATION */}
-      <section className="py-24 relative bg-background/50 overflow-hidden">
-        <div className="container mx-auto px-10 text-center">
-           <h2 className="font-display text-5xl md:text-6xl tracking-[-0.03em] text-notion-ink mb-6 leading-[1.0]">
-              Unified <span className="italic text-notion-ink-faint">Control.</span>
-           </h2>
-           <p className="text-body-md text-notion-ink-muted max-w-2xl mx-auto mb-20 leading-relaxed">
-             Eventra consolidates your stack into a single, high-performance ecosystem, streaming real-time operational data into your core dashboard.
-           </p>
+      <section className="py-28 relative bg-gradient-to-b from-background via-notion-sunken/40 to-background overflow-hidden border-t border-border/40">
+        <div className="container mx-auto px-6 md:px-10 text-center">
+           <div className="max-w-3xl mx-auto mb-16 space-y-4">
+              <Badge variant="outline" className="px-3.5 py-1 text-xs font-semibold tracking-wide uppercase bg-background/80 backdrop-blur-sm">
+                Omnichannel Ecosystem
+              </Badge>
+              <h2 className="font-display text-4xl md:text-6xl tracking-[-0.035em] text-notion-ink leading-[1.05]">
+                 Unified <span className="italic text-notion-ink-faint">Control.</span>
+              </h2>
+              <p className="text-body-md md:text-lg text-notion-ink-muted leading-relaxed">
+                Eventra seamlessly bridges your favorite collaboration and production tools into a synchronized operations mesh — streaming schedules, live communication, design specs, and attendee telemetry directly to your command center.
+              </p>
+           </div>
            
-           <div className="relative max-w-6xl mx-auto min-h-[500px] flex items-center justify-between gap-12 px-6 md:px-24">
-              {/* Connecting Lines SVG */}
-              <div className="absolute inset-0 pointer-events-none hidden md:block" style={{ zIndex: 0 }}>
-                 <svg className="w-full h-full" viewBox="0 0 800 500" fill="none" preserveAspectRatio="none">
+           {/* Hub & Mesh Container */}
+           <div className="relative max-w-6xl mx-auto my-6">
+              {/* Desktop SVG Connecting Lines */}
+              <div className="absolute inset-0 pointer-events-none hidden lg:block" style={{ zIndex: 0 }}>
+                 <svg className="w-full h-full" viewBox="0 0 1000 480" fill="none" preserveAspectRatio="none">
+                    <defs>
+                      <linearGradient id="stream-left" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.05" />
+                        <stop offset="60%" stopColor="hsl(var(--primary))" stopOpacity="0.8" />
+                        <stop offset="100%" stopColor="hsl(var(--data-5))" stopOpacity="1" />
+                      </linearGradient>
+                      <linearGradient id="stream-right" x1="100%" y1="0%" x2="0%" y2="0%">
+                        <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.05" />
+                        <stop offset="60%" stopColor="hsl(var(--primary))" stopOpacity="0.8" />
+                        <stop offset="100%" stopColor="hsl(var(--data-5))" stopOpacity="1" />
+                      </linearGradient>
+                    </defs>
+
+                    {/* Left Connectors */}
                     {[
-                      "M 280 100 Q 400 100 520 250",
-                      "M 280 180 Q 400 180 520 250",
-                      "M 280 260 Q 400 260 520 250",
-                      "M 280 340 Q 400 340 520 250",
-                      "M 280 420 Q 400 420 520 250"
+                      "M 260 55 C 380 55, 420 240, 500 240",
+                      "M 260 145 C 370 145, 430 240, 500 240",
+                      "M 260 235 C 360 235, 440 240, 500 240",
+                      "M 260 325 C 370 325, 430 240, 500 240"
                     ].map((d, i) => (
-                      <g key={i}>
-                        <path d={d} stroke="currentColor" strokeWidth="1" className="text-primary/10 dark:text-primary/20" />
+                      <g key={`left-${i}`}>
+                        <path d={d} stroke="currentColor" strokeWidth="1.5" className="text-border/60 dark:text-border/40" />
                         <motion.path
                           d={d}
-                          stroke="url(#line-gradient)"
-                          strokeWidth="2"
-                          strokeDasharray="20 100"
-                          initial={{ strokeDashoffset: 120 }}
-                          animate={{ strokeDashoffset: -120 }}
+                          stroke="url(#stream-left)"
+                          strokeWidth="2.5"
+                          strokeDasharray="24 120"
+                          initial={{ strokeDashoffset: 144 }}
+                          animate={{ strokeDashoffset: -144 }}
                           transition={{ 
-                            duration: 3, 
+                            duration: 2.8, 
                             repeat: Infinity, 
                             ease: "linear",
-                            delay: i * 0.4
+                            delay: i * 0.35
                           }}
                         />
                       </g>
                     ))}
-                    <defs>
-                      <linearGradient id="line-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" stopColor="transparent" />
-                        <stop offset="50%" stopColor="hsl(var(--primary))" />
-                        <stop offset="100%" stopColor="transparent" />
-                      </linearGradient>
-                    </defs>
+
+                    {/* Right Connectors */}
+                    {[
+                      "M 740 55 C 620 55, 580 240, 500 240",
+                      "M 740 145 C 630 145, 570 240, 500 240",
+                      "M 740 235 C 640 235, 560 240, 500 240",
+                      "M 740 325 C 630 325, 570 240, 500 240"
+                    ].map((d, i) => (
+                      <g key={`right-${i}`}>
+                        <path d={d} stroke="currentColor" strokeWidth="1.5" className="text-border/60 dark:text-border/40" />
+                        <motion.path
+                          d={d}
+                          stroke="url(#stream-right)"
+                          strokeWidth="2.5"
+                          strokeDasharray="24 120"
+                          initial={{ strokeDashoffset: 144 }}
+                          animate={{ strokeDashoffset: -144 }}
+                          transition={{ 
+                            duration: 2.8, 
+                            repeat: Infinity, 
+                            ease: "linear",
+                            delay: i * 0.35 + 0.15
+                          }}
+                        />
+                      </g>
+                    ))}
                  </svg>
               </div>
 
-              {/* Left Side: Tool Cards */}
-              <div className="flex flex-col gap-6 relative z-10 w-full md:w-auto">
-                 {[
-                   { label: "Confluence", icon: BookOpen, color: "text-notion-ink-secondary" },
-                   { label: "Notion", icon: NotebookText, color: "text-notion-ink-secondary" },
-                   { label: "Slack", icon: Hash, color: "text-notion-ink-secondary" },
-                   { label: "Todoist", icon: ListTodo, color: "text-notion-ink-secondary" },
-                   { label: "Miro Board", icon: LayoutGrid, color: "text-notion-ink-secondary" }
-                 ].map((tool, i) => (
-                   <motion.div
-                     key={i}
-                     initial={{ opacity: 0, x: -30 }}
-                     whileInView={{ opacity: 1, x: 0 }}
-                     transition={{ delay: i * 0.1, duration: 0.8 }}
-                     className="flex items-center gap-5 bg-notion-surface px-7 py-4 rounded-2xl shadow-notion-soft w-full md:w-72 group hover:shadow-notion-elevated transition-all cursor-default hover:-translate-y-1"
-                   >
-                      <div className={cn("w-11 h-11 rounded-xl bg-notion-sunken flex items-center justify-center transition-all duration-300", tool.color)}>
-                         <tool.icon className="w-6 h-6" />
-                      </div>
-                      <span className="text-body-md font-medium text-notion-ink">{tool.label}</span>
-                   </motion.div>
-                 ))}
-              </div>
+              {/* 3-Column Visual Layout (Desktop) / Stood-up Grid (Mobile) */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
+                 
+                 {/* Left Column: Productivity & Comms */}
+                 <div className="lg:col-span-4 flex flex-col gap-3.5 order-2 lg:order-1">
+                    {[
+                      { 
+                        name: "Notion", 
+                        role: "Docs & Runbooks", 
+                        tag: "2-Way Live", 
+                        icon: NotionLogo, 
+                        bg: "bg-neutral-900 text-white dark:bg-neutral-800",
+                        glow: "group-hover:border-neutral-400/40"
+                      },
+                      { 
+                        name: "Slack", 
+                        role: "Channel Dispatch", 
+                        tag: "Instant Ping", 
+                        icon: SlackLogo, 
+                        bg: "bg-white dark:bg-neutral-900 border border-border/40",
+                        glow: "group-hover:border-emerald-500/40"
+                      },
+                      { 
+                        name: "Discord", 
+                        role: "Stage & Voice Hub", 
+                        tag: "Broadcasting", 
+                        icon: DiscordLogo, 
+                        bg: "bg-[#5865F2]/10 text-[#5865F2] border border-[#5865F2]/20",
+                        glow: "group-hover:border-[#5865F2]/50"
+                      },
+                      { 
+                        name: "Google Calendar", 
+                        role: "Dynamic Schedule", 
+                        tag: "Auto-Sync", 
+                        icon: GoogleCalendarLogo, 
+                        bg: "bg-white dark:bg-neutral-900 border border-border/40",
+                        glow: "group-hover:border-blue-500/40"
+                      }
+                    ].map((tool, i) => (
+                      <motion.div
+                        key={tool.name}
+                        initial={{ opacity: 0, x: -24 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: i * 0.1, duration: 0.6 }}
+                        whileHover={{ y: -3, scale: 1.02 }}
+                        className={cn(
+                          "flex items-center justify-between p-4 rounded-2xl bg-notion-surface/90 backdrop-blur-md border border-border/60 shadow-notion-soft hover:shadow-notion-elevated transition-all group cursor-default text-left",
+                          tool.glow
+                        )}
+                      >
+                         <div className="flex items-center gap-3.5 min-w-0">
+                            <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm transition-transform group-hover:scale-110", tool.bg)}>
+                               <tool.icon className="w-5 h-5" />
+                            </div>
+                            <div className="min-w-0">
+                               <h4 className="text-body-sm font-semibold text-notion-ink tracking-tight truncate">{tool.name}</h4>
+                               <p className="text-[11px] text-notion-ink-muted truncate font-medium">{tool.role}</p>
+                            </div>
+                         </div>
+                         <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-notion-sunken text-[10px] font-mono font-medium text-notion-ink-secondary shrink-0 border border-border/30">
+                            <span className="w-1.5 h-1.5 rounded-full bg-data-positive animate-pulse" />
+                            {tool.tag}
+                         </div>
+                      </motion.div>
+                    ))}
+                 </div>
 
-              {/* Right Side: Central Eventra Hub */}
-              <div className="relative z-10 hidden md:block">
-                 <motion.div 
-                   animate={{ scale: [1, 1.02, 1] }}
-                   transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-                   className="relative group rounded-3xl"
-                 >
-                    <div className="w-64 h-64 rounded-[2.75rem] bg-notion-primary flex items-center justify-center relative overflow-hidden shadow-notion-elevated">
-                       <Logo 
-                         iconClassName="w-40 h-48 bg-transparent shadow-none p-0" 
-                         className="gap-0" 
+                 {/* Center Column: Eventra Core Hub */}
+                 <div className="lg:col-span-4 flex flex-col items-center justify-center order-1 lg:order-2 py-4 lg:py-0">
+                    <motion.div 
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      whileInView={{ opacity: 1, scale: 1 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.8, ease: "easeOut" }}
+                      className="relative flex items-center justify-center"
+                    >
+                       {/* Animated Radial Pulse Rings */}
+                       <motion.div 
+                         animate={{ scale: [1, 1.08, 1], opacity: [0.35, 0.6, 0.35] }}
+                         transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                         className="absolute -inset-10 rounded-full border border-primary/20 bg-primary/5 pointer-events-none"
                        />
-                       <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent pointer-events-none opacity-50" />
-                    </div>
-                    {/* Animated outer rings */}
-                    <div className="absolute inset-0 -m-6 border border-border rounded-[3rem]" />
-                    <div className="absolute inset-0 -m-12 border border-border/60 rounded-[3.5rem]" />
-                 </motion.div>
+                       <motion.div 
+                         animate={{ scale: [1.05, 0.98, 1.05], opacity: [0.2, 0.45, 0.2] }}
+                         transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                         className="absolute -inset-20 rounded-full border border-dashed border-primary/20 pointer-events-none hidden sm:block"
+                       />
+
+                       {/* Central Core Console */}
+                       <div className="relative w-64 h-64 sm:w-72 sm:h-72 rounded-[2.75rem] bg-gradient-to-b from-notion-surface via-notion-surface to-notion-sunken p-6 border-2 border-border/80 shadow-notion-elevated flex flex-col items-center justify-between text-center overflow-hidden group">
+                          {/* Inner Lighting Glow */}
+                          <div className="absolute inset-0 bg-radial from-primary/10 via-transparent to-transparent pointer-events-none" />
+                          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary to-transparent" />
+                          
+                          {/* Top Status */}
+                          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-notion-sunken/80 border border-border/60 backdrop-blur-md">
+                             <Zap className="w-3 h-3 text-data-3 fill-data-3 animate-bounce" />
+                             <span className="text-[10px] font-mono font-semibold uppercase tracking-wider text-notion-ink">Core Engine</span>
+                          </div>
+
+                          {/* Center Emblem */}
+                          <div className="relative my-auto flex flex-col items-center">
+                             <div className="w-20 h-20 rounded-2xl bg-notion-primary text-notion-on-primary flex items-center justify-center shadow-lg border border-white/10 group-hover:scale-105 transition-transform duration-300">
+                                <Logo 
+                                  iconClassName="w-12 h-12 text-notion-on-primary" 
+                                  className="gap-0" 
+                                />
+                             </div>
+                             <span className="font-display font-bold text-lg text-notion-ink tracking-tight mt-3">Eventra Mesh</span>
+                             <span className="text-[11px] font-mono text-notion-ink-muted">0.2ms latency • 100% synced</span>
+                          </div>
+
+                          {/* Bottom Pulse Bar */}
+                          <div className="w-full flex items-center justify-between px-3 py-1.5 rounded-xl bg-notion-sunken/90 border border-border/40 text-[10px] font-mono text-notion-ink-secondary">
+                             <span className="flex items-center gap-1.5 font-medium">
+                                <span className="w-2 h-2 rounded-full bg-data-positive animate-pulse" />
+                                32 Active Nodes
+                             </span>
+                             <span className="text-data-positive font-bold">Encrypted</span>
+                          </div>
+                       </div>
+                    </motion.div>
+                 </div>
+
+                 {/* Right Column: Creative, Production & Infra */}
+                 <div className="lg:col-span-4 flex flex-col gap-3.5 order-3">
+                    {[
+                      { 
+                        name: "Figma", 
+                        role: "Stage Assets & Specs", 
+                        tag: "Live Spec", 
+                        icon: FigmaLogo, 
+                        bg: "bg-white dark:bg-neutral-900 border border-border/40",
+                        glow: "group-hover:border-purple-500/40"
+                      },
+                      { 
+                        name: "Miro", 
+                        role: "Interactive Boards", 
+                        tag: "Multi-Canvas", 
+                        icon: MiroLogo, 
+                        bg: "bg-[#FFD02F]/10 border border-[#FFD02F]/30",
+                        glow: "group-hover:border-[#FFD02F]/60"
+                      },
+                      { 
+                        name: "Stripe", 
+                        role: "Ticketing & Payouts", 
+                        tag: "Instant Pay", 
+                        icon: StripeLogo, 
+                        bg: "bg-[#635BFF]/10 border border-[#635BFF]/30",
+                        glow: "group-hover:border-[#635BFF]/50"
+                      },
+                      { 
+                        name: "Zoom", 
+                        role: "Hybrid Video Mesh", 
+                        tag: "4K Pipeline", 
+                        icon: ZoomLogo, 
+                        bg: "bg-[#2D8CFF]/10 border border-[#2D8CFF]/30",
+                        glow: "group-hover:border-[#2D8CFF]/50"
+                      }
+                    ].map((tool, i) => (
+                      <motion.div
+                        key={tool.name}
+                        initial={{ opacity: 0, x: 24 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: i * 0.1, duration: 0.6 }}
+                        whileHover={{ y: -3, scale: 1.02 }}
+                        className={cn(
+                          "flex items-center justify-between p-4 rounded-2xl bg-notion-surface/90 backdrop-blur-md border border-border/60 shadow-notion-soft hover:shadow-notion-elevated transition-all group cursor-default text-left",
+                          tool.glow
+                        )}
+                      >
+                         <div className="flex items-center gap-3.5 min-w-0">
+                            <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm transition-transform group-hover:scale-110", tool.bg)}>
+                               <tool.icon className="w-5 h-5" />
+                            </div>
+                            <div className="min-w-0">
+                               <h4 className="text-body-sm font-semibold text-notion-ink tracking-tight truncate">{tool.name}</h4>
+                               <p className="text-[11px] text-notion-ink-muted truncate font-medium">{tool.role}</p>
+                            </div>
+                         </div>
+                         <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-notion-sunken text-[10px] font-mono font-medium text-notion-ink-secondary shrink-0 border border-border/30">
+                            <span className="w-1.5 h-1.5 rounded-full bg-data-positive animate-pulse" />
+                            {tool.tag}
+                         </div>
+                      </motion.div>
+                    ))}
+                 </div>
+
               </div>
+           </div>
+
+           {/* Value Pill Banner */}
+           <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
+              {[
+                { title: "100+ Connectors", subtitle: "Zero-code webhook setup" },
+                { title: "< 1.2ms Global Sync", subtitle: "Edge-replicated pipelines" },
+                { title: "AES-256 Verified", subtitle: "End-to-end payload trust" },
+                { title: "Bi-Directional State", subtitle: "Zero manual reconciliation" }
+              ].map((feat, i) => (
+                <div key={i} className="p-4 rounded-2xl bg-notion-surface/60 border border-border/40 text-center flex flex-col items-center justify-center gap-1 shadow-sm">
+                   <div className="flex items-center gap-1.5">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-data-positive" />
+                      <span className="text-xs font-bold text-notion-ink tracking-tight">{feat.title}</span>
+                   </div>
+                   <span className="text-[10px] text-notion-ink-muted">{feat.subtitle}</span>
+                </div>
+              ))}
            </div>
         </div>
       </section>

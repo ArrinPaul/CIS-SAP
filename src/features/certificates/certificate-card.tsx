@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/core/utils/utils';
 import { useToast } from '@/hooks/use-toast';
-import DOMPurify from 'isomorphic-dompurify';
+import DOMPurify from 'dompurify';
 
 interface CertificateData {
   recipientName: string;

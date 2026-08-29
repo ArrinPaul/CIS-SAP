@@ -26,8 +26,15 @@ function withTimeout<T>(promise: Promise<T>, timeoutMs: number = AI_TIMEOUT_MS):
   });
 }
 
-function getAiFailureReason(error: unknown): 'timeout' | 'quota' | 'unknown' {
+export function isAiConfigured(): boolean {
+  return Boolean(process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY);
+}
+
+function getAiFailureReason(error: unknown): 'timeout' | 'quota' | 'missing_key' | 'unknown' {
   const message = error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
+  if (message.includes('api key') || message.includes('failed_precondition') || message.includes('gemini_api_key')) {
+    return 'missing_key';
+  }
   if (message.includes('ai_timeout') || message.includes('timeout')) return 'timeout';
   if (
     message.includes('quota') ||
@@ -42,10 +49,17 @@ function getAiFailureReason(error: unknown): 'timeout' | 'quota' | 'unknown' {
 
 function logAiFailure(flowName: string, error: unknown) {
   const reason = getAiFailureReason(error);
+  if (reason === 'missing_key') {
+    console.warn(`[AI:${flowName}] skipped/degraded: GEMINI_API_KEY or GOOGLE_API_KEY is not set in environment.`);
+    return;
+  }
   console.warn(`[AI:${flowName}] degraded due to ${reason}`, error);
 }
 
 async function safeGenerate<T>(flowName: string, input: Parameters<typeof ai.generate>[0]) {
+  if (!isAiConfigured()) {
+    return null;
+  }
   try {
     const result = await withTimeout(ai.generate(input));
     return result;
@@ -56,6 +70,9 @@ async function safeGenerate<T>(flowName: string, input: Parameters<typeof ai.gen
 }
 
 async function safeEmbed(input: Parameters<typeof ai.embed>[0]) {
+  if (!isAiConfigured()) {
+    return null;
+  }
   try {
     return await withTimeout(ai.embed(input));
   } catch (error) {
