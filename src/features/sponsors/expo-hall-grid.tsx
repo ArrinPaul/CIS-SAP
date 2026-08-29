@@ -18,7 +18,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { SponsorBoothDialog, SponsorBoothData } from './sponsor-booth-dialog';
-import { tierBadgeStyles, SponsorTier } from '@/app/actions/sponsors';
+import { tierBadgeStyles, SponsorTier } from '@/core/utils/sponsors';
 import { cn } from '@/core/utils/utils';
 
 interface ExpoHallGridProps {

@@ -27,7 +27,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
-import { captureSponsorLead, tierBadgeStyles, SponsorTier } from '@/app/actions/sponsors';
+import { captureSponsorLead } from '@/app/actions/sponsors';
+import { tierBadgeStyles, SponsorTier } from '@/core/utils/sponsors';
 import { cn } from '@/core/utils/utils';
 
 export interface SponsorBoothData {

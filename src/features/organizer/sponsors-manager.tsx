@@ -37,10 +37,9 @@ import { useToast } from '@/hooks/use-toast';
 import { 
   createSponsor, 
   getEventSponsors, 
-  deleteSponsor, 
-  tierBadgeStyles, 
-  SponsorTier 
+  deleteSponsor 
 } from '@/app/actions/sponsors';
+import { tierBadgeStyles, SponsorTier } from '@/core/utils/sponsors';
 import { cn } from '@/core/utils/utils';
 
 interface SponsorsManagerProps {

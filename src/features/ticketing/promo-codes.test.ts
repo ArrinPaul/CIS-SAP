@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { calculateDiscount } from '@/app/actions/promo-codes';
+import { calculateDiscount } from '@/core/utils/promo-codes';
 
 describe('Promo Codes & Discount Engine', () => {
   it('calculates percentage discounts accurately', () => {

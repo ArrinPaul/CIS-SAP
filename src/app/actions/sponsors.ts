@@ -6,78 +6,12 @@ import { eq, desc, and, sql } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { requireAuth, validateRole, validateEventOwnership } from '@/lib/auth-utils';
 import { logger } from '@/lib/logger';
-
-export type SponsorTier = 'title' | 'platinum' | 'gold' | 'silver' | 'bronze' | 'community';
-
-export const tierPriority: Record<SponsorTier, number> = {
-  title: 1,
-  platinum: 2,
-  gold: 3,
-  silver: 4,
-  bronze: 5,
-  community: 6,
-};
-
-export const tierBadgeStyles: Record<SponsorTier, { label: string; bg: string; text: string; border: string }> = {
-  title: {
-    label: 'TITLE SPONSOR',
-    bg: 'bg-amber-500/20',
-    text: 'text-amber-400',
-    border: 'border-amber-500/40',
-  },
-  platinum: {
-    label: 'PLATINUM',
-    bg: 'bg-cyan-500/20',
-    text: 'text-cyan-400',
-    border: 'border-cyan-500/40',
-  },
-  gold: {
-    label: 'GOLD',
-    bg: 'bg-yellow-500/20',
-    text: 'text-yellow-400',
-    border: 'border-yellow-500/40',
-  },
-  silver: {
-    label: 'SILVER',
-    bg: 'bg-slate-300/20',
-    text: 'text-slate-300',
-    border: 'border-slate-400/40',
-  },
-  bronze: {
-    label: 'BRONZE',
-    bg: 'bg-orange-700/20',
-    text: 'text-orange-400',
-    border: 'border-orange-600/40',
-  },
-  community: {
-    label: 'COMMUNITY PARTNER',
-    bg: 'bg-emerald-500/20',
-    text: 'text-emerald-400',
-    border: 'border-emerald-500/40',
-  },
-};
-
-/**
- * Pure helper to sort sponsors by tier hierarchy and custom order index
- */
-export function sortSponsorsByTier<T extends { tier: string; orderIndex?: number; name: string }>(sponsors: T[]): T[] {
-  return [...sponsors].sort((a, b) => {
-    const priorityA = tierPriority[a.tier as SponsorTier] || 99;
-    const priorityB = tierPriority[b.tier as SponsorTier] || 99;
-
-    if (priorityA !== priorityB) {
-      return priorityA - priorityB;
-    }
-
-    const orderA = a.orderIndex ?? 0;
-    const orderB = b.orderIndex ?? 0;
-    if (orderA !== orderB) {
-      return orderA - orderB;
-    }
-
-    return a.name.localeCompare(b.name);
-  });
-}
+import { 
+  SponsorTier, 
+  tierPriority, 
+  tierBadgeStyles, 
+  sortSponsorsByTier 
+} from '@/core/utils/sponsors';
 
 export interface CreateSponsorInput {
   eventId: string;

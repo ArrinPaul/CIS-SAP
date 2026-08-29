@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { sortSponsorsByTier, tierBadgeStyles, tierPriority } from '@/app/actions/sponsors';
+import { sortSponsorsByTier, tierBadgeStyles, tierPriority } from '@/core/utils/sponsors';
 
 describe('Sponsor & Exhibitor Virtual Booth Engine', () => {
   it('correctly sorts sponsors according to tier hierarchy', () => {

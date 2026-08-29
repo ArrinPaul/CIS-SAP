@@ -7,6 +7,8 @@ import { revalidatePath } from 'next/cache';
 import { requireAuth, validateRole, validateEventOwnership } from '@/lib/auth-utils';
 import { logger } from '@/lib/logger';
 
+import { calculateDiscount } from '@/core/utils/promo-codes';
+
 export interface CreatePromoCodeInput {
   eventId?: string;
   code: string;
@@ -15,34 +17,6 @@ export interface CreatePromoCodeInput {
   maxUses?: number;
   minOrderAmount?: number;
   expiresAt?: string;
-}
-
-/**
- * Pure calculation helper for promo code discounts
- */
-export function calculateDiscount(
-  discountType: 'percentage' | 'fixed',
-  discountValue: number,
-  orderAmount: number
-): { discountAmount: number; finalAmount: number } {
-  if (orderAmount <= 0) {
-    return { discountAmount: 0, finalAmount: 0 };
-  }
-
-  let discount = 0;
-  if (discountType === 'percentage') {
-    discount = (orderAmount * discountValue) / 100;
-  } else {
-    discount = discountValue;
-  }
-
-  // Cap discount at total order amount
-  discount = Math.min(discount, orderAmount);
-  discount = Math.round(discount * 100) / 100;
-
-  const finalAmount = Math.max(0, Math.round((orderAmount - discount) * 100) / 100);
-
-  return { discountAmount: discount, finalAmount };
 }
 
 /**

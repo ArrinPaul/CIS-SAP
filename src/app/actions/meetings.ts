@@ -7,6 +7,8 @@ import { revalidatePath } from 'next/cache';
 import { requireAuth } from '@/lib/auth-utils';
 import { logger } from '@/lib/logger';
 
+import { checkSlotConflict, generateAvailableSlots } from '@/core/utils/meetings';
+
 export interface RequestMeetingInput {
   eventId: string;
   recipientId: string;
@@ -16,56 +18,6 @@ export interface RequestMeetingInput {
   durationMinutes?: number; // 15 or 30 mins default
   meetingType?: 'virtual' | 'in_person';
   locationDetails?: string;
-}
-
-/**
- * Pure conflict detection helper
- */
-export function checkSlotConflict(
-  newStart: Date,
-  newEnd: Date,
-  existingMeetings: { startTime: Date; endTime: Date; status: string }[]
-): boolean {
-  return existingMeetings.some((m) => {
-    if (m.status === 'declined' || m.status === 'cancelled') return false;
-    const start = new Date(m.startTime);
-    const end = new Date(m.endTime);
-    // Overlap check: startA < endB && endA > startB
-    return newStart < end && newEnd > start;
-  });
-}
-
-/**
- * Pure available slot generation helper
- */
-export function generateAvailableSlots(
-  baseDate: Date,
-  startHour: number = 9,
-  endHour: number = 18,
-  durationMinutes: number = 15
-): { startTime: Date; endTime: Date; label: string }[] {
-  const slots: { startTime: Date; endTime: Date; label: string }[] = [];
-  const current = new Date(baseDate);
-  current.setHours(startHour, 0, 0, 0);
-
-  const endOfDay = new Date(baseDate);
-  endOfDay.setHours(endHour, 0, 0, 0);
-
-  while (current < endOfDay) {
-    const slotStart = new Date(current);
-    const slotEnd = new Date(current.getTime() + durationMinutes * 60 * 1000);
-
-    const timeLabel = slotStart.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    slots.push({
-      startTime: slotStart,
-      endTime: slotEnd,
-      label: timeLabel,
-    });
-
-    current.setTime(current.getTime() + durationMinutes * 60 * 1000);
-  }
-
-  return slots;
 }
 
 /**

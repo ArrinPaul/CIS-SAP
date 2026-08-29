@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { checkSlotConflict, generateAvailableSlots } from '@/app/actions/meetings';
+import { checkSlotConflict, generateAvailableSlots } from '@/core/utils/meetings';
 
 describe('1-on-1 Speed Networking & Meeting Scheduler Engine', () => {
   const baseDate = new Date('2026-09-15T09:00:00Z');
