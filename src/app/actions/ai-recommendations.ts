@@ -163,7 +163,8 @@ export async function getAIRecommendations(userId?: string): Promise<AIEventReco
  */
 export async function getAIConnectionRecommendations(userId?: string): Promise<AIConnectionRecommendation[]> {
   const { userId: callerId } = await auth();
-  if (!callerId) throw new Error('Unauthorized');
+  // No session means no suggestions — not an error worth crashing the caller.
+  if (!callerId) return [];
 
   const targetUserId = userId || callerId;
 

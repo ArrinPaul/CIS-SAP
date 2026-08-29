@@ -48,6 +48,8 @@ export function AIToolsClient() {
       if (res.success) {
         setStructuredNotes(res.data);
         toast({ title: 'Notes Structured' });
+      } else {
+        toast({ title: 'Operation Failed', description: res.error, variant: 'destructive' });
       }
     } catch (e) {
       toast({ title: 'Operation Failed', variant: 'destructive' });
@@ -64,6 +66,8 @@ export function AIToolsClient() {
       if (res.success && res.code) {
         setMermaidCode(res.code);
         toast({ title: 'Diagram Generated' });
+      } else {
+        toast({ title: 'Generation Failed', description: res.error, variant: 'destructive' });
       }
     } catch (e) {
       toast({ title: 'Generation Failed', variant: 'destructive' });

@@ -9,7 +9,7 @@ import { auth } from '@clerk/nextjs/server';
  */
 export async function generateDiagram(prompt: string) {
   const { userId } = await auth();
-  if (!userId) throw new Error('Unauthorized');
+  if (!userId) return { success: false, error: 'Your session has expired. Please sign in again.' };
 
   try {
     const response = await ai.generate({
@@ -35,7 +35,7 @@ export async function generateDiagram(prompt: string) {
  */
 export async function formatNotes(rawNotes: string) {
   const { userId } = await auth();
-  if (!userId) throw new Error('Unauthorized');
+  if (!userId) return { success: false, error: 'Your session has expired. Please sign in again.' };
 
   try {
     const response = await ai.generate({

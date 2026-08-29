@@ -15,6 +15,8 @@ import {
   CalendarCheck,
   UserPlus,
   CalendarDays,
+  WifiOff,
+  RotateCw,
   Sparkles,
   ChevronRight,
   MoreVertical,
@@ -45,20 +47,31 @@ export default function AttendeeDashboard() {
   const [loading, setLoading] = React.useState(true);
   const [connectingId, setConnectingId] = React.useState<string | null>(null);
 
-  React.useEffect(() => {
-    async function loadData() {
-      if (!user) return;
-      try {
-        const res = await getDashboardData();
-        setData(res);
-      } catch (error) {
-        console.error("Dashboard load error:", error);
-      } finally {
-        setLoading(false);
+  const [loadError, setLoadError] = React.useState(false);
+
+  const loadData = React.useCallback(async () => {
+    if (!user) return;
+    setLoadError(false);
+    try {
+      const res = await getDashboardData();
+      // The client still thinks it is signed in but the server session is
+      // gone — send the user to sign in rather than render an empty shell.
+      if (res.unauthorized) {
+        router.push('/login');
+        return;
       }
+      setData(res);
+    } catch (error) {
+      console.error("Dashboard load error:", error);
+      setLoadError(true);
+    } finally {
+      setLoading(false);
     }
+  }, [user, router]);
+
+  React.useEffect(() => {
     loadData();
-  }, [user]);
+  }, [loadData]);
 
   const handleQuickConnect = async (person: any) => {
     setConnectingId(person.userId);
@@ -85,6 +98,27 @@ export default function AttendeeDashboard() {
         <div className="flex flex-col items-center gap-4">
           <div className="w-10 h-10 rounded-full border-2 border-notion-hairline border-t-notion-primary animate-spin" />
           <p className="text-body-sm text-notion-ink-muted">Syncing data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div role="alert" className="flex h-[80vh] items-center justify-center px-6">
+        <div className="flex flex-col items-center gap-5 text-center">
+          <div className="w-16 h-16 rounded-2xl bg-notion-sunken flex items-center justify-center">
+            <WifiOff className="w-8 h-8 text-notion-ink-faint" />
+          </div>
+          <div className="space-y-2">
+            <h2 className="font-display text-h3 text-notion-ink">Couldn&apos;t load your dashboard</h2>
+            <p className="text-body-sm text-notion-ink-muted max-w-xs">
+              Something went wrong reaching the server.
+            </p>
+          </div>
+          <Button variant="secondary" onClick={loadData} className="gap-2">
+            <RotateCw className="w-4 h-4" /> Try again
+          </Button>
         </div>
       </div>
     );
