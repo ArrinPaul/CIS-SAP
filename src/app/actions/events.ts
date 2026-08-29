@@ -48,6 +48,8 @@ export async function getEvents(filters?: {
   category?: string;
   search?: string;
   limit?: number;
+  offset?: number;
+  type?: string;
   organizerId?: string;
   status?: string;
   dateRange?: string; // 'today', 'this-week', 'this-month'
@@ -68,6 +70,10 @@ export async function getEvents(filters?: {
 
     if (filters?.category && filters.category !== 'All') {
       conditions.push(eq(events.category, filters.category));
+    }
+
+    if (filters?.type) {
+      conditions.push(eq(events.type, filters.type as any));
     }
 
     if (filters?.search) {
@@ -104,7 +110,8 @@ export async function getEvents(filters?: {
     const result = await db.select().from(events)
       .where(and(...conditions))
       .orderBy(desc(events.startDate))
-      .limit(filters?.limit || 50);
+      .limit(filters?.limit || 50)
+      .offset(filters?.offset || 0);
 
     return result;
   } catch (error) {

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Filter, X, CalendarSearch, WifiOff, Activity, Compass, ChevronRight, SlidersHorizontal, Check, RotateCw } from 'lucide-react';
+import { Search, Filter, X, CalendarSearch, WifiOff, Activity, Compass, ChevronRight, SlidersHorizontal, Check, RotateCw, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -19,10 +19,14 @@ interface EventItem {
   imageUrl: string | null; isPaid: boolean; status: string;
 }
 
+const PAGE_SIZE = 9;
+
 export default function ExploreClient() {
   const t = useTranslations('Events');
   const [events, setEvents] = useState<EventItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
   const [loadError, setLoadError] = useState(false);
   // Guards against a slow request landing after a newer one has been issued.
   const requestId = React.useRef(0);
@@ -52,29 +56,50 @@ export default function ExploreClient() {
       const result = await getEvents({
         search: debouncedSearch || undefined,
         category: selectedCategory !== 'All' ? selectedCategory : undefined,
-        limit: 20,
+        type: selectedType || undefined,
+        limit: PAGE_SIZE,
+        offset: 0,
       });
 
       // A newer request has since been issued — discard this response.
       if (id !== requestId.current) return;
 
-      // Client-side type filtering until getEvents supports it
-      let filtered = result as EventItem[];
-      if (selectedType) {
-        filtered = filtered.filter(e => e.type === selectedType);
-      }
-
-      setEvents(filtered);
+      const loaded = result as EventItem[];
+      setEvents(loaded);
+      setHasMore(loaded.length === PAGE_SIZE);
     } catch (error) {
       if (id !== requestId.current) return;
       console.error('Failed to fetch events:', error);
       setEvents([]);
+      setHasMore(false);
       // Surface the failure instead of rendering it as "no results".
       setLoadError(true);
     } finally {
       if (id === requestId.current) setLoading(false);
     }
   }, [debouncedSearch, selectedCategory, selectedType]);
+
+  const handleLoadMore = async () => {
+    if (loadingMore || !hasMore) return;
+    setLoadingMore(true);
+    try {
+      const nextBatch = await getEvents({
+        search: debouncedSearch || undefined,
+        category: selectedCategory !== 'All' ? selectedCategory : undefined,
+        type: selectedType || undefined,
+        limit: PAGE_SIZE,
+        offset: events.length,
+      });
+
+      const loaded = nextBatch as EventItem[];
+      setEvents(prev => [...prev, ...loaded]);
+      setHasMore(loaded.length === PAGE_SIZE);
+    } catch (error) {
+      console.error('Failed to load more events:', error);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   useEffect(() => {
     fetchEvents();
@@ -266,11 +291,26 @@ export default function ExploreClient() {
              ))}
            </motion.div>
            
-           <div className="pt-10 flex justify-center">
-              <Button variant="outline" size="lg" className="rounded-xl font-bold border-notion-hairline hover:bg-notion-surface px-10 h-12">
-                 Load More Nodes
-              </Button>
-           </div>
+            {hasMore && (
+              <div className="pt-10 flex justify-center">
+                 <Button 
+                   variant="outline" 
+                   size="lg" 
+                   onClick={handleLoadMore}
+                   disabled={loadingMore}
+                   className="rounded-xl font-bold border-notion-hairline hover:bg-notion-surface px-10 h-12 gap-2 transition-all active:scale-95"
+                 >
+                    {loadingMore ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin text-notion-primary" />
+                        <span>Loading Nodes...</span>
+                      </>
+                    ) : (
+                      'Load More Nodes'
+                    )}
+                 </Button>
+              </div>
+            )}
         </div>
       )}
     </div>

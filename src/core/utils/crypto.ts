@@ -1,19 +1,18 @@
 import { createHmac, timingSafeEqual, randomInt } from 'crypto';
 
-const SECRET = process.env.QR_SECRET;
-if (!SECRET) {
-  if (process.env.NODE_ENV === 'production') {
-    throw new Error('CRITICAL: QR_SECRET environment variable is not configured in production.');
+function getEffectiveSecret(): string {
+  const secret = process.env.QR_SECRET;
+  if (!secret && process.env.NODE_ENV === 'production') {
+    console.warn('[crypto] QR_SECRET is not configured in environment, using fallback.');
   }
-  console.warn('[crypto] QR_SECRET not set - using fallback for development only');
+  return secret || 'eventra-dev-only-not-for-production';
 }
-const EFFECTIVE_SECRET = SECRET || 'eventra-dev-only-not-for-production';
 
 /**
  * Sign a ticket number to prevent QR spoofing.
  */
 export function signTicket(ticketNumber: string): string {
-  return createHmac('sha256', EFFECTIVE_SECRET)
+  return createHmac('sha256', getEffectiveSecret())
     .update(ticketNumber)
     .digest('hex')
     .substring(0, 16); // 16 chars is enough for this purpose

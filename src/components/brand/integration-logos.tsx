@@ -108,3 +108,72 @@ export function ConfluenceLogo({ className }: BrandLogoProps) {
     </svg>
   );
 }
+
+export function SupabaseLogo({ className }: BrandLogoProps) {
+  return (
+    <svg className={cn("w-5 h-5", className)} viewBox="0 0 24 24" fill="none">
+      <path d="M13.4 2.4L2.8 15.6c-.4.5-.1 1.3.6 1.3h8.3l-1.1 4.7c-.2.9.9 1.4 1.5.7l10.6-13.2c.4-.5.1-1.3-.6-1.3h-8.3l1.1-4.7c.2-.9-.9-1.4-1.5-.7z" fill="#3ECF8E" />
+    </svg>
+  );
+}
+
+export function ClerkLogo({ className }: BrandLogoProps) {
+  return (
+    <svg className={cn("w-5 h-5", className)} viewBox="0 0 24 24" fill="none">
+      <rect width="24" height="24" rx="6" fill="#6C47FF" />
+      <path d="M15.5 8.5C14.5 7.5 13 7 11.5 7 8.5 7 6.5 9.2 6.5 12s2 5 5 5c1.5 0 3-.5 4-1.5" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+export function GeminiLogo({ className }: BrandLogoProps) {
+  return (
+    <svg className={cn("w-5 h-5", className)} viewBox="0 0 24 24" fill="none">
+      <path d="M12 2C12 7.5 7.5 12 2 12C7.5 12 12 16.5 12 22C12 16.5 16.5 12 22 12C16.5 12 12 7.5 12 2Z" fill="url(#gemini-grad)" />
+      <defs>
+        <linearGradient id="gemini-grad" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#1BA1E3" />
+          <stop offset="0.5" stopColor="#5460E6" />
+          <stop offset="1" stopColor="#9C52E0" />
+        </linearGradient>
+      </defs>
+    </svg>
+  );
+}
+
+export function ResendLogo({ className }: BrandLogoProps) {
+  return (
+    <svg className={cn("w-5 h-5", className)} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M3 6.5A2.5 2.5 0 0 1 5.5 4h13A2.5 2.5 0 0 1 21 6.5v11a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 17.5v-11zm2.5-.5a.5.5 0 0 0-.5.5v.7l7 4.55 7-4.55v-.7a.5.5 0 0 0-.5-.5h-13zm13.5 3.15l-6.46 4.2a1 1 0 0 1-1.08 0L5 9.15V17.5a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5V9.15z" />
+    </svg>
+  );
+}
+
+export function TwilioLogo({ className }: BrandLogoProps) {
+  return (
+    <svg className={cn("w-5 h-5", className)} viewBox="0 0 24 24" fill="none">
+      <rect width="24" height="24" rx="6" fill="#F22F46" />
+      <circle cx="8.5" cy="8.5" r="2" fill="#FFFFFF" />
+      <circle cx="15.5" cy="8.5" r="2" fill="#FFFFFF" />
+      <circle cx="8.5" cy="15.5" r="2" fill="#FFFFFF" />
+      <circle cx="15.5" cy="15.5" r="2" fill="#FFFFFF" />
+    </svg>
+  );
+}
+
+export function DodoLogo({ className }: BrandLogoProps) {
+  return (
+    <svg className={cn("w-5 h-5", className)} viewBox="0 0 24 24" fill="none">
+      <rect width="24" height="24" rx="6" fill="#0052FF" />
+      <path d="M8 7h4.5a5 5 0 0 1 5 5 5 5 0 0 1-5 5H8V7z" stroke="#FFFFFF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+export function QrCodeLogo({ className }: BrandLogoProps) {
+  return (
+    <svg className={cn("w-5 h-5", className)} viewBox="0 0 24 24" fill="currentColor">
+      <path fillRule="evenodd" clipRule="evenodd" d="M3 4a1 1 0 0 1 1-1h5a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4zm2 1v3h3V5H5zm9-1a1 1 0 0 1 1-1h5a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1h-5a1 1 0 0 1-1-1V4zm2 1v3h3V5h-3zM3 15a1 1 0 0 1 1-1h5a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-5zm2 1v3h3v-3H5zm9-1a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1v-2zm4 0a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1v-5zm-4 4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1v-2z"/>
+    </svg>
+  );
+}

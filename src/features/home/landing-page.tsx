@@ -42,16 +42,15 @@ import {
   Zap
 } from 'lucide-react';
 import {
-  NotionLogo,
-  SlackLogo,
-  DiscordLogo,
   GoogleCalendarLogo,
-  FigmaLogo,
-  MiroLogo,
-  StripeLogo,
-  ZoomLogo,
-  GitHubLogo,
-  ConfluenceLogo
+  SupabaseLogo,
+  ClerkLogo,
+  GeminiLogo,
+  ResendLogo,
+  TwilioLogo,
+  DodoLogo,
+  QrCodeLogo,
+  GitHubLogo
 } from '@/components/brand/integration-logos';
 
 const FADE_UP: Variants = {
@@ -689,13 +688,13 @@ export default function LandingPage({ featuredEvents = [] }: { featuredEvents?: 
         <div className="container mx-auto px-6 md:px-10 text-center">
            <div className="max-w-3xl mx-auto mb-16 space-y-4">
               <Badge variant="outline" className="px-3.5 py-1 text-xs font-semibold tracking-wide uppercase bg-background/80 backdrop-blur-sm">
-                Omnichannel Ecosystem
+                Connected Infrastructure
               </Badge>
               <h2 className="font-display text-4xl md:text-6xl tracking-[-0.035em] text-notion-ink leading-[1.05]">
-                 Unified <span className="italic text-notion-ink-faint">Control.</span>
+                 Integrated <span className="italic text-notion-ink-faint">Platform.</span>
               </h2>
               <p className="text-body-md md:text-lg text-notion-ink-muted leading-relaxed">
-                Eventra seamlessly bridges your favorite collaboration and production tools into a synchronized operations mesh — streaming schedules, live communication, design specs, and attendee telemetry directly to your command center.
+                Eventra seamlessly unites your identity, database, AI intelligence, notifications, and payments into a unified, reliable event operations pipeline.
               </p>
            </div>
            
@@ -774,40 +773,40 @@ export default function LandingPage({ featuredEvents = [] }: { featuredEvents?: 
               {/* 3-Column Visual Layout (Desktop) / Stood-up Grid (Mobile) */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
                  
-                 {/* Left Column: Productivity & Comms */}
+                 {/* Left Column: Identity, AI & Data */}
                  <div className="lg:col-span-4 flex flex-col gap-3.5 order-2 lg:order-1">
                     {[
                       { 
-                        name: "Notion", 
-                        role: "Docs & Runbooks", 
-                        tag: "2-Way Live", 
-                        icon: NotionLogo, 
-                        bg: "bg-neutral-900 text-white dark:bg-neutral-800",
-                        glow: "group-hover:border-neutral-400/40"
-                      },
-                      { 
-                        name: "Slack", 
-                        role: "Channel Dispatch", 
-                        tag: "Instant Ping", 
-                        icon: SlackLogo, 
-                        bg: "bg-white dark:bg-neutral-900 border border-border/40",
-                        glow: "group-hover:border-emerald-500/40"
-                      },
-                      { 
-                        name: "Discord", 
-                        role: "Stage & Voice Hub", 
-                        tag: "Broadcasting", 
-                        icon: DiscordLogo, 
-                        bg: "bg-[#5865F2]/10 text-[#5865F2] border border-[#5865F2]/20",
-                        glow: "group-hover:border-[#5865F2]/50"
-                      },
-                      { 
                         name: "Google Calendar", 
-                        role: "Dynamic Schedule", 
-                        tag: "Auto-Sync", 
+                        role: "Dynamic Schedule Sync", 
+                        tag: "Live Sync", 
                         icon: GoogleCalendarLogo, 
                         bg: "bg-white dark:bg-neutral-900 border border-border/40",
                         glow: "group-hover:border-blue-500/40"
+                      },
+                      { 
+                        name: "Clerk Auth", 
+                        role: "Identity & Role Security", 
+                        tag: "Secured", 
+                        icon: ClerkLogo, 
+                        bg: "bg-[#6C47FF]/10 text-[#6C47FF] border border-[#6C47FF]/20",
+                        glow: "group-hover:border-[#6C47FF]/50"
+                      },
+                      { 
+                        name: "Google Gemini", 
+                        role: "AI Matchmaking & Flows", 
+                        tag: "GenAI", 
+                        icon: GeminiLogo, 
+                        bg: "bg-purple-500/10 border border-purple-500/20",
+                        glow: "group-hover:border-purple-500/40"
+                      },
+                      { 
+                        name: "Supabase & Postgres", 
+                        role: "Realtime State & Vectors", 
+                        tag: "Realtime", 
+                        icon: SupabaseLogo, 
+                        bg: "bg-[#3ECF8E]/10 border border-[#3ECF8E]/20",
+                        glow: "group-hover:border-[#3ECF8E]/50"
                       }
                     ].map((tool, i) => (
                       <motion.div
@@ -839,7 +838,7 @@ export default function LandingPage({ featuredEvents = [] }: { featuredEvents?: 
                     ))}
                  </div>
 
-                 {/* Center Column: Eventra Core Hub */}
+                 {/* Center Column: Eventra Hub */}
                  <div className="lg:col-span-4 flex flex-col items-center justify-center order-1 lg:order-2 py-4 lg:py-0">
                     <motion.div 
                       initial={{ opacity: 0, scale: 0.9 }}
@@ -860,7 +859,7 @@ export default function LandingPage({ featuredEvents = [] }: { featuredEvents?: 
                          className="absolute -inset-20 rounded-full border border-dashed border-primary/20 pointer-events-none hidden sm:block"
                        />
 
-                       {/* Central Core Console */}
+                       {/* Central Platform Console */}
                        <div className="relative w-64 h-64 sm:w-72 sm:h-72 rounded-[2.75rem] bg-gradient-to-b from-notion-surface via-notion-surface to-notion-sunken p-6 border-2 border-border/80 shadow-notion-elevated flex flex-col items-center justify-between text-center overflow-hidden group">
                           {/* Inner Lighting Glow */}
                           <div className="absolute inset-0 bg-radial from-primary/10 via-transparent to-transparent pointer-events-none" />
@@ -868,8 +867,8 @@ export default function LandingPage({ featuredEvents = [] }: { featuredEvents?: 
                           
                           {/* Top Status */}
                           <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-notion-sunken/80 border border-border/60 backdrop-blur-md">
-                             <Zap className="w-3 h-3 text-data-3 fill-data-3 animate-bounce" />
-                             <span className="text-[10px] font-mono font-semibold uppercase tracking-wider text-notion-ink">Core Engine</span>
+                             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                             <span className="text-[10px] font-mono font-semibold uppercase tracking-wider text-notion-ink">Platform Hub</span>
                           </div>
 
                           {/* Center Emblem */}
@@ -880,15 +879,15 @@ export default function LandingPage({ featuredEvents = [] }: { featuredEvents?: 
                                   className="gap-0" 
                                 />
                              </div>
-                             <span className="font-display font-bold text-lg text-notion-ink tracking-tight mt-3">Eventra Mesh</span>
-                             <span className="text-[11px] font-mono text-notion-ink-muted">0.2ms latency • 100% synced</span>
+                             <span className="font-display font-bold text-lg text-notion-ink tracking-tight mt-3">Eventra Hub</span>
+                             <span className="text-[11px] font-mono text-notion-ink-muted">Unified Event Orchestration</span>
                           </div>
 
-                          {/* Bottom Pulse Bar */}
+                          {/* Bottom Status Bar */}
                           <div className="w-full flex items-center justify-between px-3 py-1.5 rounded-xl bg-notion-sunken/90 border border-border/40 text-[10px] font-mono text-notion-ink-secondary">
                              <span className="flex items-center gap-1.5 font-medium">
-                                <span className="w-2 h-2 rounded-full bg-data-positive animate-pulse" />
-                                32 Active Nodes
+                                <span className="w-2 h-2 rounded-full bg-data-positive" />
+                                Live Sync Active
                              </span>
                              <span className="text-data-positive font-bold">Encrypted</span>
                           </div>
@@ -896,40 +895,40 @@ export default function LandingPage({ featuredEvents = [] }: { featuredEvents?: 
                     </motion.div>
                  </div>
 
-                 {/* Right Column: Creative, Production & Infra */}
+                 {/* Right Column: Commerce, Notifications & Check-in */}
                  <div className="lg:col-span-4 flex flex-col gap-3.5 order-3">
                     {[
                       { 
-                        name: "Figma", 
-                        role: "Stage Assets & Specs", 
-                        tag: "Live Spec", 
-                        icon: FigmaLogo, 
-                        bg: "bg-white dark:bg-neutral-900 border border-border/40",
-                        glow: "group-hover:border-purple-500/40"
-                      },
-                      { 
-                        name: "Miro", 
-                        role: "Interactive Boards", 
-                        tag: "Multi-Canvas", 
-                        icon: MiroLogo, 
-                        bg: "bg-[#FFD02F]/10 border border-[#FFD02F]/30",
-                        glow: "group-hover:border-[#FFD02F]/60"
-                      },
-                      { 
-                        name: "Stripe", 
-                        role: "Ticketing & Payouts", 
+                        name: "Dodo Payments", 
+                        role: "Ticketing & Instant Payouts", 
                         tag: "Instant Pay", 
-                        icon: StripeLogo, 
-                        bg: "bg-[#635BFF]/10 border border-[#635BFF]/30",
-                        glow: "group-hover:border-[#635BFF]/50"
+                        icon: DodoLogo, 
+                        bg: "bg-blue-500/10 border border-blue-500/20",
+                        glow: "group-hover:border-blue-500/40"
                       },
                       { 
-                        name: "Zoom", 
-                        role: "Hybrid Video Mesh", 
-                        tag: "4K Pipeline", 
-                        icon: ZoomLogo, 
-                        bg: "bg-[#2D8CFF]/10 border border-[#2D8CFF]/30",
-                        glow: "group-hover:border-[#2D8CFF]/50"
+                        name: "Resend Mail", 
+                        role: "Transactional Invitations", 
+                        tag: "Automated", 
+                        icon: ResendLogo, 
+                        bg: "bg-neutral-100 dark:bg-neutral-900 border border-border/40",
+                        glow: "group-hover:border-neutral-400/40"
+                      },
+                      { 
+                        name: "Twilio SMS", 
+                        role: "Broadcasts & Urgent Alerts", 
+                        tag: "Direct", 
+                        icon: TwilioLogo, 
+                        bg: "bg-red-500/10 border border-red-500/20",
+                        glow: "group-hover:border-red-500/40"
+                      },
+                      { 
+                        name: "QR Verification", 
+                        role: "Signed Check-in Pipeline", 
+                        tag: "Verified", 
+                        icon: QrCodeLogo, 
+                        bg: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20",
+                        glow: "group-hover:border-amber-500/40"
                       }
                     ].map((tool, i) => (
                       <motion.div
@@ -967,10 +966,10 @@ export default function LandingPage({ featuredEvents = [] }: { featuredEvents?: 
            {/* Value Pill Banner */}
            <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
               {[
-                { title: "100+ Connectors", subtitle: "Zero-code webhook setup" },
-                { title: "< 1.2ms Global Sync", subtitle: "Edge-replicated pipelines" },
-                { title: "AES-256 Verified", subtitle: "End-to-end payload trust" },
-                { title: "Bi-Directional State", subtitle: "Zero manual reconciliation" }
+                { title: "Instant Calendar Sync", subtitle: "1-Click schedule export" },
+                { title: "HMAC QR Passes", subtitle: "Cryptographic check-in" },
+                { title: "AI Flow Pipelines", subtitle: "Smart matchmaking & insights" },
+                { title: "Realtime Webhooks", subtitle: "Automated attendee sync" }
               ].map((feat, i) => (
                 <div key={i} className="p-4 rounded-2xl bg-notion-surface/60 border border-border/40 text-center flex flex-col items-center justify-center gap-1 shadow-sm">
                    <div className="flex items-center gap-1.5">
