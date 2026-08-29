@@ -357,6 +357,13 @@ export const eventFeedback = pgTable('event_feedback', {
   userId: text('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
   rating: integer('rating').notNull(),
   comment: text('content'),
+  npsScore: integer('nps_score'), // 0 to 10 scale
+  venueRating: integer('venue_rating'), // 1 to 5
+  contentRating: integer('content_rating'), // 1 to 5
+  organizationRating: integer('organization_rating'), // 1 to 5
+  highlight: text('highlight'),
+  improvement: text('improvement'),
+  allowTestimonial: boolean('allow_testimonial').default(false).notNull(),
   responses: jsonb('responses'), // Key-value pairs for custom questions
   createdAt: timestamp('created_at').defaultNow().notNull(),
 }, (table) => ({

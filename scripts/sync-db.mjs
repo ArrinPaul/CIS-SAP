@@ -156,6 +156,19 @@ try {
   await sql`CREATE INDEX IF NOT EXISTS agenda_bookmarks_session_user_idx ON agenda_bookmarks(session_id, user_id);`;
   console.log('✓ agenda_bookmarks table synced successfully');
 
+  // 8. Add NPS & category rating columns to event_feedback
+  await sql`
+    ALTER TABLE event_feedback
+    ADD COLUMN IF NOT EXISTS nps_score integer,
+    ADD COLUMN IF NOT EXISTS venue_rating integer,
+    ADD COLUMN IF NOT EXISTS content_rating integer,
+    ADD COLUMN IF NOT EXISTS organization_rating integer,
+    ADD COLUMN IF NOT EXISTS highlight text,
+    ADD COLUMN IF NOT EXISTS improvement text,
+    ADD COLUMN IF NOT EXISTS allow_testimonial boolean DEFAULT false NOT NULL;
+  `;
+  console.log('✓ event_feedback table NPS columns synced successfully');
+
   console.log('Database synced successfully.');
   process.exit(0);
 } catch (error) {

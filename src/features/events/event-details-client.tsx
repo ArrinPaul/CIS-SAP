@@ -46,6 +46,7 @@ import { cloneEvent } from '@/app/actions/events';
 import { validateAndApplyPromoCode } from '@/app/actions/promo-codes';
 import { ExpoHallGrid } from '@/features/sponsors/expo-hall-grid';
 import { MultiTrackAgenda } from '@/features/agenda/multi-track-agenda';
+import { PostEventBanner } from '@/features/feedback/post-event-banner';
 import { getEventSponsors } from '@/app/actions/sponsors';
 import { format } from 'date-fns';
 
@@ -249,6 +250,14 @@ export default function EventDetailsClient({ eventId, initialEvent }: { eventId:
           {/* LEFT COLUMN: CONTENT */}
           <div className="lg:col-span-2 space-y-10">
             
+            {/* POST-EVENT FEEDBACK PROMPT BANNER */}
+            <PostEventBanner
+              eventId={eventId}
+              eventTitle={event.title}
+              isRegistered={isRegistered}
+              isCompleted={event.status === 'completed'}
+            />
+
             {/* TITLE & META */}
             <div className="space-y-6">
               <div className="flex flex-wrap gap-2">
