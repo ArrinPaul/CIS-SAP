@@ -6,9 +6,16 @@ import { events, tickets, eventFeedback } from '@/lib/db/schema';
 import { eq, sql } from 'drizzle-orm';
 import { validateRole, validateEventOwnership } from '@/lib/auth-utils';
 import { logger } from '@/lib/logger';
+import { enforceRateLimit } from '@/lib/rate-limit';
 
 export async function generateEventReport(eventId: string, highlights?: string[]) {
   const user = await validateRole(['organizer', 'admin']);
+  // Report generation is an LLM call; keep it well under the general budget.
+  try {
+    await enforceRateLimit({ userId: user.id, scope: 'ai:event-report', limit: 5 });
+  } catch {
+    return { success: false, error: 'Too many requests. Please wait a moment and try again.' };
+  }
 
   try {
     const event = await db.query.events.findFirst({

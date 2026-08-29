@@ -7,12 +7,17 @@ import { validateRole } from '@/lib/auth-utils';
 import { generateEmbedding } from '@/lib/ai';
 import { revalidatePath } from 'next/cache';
 import { slugify } from '@/core/utils/slugify';
+import { enforceRateLimit } from '@/lib/rate-limit';
 
 /**
  * Extract Metadata from a URL (Proof of Concept Scraper)
  */
 export async function scrapeEventMetadata(url: string) {
-  await validateRole(['admin']);
+  const admin = await validateRole(['admin']);
+  // This fetches a caller-supplied URL from the server, so keep it slow.
+  // Throws rather than returning a result: the success path returns bare
+  // metadata and the caller already handles thrown errors.
+  await enforceRateLimit({ userId: admin.id, scope: 'scrape:url', limit: 10 });
 
   try {
     const response = await fetch(url, {
