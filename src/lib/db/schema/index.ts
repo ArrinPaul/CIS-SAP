@@ -918,5 +918,56 @@ export const sponsorLeadsRelations = relations(sponsorLeads, ({ one }) => ({
   }),
 }));
 
+// --- Multi-Track Time Grid Agenda & Session Bookmarks ---
+
+export const agendaSessions = pgTable('agenda_sessions', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  eventId: uuid('event_id').references(() => events.id, { onDelete: 'cascade' }).notNull(),
+  title: text('title').notNull(),
+  description: text('description'),
+  track: text('track').default('Main Stage').notNull(), // 'Main Stage', 'AI & ML', 'DevOps', 'Workshop'
+  startTime: timestamp('start_time', { withTimezone: true }).notNull(),
+  endTime: timestamp('end_time', { withTimezone: true }).notNull(),
+  speakerName: text('speaker_name'),
+  speakerTitle: text('speaker_title'),
+  speakerAvatar: text('speaker_avatar'),
+  roomLocation: text('room_location'),
+  sessionType: text('session_type').default('talk').notNull(), // 'keynote' | 'talk' | 'workshop' | 'panel' | 'networking' | 'break'
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => ({
+  eventTrackIdx: index('agenda_event_track_idx').on(table.eventId, table.track),
+  eventTimeIdx: index('agenda_event_time_idx').on(table.eventId, table.startTime),
+}));
+
+export const agendaBookmarks = pgTable('agenda_bookmarks', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  sessionId: uuid('session_id').references(() => agendaSessions.id, { onDelete: 'cascade' }).notNull(),
+  userId: text('user_id').references(() => users.id).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => ({
+  sessionUserIdx: index('agenda_bookmarks_session_user_idx').on(table.sessionId, table.userId),
+}));
+
+export const agendaSessionsRelations = relations(agendaSessions, ({ one, many }) => ({
+  event: one(events, {
+    fields: [agendaSessions.eventId],
+    references: [events.id],
+  }),
+  bookmarks: many(agendaBookmarks),
+}));
+
+export const agendaBookmarksRelations = relations(agendaBookmarks, ({ one }) => ({
+  session: one(agendaSessions, {
+    fields: [agendaBookmarks.sessionId],
+    references: [agendaSessions.id],
+  }),
+  user: one(users, {
+    fields: [agendaBookmarks.userId],
+    references: [users.id],
+  }),
+}));
+
+
 
 

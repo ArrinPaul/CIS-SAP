@@ -45,6 +45,7 @@ import { registerForEvent, getRegistrationStatus } from '@/app/actions/registrat
 import { cloneEvent } from '@/app/actions/events';
 import { validateAndApplyPromoCode } from '@/app/actions/promo-codes';
 import { ExpoHallGrid } from '@/features/sponsors/expo-hall-grid';
+import { MultiTrackAgenda } from '@/features/agenda/multi-track-agenda';
 import { getEventSponsors } from '@/app/actions/sponsors';
 import { format } from 'date-fns';
 
@@ -344,30 +345,7 @@ export default function EventDetailsClient({ eventId, initialEvent }: { eventId:
 
                 {/* AGENDA TAB */}
                 <TabsContent value="agenda" className="m-0 focus:outline-none">
-                  <div className="space-y-4">
-                    {event.agenda && Array.isArray(event.agenda) && event.agenda.length > 0 ? (
-                      event.agenda.map((item: any, i: number) => (
-                        <div key={i} className="flex gap-6 p-4 rounded-2xl hover:bg-muted/50 transition-colors border border-transparent hover:border-border">
-                          <div className="w-16 shrink-0 text-right">
-                            <span className="text-sm font-bold text-foreground">{item.startTime}</span>
-                          </div>
-                          <div className="w-px bg-border relative">
-                            <div className="absolute top-1.5 -left-1.5 w-3 h-3 rounded-full border-2 border-primary bg-background" />
-                          </div>
-                          <div className="pb-6">
-                            <h4 className="text-base font-bold text-foreground">{item.title}</h4>
-                            <p className="text-sm text-muted-foreground mt-1">{item.description}</p>
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="p-12 text-center border border-dashed border-border rounded-2xl bg-muted/20">
-                        <Calendar className="w-10 h-10 text-muted-foreground/40 mx-auto mb-4" />
-                        <p className="text-base font-medium text-foreground">No agenda available</p>
-                        <p className="text-sm text-muted-foreground">The organizer hasn't added a schedule yet.</p>
-                      </div>
-                    )}
-                  </div>
+                  <MultiTrackAgenda eventId={eventId} eventTitle={event.title} />
                 </TabsContent>
 
                 {/* EXPO HALL TAB */}

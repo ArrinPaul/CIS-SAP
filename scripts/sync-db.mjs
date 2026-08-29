@@ -122,6 +122,40 @@ try {
   await sql`CREATE INDEX IF NOT EXISTS sponsor_leads_sponsor_user_idx ON sponsor_leads(sponsor_id, user_id);`;
   console.log('✓ sponsor_leads table synced successfully');
 
+  // 7. Create agenda_sessions and agenda_bookmarks tables if they don't exist
+  await sql`
+    CREATE TABLE IF NOT EXISTS agenda_sessions (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      event_id uuid REFERENCES events(id) ON DELETE CASCADE NOT NULL,
+      title text NOT NULL,
+      description text,
+      track text DEFAULT 'Main Stage' NOT NULL,
+      start_time timestamp with time zone NOT NULL,
+      end_time timestamp with time zone NOT NULL,
+      speaker_name text,
+      speaker_title text,
+      speaker_avatar text,
+      room_location text,
+      session_type text DEFAULT 'talk' NOT NULL,
+      created_at timestamp with time zone DEFAULT now() NOT NULL,
+      updated_at timestamp with time zone DEFAULT now() NOT NULL
+    );
+  `;
+  await sql`CREATE INDEX IF NOT EXISTS agenda_event_track_idx ON agenda_sessions(event_id, track);`;
+  await sql`CREATE INDEX IF NOT EXISTS agenda_event_time_idx ON agenda_sessions(event_id, start_time);`;
+  console.log('✓ agenda_sessions table synced successfully');
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS agenda_bookmarks (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      session_id uuid REFERENCES agenda_sessions(id) ON DELETE CASCADE NOT NULL,
+      user_id text REFERENCES users(id) NOT NULL,
+      created_at timestamp with time zone DEFAULT now() NOT NULL
+    );
+  `;
+  await sql`CREATE INDEX IF NOT EXISTS agenda_bookmarks_session_user_idx ON agenda_bookmarks(session_id, user_id);`;
+  console.log('✓ agenda_bookmarks table synced successfully');
+
   console.log('Database synced successfully.');
   process.exit(0);
 } catch (error) {
