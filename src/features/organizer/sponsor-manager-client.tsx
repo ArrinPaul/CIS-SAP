@@ -95,7 +95,7 @@ export function SponsorManagerClient({ eventId, eventTitle }: SponsorManagerProp
     setLoadingLeads(true);
     try {
       const data = await getSponsorLeads(sponsor.id);
-      setLeads(data);
+      setLeads((data as any).leads || (data as any) || []);
     } catch (e) {
       console.error(e);
     } finally {

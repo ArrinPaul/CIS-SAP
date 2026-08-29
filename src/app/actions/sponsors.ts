@@ -280,3 +280,26 @@ export async function getSponsorLeads(sponsorId: string) {
     return { success: false, leads: [], error: error.message };
   }
 }
+
+// Backward-compatible aliases
+export async function getSponsorsForEvent(eventId: string) {
+  const res = await getEventSponsors(eventId);
+  return res.sponsors;
+}
+
+export async function upsertSponsor(eventIdOrData: string | any, data?: any) {
+  const payload = typeof eventIdOrData === 'object' ? eventIdOrData : { ...data, eventId: eventIdOrData };
+  if (payload.id) {
+    return updateSponsor(payload.id, payload);
+  }
+  return createSponsor(payload);
+}
+
+export async function recordSponsorLead(sponsorIdOrInput: string | any, ticketOrUserId?: string, notes?: string) {
+  const sponsorId = typeof sponsorIdOrInput === 'object' ? sponsorIdOrInput.sponsorId : sponsorIdOrInput;
+  const noteText = typeof sponsorIdOrInput === 'object' ? sponsorIdOrInput.notes : notes;
+  const res = await captureSponsorLead(sponsorId, noteText);
+  return { ...res, lead: { id: 'lead_new' } };
+}
+
+
