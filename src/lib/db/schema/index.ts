@@ -558,33 +558,6 @@ export const commentsRelations = relations(comments, ({ one }) => ({
   }),
 }));
 
-export const sponsorLeads = pgTable('sponsor_leads', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  sponsorId: uuid('sponsor_id').references(() => sponsors.id, { onDelete: 'cascade' }).notNull(),
-  userId: text('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
-  notes: text('notes'),
-  scannedAt: timestamp('scanned_at').defaultNow().notNull(),
-}, (table) => ({
-  sponsorIdx: index('sponsor_leads_sponsor_idx').on(table.sponsorId),
-  userIdx: index('sponsor_leads_user_idx').on(table.userId),
-  uniqueLead: uniqueIndex('sponsor_leads_unique_idx').on(table.sponsorId, table.userId),
-}));
-
-export const sponsorsRelationsExtended = relations(sponsors, ({ many }) => ({
-  leads: many(sponsorLeads),
-}));
-
-export const sponsorLeadsRelations = relations(sponsorLeads, ({ one }) => ({
-  sponsor: one(sponsors, {
-    fields: [sponsorLeads.sponsorId],
-    references: [sponsors.id],
-  }),
-  user: one(users, {
-    fields: [sponsorLeads.userId],
-    references: [users.id],
-  }),
-}));
-
 export const ingestionSources = pgTable('ingestion_sources', {
   id: uuid('id').primaryKey().defaultRandom(),
   name: text('name').notNull(),
@@ -892,5 +865,58 @@ export const networkingMeetingsRelations = relations(networkingMeetings, ({ one 
     relationName: 'meetingRecipient',
   }),
 }));
+
+// --- Sponsors & Exhibitor Virtual Booth Showcase ---
+
+export const eventSponsors = pgTable('event_sponsors', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  eventId: uuid('event_id').references(() => events.id, { onDelete: 'cascade' }).notNull(),
+  name: text('name').notNull(),
+  tier: text('tier').default('gold').notNull(), // 'title' | 'platinum' | 'gold' | 'silver' | 'bronze' | 'community'
+  logoUrl: text('logo_url'),
+  bannerUrl: text('banner_url'),
+  websiteUrl: text('website_url'),
+  careersUrl: text('careers_url'),
+  description: text('description'),
+  demoVideoUrl: text('demo_video_url'),
+  promoOffer: text('promo_offer'),
+  boothNumber: text('booth_number'),
+  leadCount: integer('lead_count').default(0).notNull(),
+  orderIndex: integer('order_index').default(0).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => ({
+  eventTierIdx: index('sponsors_event_tier_idx').on(table.eventId, table.tier),
+}));
+
+export const sponsorLeads = pgTable('sponsor_leads', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  sponsorId: uuid('sponsor_id').references(() => eventSponsors.id, { onDelete: 'cascade' }).notNull(),
+  userId: text('user_id').references(() => users.id).notNull(),
+  notes: text('notes'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => ({
+  sponsorUserIdx: index('sponsor_leads_sponsor_user_idx').on(table.sponsorId, table.userId),
+}));
+
+export const eventSponsorsRelations = relations(eventSponsors, ({ one, many }) => ({
+  event: one(events, {
+    fields: [eventSponsors.eventId],
+    references: [events.id],
+  }),
+  leads: many(sponsorLeads),
+}));
+
+export const sponsorLeadsRelations = relations(sponsorLeads, ({ one }) => ({
+  sponsor: one(eventSponsors, {
+    fields: [sponsorLeads.sponsorId],
+    references: [eventSponsors.id],
+  }),
+  user: one(users, {
+    fields: [sponsorLeads.userId],
+    references: [users.id],
+  }),
+}));
+
 
 

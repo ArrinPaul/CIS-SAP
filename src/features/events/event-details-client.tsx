@@ -27,7 +27,8 @@ import {
   ExternalLink,
   Navigation,
   FileText,
-  Tag
+  Tag,
+  Building2
 } from 'lucide-react';
 import { cn } from '@/core/utils/utils';
 import { useAuth } from '@/hooks/use-auth';
@@ -43,6 +44,8 @@ import { generateEventSummary } from '@/app/actions/event-insights';
 import { registerForEvent, getRegistrationStatus } from '@/app/actions/registrations';
 import { cloneEvent } from '@/app/actions/events';
 import { validateAndApplyPromoCode } from '@/app/actions/promo-codes';
+import { ExpoHallGrid } from '@/features/sponsors/expo-hall-grid';
+import { getEventSponsors } from '@/app/actions/sponsors';
 import { format } from 'date-fns';
 
 export default function EventDetailsClient({ eventId, initialEvent }: { eventId: string, initialEvent: any }) {
@@ -57,6 +60,7 @@ export default function EventDetailsClient({ eventId, initialEvent }: { eventId:
   const [cloning, setCloning] = useState(false);
   const [showChatbot, setShowChatbot] = useState(false);
   const [generatingSummary, setGeneratingSummary] = useState(false);
+  const [sponsors, setSponsors] = useState<any[]>([]);
 
   // Promo Code State
   const [promoCodeInput, setPromoCodeInput] = useState('');
@@ -71,6 +75,14 @@ export default function EventDetailsClient({ eventId, initialEvent }: { eventId:
         if (res) {
           setRegistration(res);
         }
+      }
+      try {
+        const sp = await getEventSponsors(eventId);
+        if (sp.success) {
+          setSponsors(sp.sponsors);
+        }
+      } catch (e) {
+        console.warn('Failed to load event sponsors', e);
       }
     }
     checkStatus();
@@ -288,7 +300,7 @@ export default function EventDetailsClient({ eventId, initialEvent }: { eventId:
             {/* TABS */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="w-full justify-start border-b border-border rounded-none bg-transparent p-0 h-auto gap-8 overflow-x-auto scrollbar-hide">
-                {['about', 'agenda', 'discussion', 'media', 'venue map', 'live stage'].map((tab) => (
+                {['about', 'agenda', 'expo hall', 'discussion', 'media', 'venue map', 'live stage'].map((tab) => (
                   <TabsTrigger 
                     key={tab} 
                     value={tab} 
@@ -355,6 +367,26 @@ export default function EventDetailsClient({ eventId, initialEvent }: { eventId:
                         <p className="text-sm text-muted-foreground">The organizer hasn't added a schedule yet.</p>
                       </div>
                     )}
+                  </div>
+                </TabsContent>
+
+                {/* EXPO HALL TAB */}
+                <TabsContent value="expo hall" className="m-0 focus:outline-none">
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="text-2xl font-bold tracking-tight">Virtual Expo Hall</h3>
+                        <p className="text-sm text-muted-foreground">Explore partner booths, drop digital business cards, and claim exclusive attendee perks.</p>
+                      </div>
+                      {isOrganizer && (
+                        <Button size="sm" asChild variant="outline" className="rounded-xl gap-1.5 text-xs">
+                          <Link href={`/organizer/sponsors?eventId=${eventId}`}>
+                            <Building2 className="w-3.5 h-3.5" /> Manage Sponsors
+                          </Link>
+                        </Button>
+                      )}
+                    </div>
+                    <ExpoHallGrid sponsors={sponsors} />
                   </div>
                 </TabsContent>
 

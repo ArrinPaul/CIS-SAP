@@ -86,6 +86,42 @@ try {
   await sql`CREATE INDEX IF NOT EXISTS meetings_status_idx ON networking_meetings(status);`;
   console.log('✓ networking_meetings table synced successfully');
 
+  // 6. Create event_sponsors and sponsor_leads tables if they don't exist
+  await sql`
+    CREATE TABLE IF NOT EXISTS event_sponsors (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      event_id uuid REFERENCES events(id) ON DELETE CASCADE NOT NULL,
+      name text NOT NULL,
+      tier text DEFAULT 'gold' NOT NULL,
+      logo_url text,
+      banner_url text,
+      website_url text,
+      careers_url text,
+      description text,
+      demo_video_url text,
+      promo_offer text,
+      booth_number text,
+      lead_count integer DEFAULT 0 NOT NULL,
+      order_index integer DEFAULT 0 NOT NULL,
+      created_at timestamp with time zone DEFAULT now() NOT NULL,
+      updated_at timestamp with time zone DEFAULT now() NOT NULL
+    );
+  `;
+  await sql`CREATE INDEX IF NOT EXISTS sponsors_event_tier_idx ON event_sponsors(event_id, tier);`;
+  console.log('✓ event_sponsors table synced successfully');
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS sponsor_leads (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      sponsor_id uuid REFERENCES event_sponsors(id) ON DELETE CASCADE NOT NULL,
+      user_id text REFERENCES users(id) NOT NULL,
+      notes text,
+      created_at timestamp with time zone DEFAULT now() NOT NULL
+    );
+  `;
+  await sql`CREATE INDEX IF NOT EXISTS sponsor_leads_sponsor_user_idx ON sponsor_leads(sponsor_id, user_id);`;
+  console.log('✓ sponsor_leads table synced successfully');
+
   console.log('Database synced successfully.');
   process.exit(0);
 } catch (error) {

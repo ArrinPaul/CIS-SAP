@@ -34,6 +34,7 @@ import {
   Eye,
   Tag,
   Contact2,
+  Building2,
 } from 'lucide-react';
 
 const sidebarGroups = [
@@ -50,6 +51,7 @@ const sidebarGroups = [
       { title: 'My Events', href: '/organizer/events', icon: Calendar },
       { title: 'Attendees', href: '/organizer/attendees', icon: Users },
       { title: 'Name Badges', href: '/organizer/badges', icon: Contact2 },
+      { title: 'Sponsors', href: '/organizer/sponsors', icon: Building2 },
       { title: 'Certificates', href: '/organizer/certificates', icon: Award },
       { title: 'Feedback', href: '/organizer/feedback', icon: MessageSquare },
       { title: 'Scanner', href: '/check-in-scanner', icon: QrCode },
