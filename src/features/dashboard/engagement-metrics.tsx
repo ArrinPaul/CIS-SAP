@@ -5,12 +5,12 @@ import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { 
-  Users, 
+  CalendarCheck,
   MessageSquare, 
-  Award, 
+  Medal,
   Star,
   Activity,
-  Zap,
+  Coins,
   TrendingUp,
   BarChart3
 } from 'lucide-react';
@@ -51,10 +51,10 @@ export function EngagementMetrics({ stats }: EngagementMetricsProps) {
   };
 
   const metrics = [
-    { label: 'Events Attended', value: displayStats.attended, icon: Users, color: 'text-notion-accent-purple', bg: 'bg-notion-accent-purple/10' },
-    { label: 'Community Posts', value: displayStats.posts, icon: MessageSquare, color: 'text-notion-accent-teal', bg: 'bg-notion-accent-teal/10' },
-    { label: 'Earned XP', value: displayStats.xp, icon: Zap, color: 'text-notion-accent-orange', bg: 'bg-notion-accent-orange/10' },
-    { label: 'Badges Earned', value: displayStats.badgeCount, icon: Award, color: 'text-notion-accent-pink', bg: 'bg-notion-accent-pink/10' },
+    { label: 'Events Attended', value: displayStats.attended, icon: CalendarCheck, color: 'text-notion-ink-secondary', bg: 'bg-notion-sunken' },
+    { label: 'Community Posts', value: displayStats.posts, icon: MessageSquare, color: 'text-notion-ink-secondary', bg: 'bg-notion-sunken' },
+    { label: 'Earned XP', value: displayStats.xp, icon: Coins, color: 'text-notion-ink-secondary', bg: 'bg-notion-sunken' },
+    { label: 'Badges Earned', value: displayStats.badgeCount, icon: Medal, color: 'text-notion-ink-secondary', bg: 'bg-notion-sunken' },
   ];
 
   return (
@@ -75,22 +75,22 @@ export function EngagementMetrics({ stats }: EngagementMetricsProps) {
                 </div>
                 <CardDescription className="text-sm font-medium text-notion-ink-muted">Real-time analysis of your network activity.</CardDescription>
              </div>
-             <Badge variant="outline" className="bg-notion-canvas border-notion-hairline text-notion-ink-faint text-[9px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-md">Validated</Badge>
+             <Badge variant="secondary">Validated</Badge>
           </div>
         </CardHeader>
 
         <CardContent className="p-8 space-y-10 relative z-10">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
              <div className="flex items-baseline gap-4">
-                <span className="text-6xl font-display font-black tracking-tighter text-notion-primary">{score}</span>
+                <span className="font-display text-metric-lg tabular text-notion-ink">{score}</span>
                 <div className="space-y-1">
-                   <p className="text-xs font-black uppercase tracking-widest text-notion-ink">{getRank(displayStats.level)}</p>
+                   <p className="text-body-sm font-medium text-notion-ink">{getRank(displayStats.level)}</p>
                    <Badge className="bg-notion-accent-green/10 text-notion-accent-green border-none text-[10px] font-bold px-2 py-0">Top {100 - percentile}% Network</Badge>
                 </div>
              </div>
              
              <div className="flex-1 max-w-md space-y-3">
-                <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-notion-ink-faint">
+                <div className="flex justify-between text-caption text-notion-ink-muted">
                   <span>Sync Progression</span>
                   <span className="text-notion-ink">XP: {displayStats.xp} / {Math.pow(displayStats.level, 2) * 100}</span>
                 </div>
@@ -113,7 +113,7 @@ export function EngagementMetrics({ stats }: EngagementMetricsProps) {
                 </div>
                 <div className="space-y-1">
                    <p className="text-xl font-display font-bold text-notion-ink leading-none">{stat.value}</p>
-                   <span className="text-[9px] font-black uppercase tracking-widest text-notion-ink-faint leading-none">{stat.label}</span>
+                   <span className="text-caption text-notion-ink-muted leading-none">{stat.label}</span>
                 </div>
               </div>
             ))}
