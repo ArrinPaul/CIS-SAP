@@ -33,6 +33,7 @@ import {
   DollarSign,
   Eye,
   Tag,
+  Contact2,
 } from 'lucide-react';
 
 const sidebarGroups = [
@@ -48,6 +49,7 @@ const sidebarGroups = [
     items: [
       { title: 'My Events', href: '/organizer/events', icon: Calendar },
       { title: 'Attendees', href: '/organizer/attendees', icon: Users },
+      { title: 'Name Badges', href: '/organizer/badges', icon: Contact2 },
       { title: 'Certificates', href: '/organizer/certificates', icon: Award },
       { title: 'Feedback', href: '/organizer/feedback', icon: MessageSquare },
       { title: 'Scanner', href: '/check-in-scanner', icon: QrCode },
