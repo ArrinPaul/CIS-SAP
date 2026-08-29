@@ -107,7 +107,7 @@ export default function AttendeeCheckInView({ registrations, isOrganizer }: Atte
               </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col items-center gap-8 pb-10">
-              <div className="p-6 bg-white rounded-2xl shadow-inner-lg border-4 border-muted/20">
+              <div className="p-6 bg-notion-surface rounded-2xl shadow-inner-lg border-4 border-muted/20">
                 <QRCodeSVG
                   value={qrData}
                   size={240}

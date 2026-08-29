@@ -141,7 +141,7 @@ export default function EventCreationWizard() {
                   key={step} 
                   className={cn(
                     "h-2 w-16 rounded-full transition-all duration-700",
-                    currentStep === step ? "bg-primary shadow-glow shadow-primary/40 w-24" : currentStep > step ? "bg-primary/40" : "bg-muted"
+                    currentStep === step ? "bg-primary shadow-notion-soft w-24" : currentStep > step ? "bg-primary/40" : "bg-muted"
                   )} 
                 />
               ))}
@@ -241,11 +241,11 @@ export default function EventCreationWizard() {
                 )}
                 
                 {currentStep < 3 ? (
-                  <Button type="button" size="xl" onClick={handleNext} className="rounded-2xl px-16 shadow-glow font-black uppercase tracking-widest text-[11px]">
+                  <Button type="button" size="xl" onClick={handleNext} className="rounded-2xl px-16 font-black uppercase tracking-widest text-[11px]">
                     Proceed <ChevronRight className="ml-3 h-5 w-5" />
                   </Button>
                 ) : (
-                  <Button type="submit" size="xl" className="rounded-2xl px-20 shadow-glow bg-primary text-primary-foreground font-black uppercase tracking-widest text-[11px] border-none" disabled={isSaving}>
+                  <Button type="submit" size="xl" className="rounded-2xl px-20 bg-primary text-primary-foreground font-black uppercase tracking-widest text-[11px] border-none" disabled={isSaving}>
                     {isSaving ? <Loader2 className="mr-3 h-5 w-5 animate-spin" /> : <CheckCircle className="mr-3 h-5 w-5" />}
                     Initialize Deployment
                   </Button>

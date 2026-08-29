@@ -9,7 +9,7 @@ export function LoginForm() {
       <Button
         type="button"
         variant="outline"
-        className="w-full h-12 bg-white text-black hover:bg-gray-200 rounded-full text-lg"
+        className="w-full h-12 bg-notion-surface text-black hover:bg-gray-200 rounded-full text-lg"
         disabled
       >
         Sign in with Google (Temporarily Disabled)

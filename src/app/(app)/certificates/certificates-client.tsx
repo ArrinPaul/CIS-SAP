@@ -227,7 +227,7 @@ export function CertificatesClient() {
 
                 <div className="flex gap-2">
                   <Button 
-                    className="flex-1 bg-white text-black hover:bg-gray-200 font-bold" 
+                    className="flex-1 bg-notion-surface text-black hover:bg-gray-200 font-bold" 
                     onClick={() => setSelectedCert(cert)}
                   >
                     <LinkIcon className="w-4 h-4 mr-2" />

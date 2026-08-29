@@ -119,7 +119,7 @@ export function TicketingClient() {
                 <CardTitle className="text-lg mt-2">Event Ticket</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="p-4 bg-white rounded-lg flex justify-center"><QrCode size={120} className="text-black" /></div>
+                <div className="p-4 bg-notion-surface rounded-lg flex justify-center"><QrCode size={120} className="text-black" /></div>
                 <div className="text-center">
                   <p className="text-[10px] text-muted-foreground uppercase">Purchase Date</p>
                   <p className="text-sm font-medium">{format(ticket.purchaseDate, 'PPP')}</p>

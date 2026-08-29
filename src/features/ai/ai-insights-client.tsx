@@ -180,7 +180,7 @@ export function AIInsightsClient({ eventId }: AIInsightsClientProps) {
                 </div>
               ) : (
                 <Button 
-                  className="bg-white text-black hover:bg-cyan-50" 
+                  className="bg-notion-surface text-black hover:bg-cyan-50" 
                   onClick={loadPrediction}
                   disabled={loadingAction === 'Prediction'}
                 >

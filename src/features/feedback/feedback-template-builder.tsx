@@ -284,7 +284,7 @@ export function FeedbackTemplateBuilder({ eventId, initialTemplate }: FeedbackTe
                    <p className="text-[10px] text-muted-foreground">Auto-send 1h after event ends</p>
                 </div>
                 <div className="w-8 h-4 bg-primary rounded-full flex items-center px-1">
-                   <div className="w-2.5 h-2.5 bg-white rounded-full ml-auto" />
+                   <div className="w-2.5 h-2.5 bg-notion-surface rounded-full ml-auto" />
                 </div>
              </div>
              <div className="flex items-center justify-between p-3 rounded-lg bg-card">
@@ -293,7 +293,7 @@ export function FeedbackTemplateBuilder({ eventId, initialTemplate }: FeedbackTe
                    <p className="text-[10px] text-muted-foreground">Track score in dashboard</p>
                 </div>
                 <div className="w-8 h-4 bg-primary rounded-full flex items-center px-1">
-                   <div className="w-2.5 h-2.5 bg-white rounded-full ml-auto" />
+                   <div className="w-2.5 h-2.5 bg-notion-surface rounded-full ml-auto" />
                 </div>
              </div>
           </CardContent>

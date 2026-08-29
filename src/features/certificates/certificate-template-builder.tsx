@@ -252,7 +252,7 @@ export function CertificateTemplateBuilder({ eventId, initialTemplate }: Certifi
         <div className="flex-1 bg-muted p-8 overflow-auto flex items-center justify-center" onMouseMove={handleMouseMove}>
           <div 
             ref={canvasRef}
-            className="bg-white shadow-2xl relative overflow-hidden transition-all"
+            className="bg-notion-surface shadow-2xl relative overflow-hidden transition-all"
             style={{ 
               width: `${layout.width}px`, 
               height: `${layout.height}px`,

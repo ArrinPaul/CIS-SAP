@@ -80,7 +80,7 @@ export function OrganizerSidebar() {
               animate={{ opacity: 1, x: 0 }}
               className="flex items-center gap-4 transition-transform active:scale-95 group overflow-hidden shrink-0"
             >
-              <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center shadow-glow shadow-primary/20 group-hover:rotate-12 transition-transform duration-500 shrink-0">
+              <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center shadow-notion-soft group-hover:rotate-12 transition-transform duration-500 shrink-0">
                  <Logo iconClassName="w-8 h-8 text-primary-foreground" className="gap-0" />
               </div>
               <div className="flex flex-col min-w-0">
@@ -89,7 +89,7 @@ export function OrganizerSidebar() {
               </div>
             </motion.div>
           ) : (
-            <div className="mx-auto w-12 h-12 rounded-2xl bg-primary flex items-center justify-center shadow-glow shadow-primary/20 shrink-0">
+            <div className="mx-auto w-12 h-12 rounded-2xl bg-primary flex items-center justify-center shadow-notion-soft shrink-0">
                <Logo iconClassName="w-8 h-8 text-primary-foreground" className="gap-0" />
             </div>
           )}
@@ -111,7 +111,7 @@ export function OrganizerSidebar() {
         <div className="px-4 mb-8">
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button asChild size={collapsed ? "icon" : "lg"} className={cn("rounded-2xl shadow-glow bg-primary text-primary-foreground font-black uppercase tracking-widest text-[10px] border-none transition-all active:scale-95", collapsed ? "w-12 h-12" : "w-full h-14")}>
+              <Button asChild size={collapsed ? "icon" : "lg"} className={cn("rounded-2xl bg-primary text-primary-foreground font-black uppercase tracking-widest text-[10px] border-none transition-all active:scale-95", collapsed ? "w-12 h-12" : "w-full h-14")}>
                 <Link href="/events/create">
                   <Plus className={cn("w-5 h-5", !collapsed && "mr-3")} />
                   {!collapsed && <span>New Mission</span>}

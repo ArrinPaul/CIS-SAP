@@ -281,7 +281,7 @@ export default function AiRecommendationDashboard() {
 
                         <div className="flex justify-between items-center mt-8">
                             <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Connect to expand network</p>
-                            <Button className="rounded-xl font-black px-8 shadow-glow">
+                            <Button className="rounded-xl font-black px-8">
                                 Connect
                             </Button>
                         </div>

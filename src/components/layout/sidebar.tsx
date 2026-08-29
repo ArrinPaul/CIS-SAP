@@ -21,12 +21,12 @@ import {
   ChevronRight,
   Moon,
   Sun,
-  ShieldCheck,
+  Briefcase,
   LogOut,
   Zap,
   Activity,
   Globe,
-  Cpu,
+  Sparkles,
   MessageCircle,
   Lightbulb
 } from 'lucide-react';
@@ -58,11 +58,11 @@ export function Sidebar({ className }: SidebarProps) {
     { href: '/explore', label: 'Explore', icon: Compass },
     { href: '/chat', label: 'Messages', icon: MessageCircle, requireAuth: true },
     { href: '/ai-recommendations', label: 'For You', icon: Lightbulb, requireAuth: true },
-    { href: '/ai-tools', label: 'AI Workspace', icon: Cpu, requireAuth: true },
+    { href: '/ai-tools', label: 'AI Workspace', icon: Sparkles, requireAuth: true },
     { href: '/tickets', label: 'My Tickets', icon: Ticket, requireAuth: true },
     { href: '/my-events', label: 'Schedule', icon: Calendar, requireAuth: true },
     { href: '/search', label: 'Global Search', icon: Search },
-    { href: '/organizer', label: 'Management', icon: ShieldCheck, roles: ['organizer', 'admin'] },
+    { href: '/organizer', label: 'Management', icon: Briefcase, roles: ['organizer', 'admin'] },
   ].filter(link => {
     if (link.href === '/' || link.href === '/explore' || link.href === '/search') return true;
     if (link.requireAuth && !isAuthenticated) return false;
@@ -79,19 +79,19 @@ export function Sidebar({ className }: SidebarProps) {
         initial={false}
         animate={{ width: sidebarWidth }}
         className={cn(
-          "fixed left-0 top-0 bottom-0 z-50 bg-card border-r border-notion-hairline flex flex-col transition-all duration-300 shadow-sm",
+          "fixed left-0 top-0 bottom-0 z-50 bg-notion-surface border-r border-notion-hairline/60 flex flex-col transition-all duration-300",
           className
         )}
       >
         {/* HEADER / LOGO */}
-        <div className="h-16 flex items-center px-5 shrink-0 border-b border-notion-hairline/50">
+        <div className="h-16 flex items-center px-5 shrink-0">
           <Link href="/" className="flex items-center gap-3 active:scale-95 group overflow-hidden">
-             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shadow-lg shadow-primary/20 shrink-0">
-                <Logo iconClassName="w-5 h-5 text-white" className="gap-0" />
+             <div className="w-8 h-8 rounded-xl bg-notion-primary flex items-center justify-center shrink-0">
+                <Logo iconClassName="w-5 h-5 text-notion-on-primary" className="gap-0" />
              </div>
              {!isCollapsed && (
-                <span className="font-display font-black text-lg tracking-tight uppercase text-notion-ink antialiased">
-                   Eventra<span className="text-primary italic">.</span>
+                <span className="font-display text-title text-notion-ink antialiased">
+                   Eventra<span className="text-notion-ink-faint">.</span>
                 </span>
              )}
           </Link>
@@ -100,7 +100,7 @@ export function Sidebar({ className }: SidebarProps) {
         {/* NAVIGATION */}
         <nav className="flex-1 px-3 space-y-1 overflow-y-auto pt-6 overflow-x-hidden custom-scrollbar">
           {!isCollapsed && (
-             <p className="px-3 mb-2 text-[9px] font-black uppercase tracking-[0.2em] text-notion-ink-faint">Main Console</p>
+             <p className="px-3 mb-2 text-eyebrow uppercase text-notion-ink-faint">Main Console</p>
           )}
           {navLinks.map((link) => {
             const isActive = pathname === link.href;
@@ -115,24 +115,24 @@ export function Sidebar({ className }: SidebarProps) {
                       className={cn(
                         "group relative flex items-center h-10 gap-3.5 px-3 rounded-xl transition-all cursor-pointer",
                         isActive 
-                          ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 font-bold" 
-                          : "text-notion-ink-secondary hover:bg-notion-canvas-soft hover:text-notion-ink"
+                          ? "bg-notion-primary text-notion-on-primary shadow-notion-soft font-medium" 
+                          : "text-notion-ink-secondary hover:bg-accent hover:text-notion-ink"
                       )}
                     >
-                      <Icon className={cn("w-5 h-5 shrink-0", isActive ? "text-white" : "text-notion-ink-muted group-hover:text-notion-ink")} />
+                      <Icon className={cn("w-5 h-5 shrink-0", isActive ? "text-notion-on-primary" : "text-notion-ink-muted group-hover:text-notion-ink")} />
                       {!isCollapsed && (
-                        <span className="text-sm tracking-tight truncate">
+                        <span className="text-body-sm truncate">
                           {link.label}
                         </span>
                       )}
                       {isActive && !isCollapsed && (
-                         <div className="ml-auto w-1 h-1 rounded-full bg-white animate-pulse" />
+                         <div className="ml-auto w-1 h-1 rounded-full bg-notion-on-primary" />
                       )}
                     </motion.div>
                   </Link>
                 </TooltipTrigger>
                 {isCollapsed && (
-                  <TooltipContent side="right" className="bg-notion-ink text-notion-canvas border-none rounded-lg px-3 py-1.5 text-xs ml-3 shadow-notion-elevated font-bold">
+                  <TooltipContent side="right" className="bg-notion-ink text-notion-canvas border-none rounded-md px-3 py-1.5 text-caption ml-3 shadow-notion-elevated">
                     {link.label}
                   </TooltipContent>
                 )}
@@ -142,7 +142,7 @@ export function Sidebar({ className }: SidebarProps) {
         </nav>
 
         {/* FOOTER ACTIONS */}
-        <div className="mt-auto border-t border-notion-hairline bg-notion-canvas-soft/10 flex flex-col p-3 gap-4">
+        <div className="mt-auto border-t border-notion-hairline/60 flex flex-col p-3 gap-4">
           
 
 
@@ -153,7 +153,7 @@ export function Sidebar({ className }: SidebarProps) {
                    variant="ghost"
                    size="icon"
                    onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-                   className="h-9 w-9 rounded-xl hover:bg-notion-canvas-soft text-notion-ink-muted"
+                   className="h-9 w-9 rounded-xl hover:bg-accent text-notion-ink-muted"
                 >
                    {theme === 'dark' ? <Sun className="w-4.5 h-4.5" /> : <Moon className="w-4.5 h-4.5" />}
                 </Button>
@@ -162,7 +162,7 @@ export function Sidebar({ className }: SidebarProps) {
                    variant="ghost"
                    size="icon"
                    onClick={() => setIsCollapsed(!isCollapsed)}
-                   className="h-9 w-9 rounded-xl hover:bg-notion-canvas-soft text-notion-ink-muted"
+                   className="h-9 w-9 rounded-xl hover:bg-accent text-notion-ink-muted"
                 >
                    {isCollapsed ? <ChevronRight className="w-4.5 h-4.5" /> : <ChevronLeft className="w-4.5 h-4.5" />}
                 </Button>
@@ -197,7 +197,7 @@ export function Sidebar({ className }: SidebarProps) {
 
           {/* USER PROFILE */}
           <div className={cn(
-            "flex items-center gap-3.5 p-2 rounded-xl hover:bg-notion-canvas-soft transition-colors group overflow-hidden border border-transparent hover:border-notion-hairline",
+            "flex items-center gap-3.5 p-2 rounded-xl hover:bg-accent transition-colors group overflow-hidden",
             isCollapsed && "justify-center px-0"
           )}>
             <div className="shrink-0">

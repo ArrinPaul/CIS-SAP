@@ -390,7 +390,7 @@ export function OnboardingWizard() {
                   variant={selectedInterests.includes(interest) ? 'default' : 'outline'}
                   className={cn(
                     "px-4 py-2 text-xs cursor-pointer transition-all",
-                    selectedInterests.includes(interest) ? "scale-110 shadow-glow" : "hover:bg-muted"
+                    selectedInterests.includes(interest) ? "scale-110" : "hover:bg-muted"
                   )}
                   onClick={() => toggleInterest(interest)}
                 >

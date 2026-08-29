@@ -150,7 +150,7 @@ export default function OrganizerDashboard() {
             <TabsTrigger 
               key={tab} 
               value={tab} 
-              className="rounded-xl px-8 py-2 text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-950 data-[state=active]:shadow-sm data-[state=active]:text-primary transition-all"
+              className="rounded-xl px-8 py-2 text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-notion-surface dark:data-[state=active]:bg-zinc-950 data-[state=active]:shadow-sm data-[state=active]:text-primary transition-all"
             >
               {tab}
             </TabsTrigger>
@@ -212,12 +212,12 @@ export default function OrganizerDashboard() {
                   </div>
                   
                   <div className="flex items-center gap-3 mt-6 md:mt-0 opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0">
-                    <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl border-notion-hairline hover:bg-white" onClick={() => handleClone(event.id)} disabled={isCloning === event.id}>
+                    <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl border-notion-hairline hover:bg-notion-surface" onClick={() => handleClone(event.id)} disabled={isCloning === event.id}>
                       {isCloning === event.id ? <Loader2 className="h-4 w-4 animate-spin text-primary" /> : <Copy size={16} className="text-notion-ink-faint" />}
                     </Button>
                     <div className="w-px h-6 bg-notion-hairline mx-1" />
-                    <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl border-notion-hairline hover:bg-white text-notion-primary" asChild><Link href={`/events/${event.id}`}><ExternalLink size={16} /></Link></Button>
-                    <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl border-notion-hairline hover:bg-white" asChild><Link href={`/events/${event.id}/edit`}><Edit size={16} /></Link></Button>
+                    <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl border-notion-hairline hover:bg-notion-surface text-notion-primary" asChild><Link href={`/events/${event.id}`}><ExternalLink size={16} /></Link></Button>
+                    <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl border-notion-hairline hover:bg-notion-surface" asChild><Link href={`/events/${event.id}/edit`}><Edit size={16} /></Link></Button>
                     <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl border-notion-hairline hover:bg-red-50 text-red-500 hover:text-red-600" onClick={() => handleDelete(event.id)}><Trash2 size={16} /></Button>
                   </div>
                 </div>

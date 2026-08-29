@@ -156,7 +156,7 @@ export function CertificatePreview({ html, className }: CertificatePreviewProps)
   return (
     <div 
       className={cn(
-        'bg-white rounded-lg shadow-lg overflow-hidden',
+        'bg-notion-surface rounded-lg shadow-lg overflow-hidden',
         'transform scale-[0.5] origin-top-left',
         className
       )}

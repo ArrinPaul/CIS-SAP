@@ -20,7 +20,7 @@ export default function GlobalError({
                 window.location.reload();
               }
             }}
-            className="px-6 py-3 bg-primary text-primary-foreground font-bold rounded-2xl hover:opacity-90 shadow-glow transition-all active:scale-95"
+            className="px-6 py-3 bg-primary text-primary-foreground font-bold rounded-2xl hover:opacity-90 transition-all active:scale-95"
           >
             Try again
           </button>

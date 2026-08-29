@@ -139,7 +139,7 @@ export function EditProfileDialog({ children }: { children?: React.ReactNode }) 
 
         <div className="p-6 border-t border-border/60 bg-muted/10 flex justify-end gap-3">
           <Button type="button" variant="ghost" onClick={() => setOpen(false)} className="rounded-xl font-bold uppercase tracking-widest text-xs px-6">Cancel</Button>
-          <Button type="submit" form="edit-profile-form" disabled={loading} className="rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase tracking-widest text-xs px-8 shadow-glow shadow-primary/20 border-none">
+          <Button type="submit" form="edit-profile-form" disabled={loading} className="rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase tracking-widest text-xs px-8 shadow-notion-soft border-none">
             {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Check className="w-4 h-4 mr-2" />} Save Changes
           </Button>
         </div>

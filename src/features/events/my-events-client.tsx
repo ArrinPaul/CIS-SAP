@@ -124,7 +124,7 @@ export default function MyEventsClient() {
              Manage your active synchronizations, past experiences, and node wishlist.
            </p>
         </div>
-        <Button size="lg" asChild className="rounded-2xl h-14 px-8 bg-primary text-primary-foreground shadow-glow shadow-primary/20 font-black uppercase tracking-widest text-[11px] border-none">
+        <Button size="lg" asChild className="rounded-2xl h-14 px-8 bg-primary text-primary-foreground shadow-notion-soft font-black uppercase tracking-widest text-[11px] border-none">
           <Link href="/explore"><Plus className="mr-3 h-4 w-4" />Find New Node</Link>
         </Button>
       </div>
@@ -181,7 +181,7 @@ export default function MyEventsClient() {
                      </div>
                      <h3 className="text-3xl font-display font-bold mb-4">No active synchronizations.</h3>
                      <p className="text-muted-foreground font-medium max-w-sm mx-auto mb-10">You haven't registered for any upcoming events yet.</p>
-                     <Button asChild size="lg" className="rounded-2xl px-10 shadow-glow font-black h-14">
+                     <Button asChild size="lg" className="rounded-2xl px-10 font-black h-14">
                         <Link href="/explore">Discover Events</Link>
                      </Button>
                   </div>

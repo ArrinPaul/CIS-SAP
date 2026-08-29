@@ -12,14 +12,15 @@ const Progress = React.forwardRef<
   <ProgressPrimitive.Root
     ref={ref}
     className={cn(
-      "relative h-4 w-full overflow-hidden rounded-full bg-secondary",
+      "relative h-1.5 w-full overflow-hidden rounded-full bg-notion-sunken",
       className
     )}
     {...props}
   >
+    {/* Width, not translate, so the warm ramp reads across the filled portion. */}
     <ProgressPrimitive.Indicator
-      className="h-full w-full flex-1 bg-primary transition-all"
-      style={{ transform: `translateX(-${100 - (value || 0)}%)` }}
+      className="h-full rounded-full fill-data-ramp transition-all duration-500"
+      style={{ width: `${Math.min(100, Math.max(0, value || 0))}%` }}
     />
   </ProgressPrimitive.Root>
 ))

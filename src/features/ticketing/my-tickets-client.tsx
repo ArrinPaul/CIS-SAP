@@ -256,10 +256,10 @@ export default function MyTicketsClient({ initialTickets = [] }: { initialTicket
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-10">
         <TabsList className="bg-muted/30 p-1.5 rounded-2xl border border-notion-hairline w-fit">
-          <TabsTrigger value="upcoming" className="rounded-xl px-8 py-2 text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-950 data-[state=active]:shadow-sm data-[state=active]:text-primary transition-all">
+          <TabsTrigger value="upcoming" className="rounded-xl px-8 py-2 text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-notion-surface dark:data-[state=active]:bg-zinc-950 data-[state=active]:shadow-sm data-[state=active]:text-primary transition-all">
             <UserCheck className="w-3.5 h-3.5 mr-2" /> Upcoming
           </TabsTrigger>
-          <TabsTrigger value="past" className="rounded-xl px-8 py-2 text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-950 data-[state=active]:shadow-sm data-[state=active]:text-primary transition-all">
+          <TabsTrigger value="past" className="rounded-xl px-8 py-2 text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-notion-surface dark:data-[state=active]:bg-zinc-950 data-[state=active]:shadow-sm data-[state=active]:text-primary transition-all">
             <Activity className="w-3.5 h-3.5 mr-2" /> Past Logs
           </TabsTrigger>
         </TabsList>
@@ -279,7 +279,7 @@ export default function MyTicketsClient({ initialTickets = [] }: { initialTicket
                      <h3 className="text-xl font-bold tracking-tight text-notion-ink">No Tokens Active</h3>
                      <p className="text-sm text-notion-ink-muted font-medium max-w-xs mx-auto">Explore the network to find and sync with your next experience.</p>
                   </div>
-                  <Button asChild variant="outline" size="sm" className="rounded-xl font-bold px-8 h-10 shadow-sm bg-white hover:bg-zinc-50">
+                  <Button asChild variant="outline" size="sm" className="rounded-xl font-bold px-8 h-10 shadow-sm bg-notion-surface hover:bg-zinc-50">
                     <Link href="/explore">Scan Network</Link>
                   </Button>
                </div>
@@ -298,14 +298,14 @@ export default function MyTicketsClient({ initialTickets = [] }: { initialTicket
 
       <Dialog open={!!selectedTicket} onOpenChange={() => setSelectedTicket(null)}>
         <DialogContent className="bg-white dark:bg-zinc-950 text-notion-ink border-notion-hairline p-0 overflow-hidden rounded-[2.5rem] max-w-md">
-           <div className="bg-notion-primary p-12 text-center text-white relative overflow-hidden">
+           <div className="bg-notion-primary p-12 text-center text-notion-on-primary relative overflow-hidden">
               <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 blur-3xl rounded-full -mr-16 -mt-16" />
               <Badge variant="outline" className="text-white border-white/20 mb-6 uppercase text-[10px] font-black tracking-widest px-3 py-0.5">Verification Ready</Badge>
               <h3 className="text-3xl font-display font-black leading-tight tracking-tighter uppercase mb-2">{selectedTicket?.event?.title}</h3>
               <p className="text-xs font-bold opacity-70 uppercase tracking-widest">Authorized Access Point</p>
            </div>
            <div className="p-10 flex flex-col items-center space-y-10">
-              <div className="bg-white p-6 rounded-[2.5rem] shadow-2xl ring-1 ring-black/5">
+              <div className="bg-notion-surface p-6 rounded-[2.5rem] shadow-2xl ring-1 ring-black/5">
                  <QRCodeSVG value={selectedTicket?.ticketNumber || ''} size={220} level="H" />
               </div>
                <div className="w-full space-y-8">

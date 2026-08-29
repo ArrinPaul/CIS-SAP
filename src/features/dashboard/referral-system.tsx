@@ -40,7 +40,7 @@ export function ReferralSystem() {
               <div className="flex-1 font-mono text-lg font-black tracking-widest text-notion-ink">
                  {referralCode}
               </div>
-              <Button size="icon" variant="ghost" onClick={handleCopy} className="h-10 w-10 rounded-xl border border-notion-hairline hover:bg-white transition-all shadow-sm">
+              <Button size="icon" variant="ghost" onClick={handleCopy} className="h-10 w-10 rounded-xl border border-notion-hairline hover:bg-notion-surface transition-all shadow-sm">
                  {copied ? <Check className="w-4 h-4 text-notion-accent-green" /> : <Copy className="w-4 h-4" />}
               </Button>
            </div>
@@ -53,7 +53,7 @@ export function ReferralSystem() {
                  placeholder="Enter friend's code..." 
                  value={inputCode}
                  onChange={(e) => setInputCode(e.target.value)}
-                 className="rounded-xl border-notion-hairline bg-notion-canvas-soft/50 h-10 text-xs font-bold uppercase tracking-widest focus:bg-white transition-all"
+                 className="rounded-xl border-notion-hairline bg-notion-canvas-soft/50 h-10 text-xs font-bold uppercase tracking-widest focus:bg-notion-surface transition-all"
               />
               <Button size="sm" className="rounded-xl px-4 font-bold shadow-sm">
                  <Send className="w-3.5 h-3.5 mr-2" /> Join

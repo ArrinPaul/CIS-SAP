@@ -4,33 +4,53 @@
 
 @layer base {
   :root {
-    /* Premium Brand Colors - Violet Indigo Theme */
-    --notion-primary: 250 95% 62%; /* Vibrant Royal Violet */
-    --notion-primary-active: 250 90% 52%; /* Slightly darker for active states */
-    --notion-secondary: 240 10% 15%; /* Sleek Slate */
-    --notion-on-primary: 0 0% 100%;
-    
-    --notion-canvas: 0 0% 100%; /* Pure white surface */
-    --notion-canvas-soft: 240 15% 98%; /* Soft cool grayish background */
-    --notion-surface: 0 0% 100%;
-    
-    --notion-ink: 240 10% 3.9%; /* Deep black-slate for high contrast */
-    --notion-ink-secondary: 240 5% 26%;
-    --notion-ink-muted: 240 4% 46%;
-    --notion-ink-faint: 240 4% 65%;
-    
-    --notion-hairline: 240 6% 90%; /* Soft neutral border */
-    
-    /* Sticker / Accent Palette - Refined for brand harmony */
-    --notion-accent-sky: 210 96% 70%;
-    --notion-accent-purple: 265 89% 78%;
-    --notion-accent-purple-deep: 265 60% 30%;
-    --notion-accent-pink: 325 90% 68%;
-    --notion-accent-orange: 24 95% 55%;
-    --notion-accent-orange-deep: 24 75% 30%;
-    --notion-accent-teal: 175 75% 40%;
-    --notion-accent-green: 142 70% 45%;
-    --notion-accent-brown: 30 50% 30%;
+    /* ------------------------------------------------------------------
+       Chrome: monochrome. Near-black primary, warm-tinted neutral greys.
+       Color is reserved for data (see the --data-* ramp below).
+       ------------------------------------------------------------------ */
+    --notion-primary: 25 30% 20%;          /* Warm walnut — buttons, active states */
+    --notion-primary-active: 25 34% 14%;   /* Pressed */
+    --notion-secondary: 28 16% 34%;
+    --notion-on-primary: 40 38% 96.5%;
+
+    /* Surfaces. Separation comes from tone, not borders. */
+    --notion-canvas: 40 36% 96.2%;         /* Card / raised surface — warm cream */
+    --notion-canvas-soft: 39 27% 92.4%;    /* Page background — deeper warm */
+    --notion-surface: 40 36% 96.2%;
+    --notion-sunken: 39 30% 94.2%;         /* Nested panel inside a card */
+
+    /* Ink — warm-leaning neutrals */
+    --notion-ink: 25 28% 15%;
+    --notion-ink-secondary: 28 16% 33%;
+    --notion-ink-muted: 30 12% 47%;
+    --notion-ink-faint: 32 16% 65%;
+
+    --notion-hairline: 38 20% 85%;          /* Barely-there; most edges use tone instead */
+
+    /* ------------------------------------------------------------------
+       Data ramp — warm low → cool high. Charts, progress fills, delta chips.
+       Never used for chrome.
+       ------------------------------------------------------------------ */
+    --data-1: 14 88% 60%;                  /* Warm red-orange (lowest) */
+    --data-2: 28 94% 58%;                  /* Orange */
+    --data-3: 43 95% 55%;                  /* Amber */
+    --data-4: 84 60% 48%;                  /* Yellow-green */
+    --data-5: 142 60% 44%;                 /* Green (highest) */
+    --data-positive: 142 60% 40%;
+    --data-negative: 4 76% 56%;
+    --data-positive-soft: 142 55% 93%;
+    --data-negative-soft: 4 80% 95%;
+
+    /* Legacy accent names, remapped onto the ramp so existing usages hold. */
+    --notion-accent-sky: var(--data-4);
+    --notion-accent-purple: var(--data-3);
+    --notion-accent-purple-deep: 43 60% 28%;
+    --notion-accent-pink: var(--data-1);
+    --notion-accent-orange: var(--data-2);
+    --notion-accent-orange-deep: 28 70% 28%;
+    --notion-accent-teal: var(--data-5);
+    --notion-accent-green: var(--data-5);
+    --notion-accent-brown: 28 40% 30%;
 
     /* Shadcn compatibility (internal mapping) */
     --background: var(--notion-canvas-soft);
@@ -41,47 +61,53 @@
     --popover-foreground: var(--notion-ink);
     --primary: var(--notion-primary);
     --primary-foreground: var(--notion-on-primary);
-    --secondary: 240 4.8% 95.9%;
+    --secondary: 39 26% 90.5%;
     --secondary-foreground: var(--notion-ink-secondary);
-    --muted: 240 4.8% 95%;
+    --muted: var(--notion-sunken);
     --muted-foreground: var(--notion-ink-muted);
-    --accent: 250 95% 97.5%; /* Soft violet tint for active/hover */
-    --accent-foreground: var(--notion-primary);
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --accent: 39 27% 90%;                  /* Warm hover/active tint */
+    --accent-foreground: var(--notion-ink);
+    --destructive: var(--data-negative);
+    --destructive-foreground: 40 38% 96.5%;
     --border: var(--notion-hairline);
     --input: var(--notion-hairline);
-    --ring: var(--notion-primary);
-    --radius: 12px;
+    --ring: var(--notion-ink);
+    --radius: 16px;
   }
 
   .dark {
-    /* Premium Brand Colors - Dark Mode */
-    --notion-primary: 250 95% 66%; /* Glowing Neon Violet */
-    --notion-primary-active: 250 90% 58%;
-    --notion-secondary: 240 5% 85%;
-    
-    --notion-canvas: 240 15% 10%; /* Midnight slate surface (#15151c) */
-    --notion-canvas-soft: 240 15% 6%; /* Deep midnight background (#0c0c10) */
-    --notion-surface: 240 12% 14%; /* Raised surface (#1c1c24) */
-    
-    --notion-ink: 0 0% 98%; /* High contrast off-white */
-    --notion-ink-secondary: 240 5% 90%;
-    --notion-ink-muted: 240 5% 65%;
-    --notion-ink-faint: 240 5% 45%;
-    
-    --notion-hairline: 240 8% 18%; /* Subtle dark border */
+    /* Inverted chrome: white primary on a deep warm-neutral canvas. */
+    --notion-primary: 30 10% 96%;
+    --notion-primary-active: 30 8% 88%;
+    --notion-secondary: 30 6% 86%;
+    --notion-on-primary: 24 12% 9%;
 
-    /* Sticker / Accent Palette - Softer glows for dark mode */
-    --notion-accent-sky: 210 96% 75%;
-    --notion-accent-purple: 265 89% 82%;
-    --notion-accent-purple-deep: 265 50% 25%;
-    --notion-accent-pink: 325 90% 74%;
-    --notion-accent-orange: 24 95% 65%;
-    --notion-accent-orange-deep: 24 60% 25%;
-    --notion-accent-teal: 175 75% 55%;
-    --notion-accent-green: 142 70% 55%;
-    --notion-accent-brown: 30 40% 25%;
+    --notion-canvas: 24 8% 11%;            /* Card / raised surface */
+    --notion-canvas-soft: 24 9% 7%;        /* Page background */
+    --notion-surface: 24 8% 13%;
+    --notion-sunken: 24 8% 9%;
+
+    --notion-ink: 30 10% 97%;
+    --notion-ink-secondary: 30 6% 86%;
+    --notion-ink-muted: 30 5% 62%;
+    --notion-ink-faint: 30 5% 42%;
+
+    --notion-hairline: 24 7% 20%;
+
+    /* Data ramp — lifted for legibility on a dark canvas */
+    --data-1: 14 88% 66%;
+    --data-2: 28 92% 64%;
+    --data-3: 43 92% 62%;
+    --data-4: 84 55% 56%;
+    --data-5: 142 52% 52%;
+    --data-positive: 142 52% 52%;
+    --data-negative: 4 76% 64%;
+    --data-positive-soft: 142 30% 16%;
+    --data-negative-soft: 4 40% 18%;
+
+    --notion-accent-purple-deep: 43 40% 24%;
+    --notion-accent-orange-deep: 28 45% 22%;
+    --notion-accent-brown: 28 30% 24%;
 
     /* Shadcn compatibility (dark mode) */
     --background: var(--notion-canvas-soft);
@@ -92,24 +118,64 @@
     --popover-foreground: var(--notion-ink);
     --primary: var(--notion-primary);
     --primary-foreground: var(--notion-on-primary);
-    --secondary: 240 6% 14%; /* Distinct from background */
+    --secondary: 24 8% 16%;
     --secondary-foreground: var(--notion-ink-secondary);
-    --muted: 240 6% 12%;
+    --muted: var(--notion-sunken);
     --muted-foreground: var(--notion-ink-muted);
-    --accent: 250 30% 12%; /* Dark violet accent glow */
-    --accent-foreground: var(--notion-primary);
+    --accent: 24 8% 17%;
+    --accent-foreground: var(--notion-ink);
+    --destructive: var(--data-negative);
+    --destructive-foreground: 24 12% 9%;
     --border: var(--notion-hairline);
     --input: var(--notion-hairline);
-    --ring: var(--notion-primary);
+    --ring: var(--notion-ink);
   }
 }
 
 @layer base {
   * {
-    @apply border-border outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background transition-colors duration-150;
+    @apply border-border;
+  }
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
   }
   body {
     @apply bg-background text-foreground font-sans antialiased overflow-x-hidden w-full;
+  }
+  /* Browsers default buttons to the arrow cursor; every interactive control
+     in the app should read as clickable. */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  summary,
+  label[for] {
+    cursor: pointer;
+  }
+  button:disabled,
+  [aria-disabled="true"] {
+    cursor: not-allowed;
+  }
+  /* Links and icon affordances get a consistent, quiet transition. */
+  a {
+    @apply transition-colors duration-150;
+  }
+  /* Respect the OS setting — no lifts, scales or slides. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+  /* Big numerals in the reference are tabular and tightly tracked. */
+  .font-display {
+    font-feature-settings: 'ss01', 'cv01';
+    letter-spacing: -0.02em;
+  }
+  .tabular {
+    font-variant-numeric: tabular-nums;
   }
 }
 
@@ -134,33 +200,45 @@
   }
 }
 
-/* Notion Micro-Shadows */
+/* Elevation — soft and diffuse. These carry the separation that borders used to. */
 @layer utilities {
   .shadow-notion-soft {
-    box-shadow: rgba(0,0,0,0.01) 0 0.175px 1.041px, 
-                rgba(0,0,0,0.02) 0 0.8px 2.925px, 
-                rgba(0,0,0,0.027) 0 2.025px 7.847px, 
-                rgba(0,0,0,0.04) 0 4px 18px;
+    box-shadow: rgba(28,25,23,0.02) 0 1px 2px,
+                rgba(28,25,23,0.02) 0 3px 6px,
+                rgba(28,25,23,0.03) 0 8px 18px -6px;
   }
-  
+
   .dark .shadow-notion-soft {
-    box-shadow: rgba(0,0,0,0.15) 0 4px 20px;
+    box-shadow: rgba(0,0,0,0.28) 0 2px 6px,
+                rgba(0,0,0,0.22) 0 10px 24px -8px;
   }
 
   .shadow-notion-elevated {
-    box-shadow: rgba(0,0,0,0.02) 0 1px 2px,
-                rgba(0,0,0,0.03) 0 2px 4px,
-                rgba(0,0,0,0.04) 0 4px 8px,
-                rgba(0,0,0,0.05) 0 8px 16px,
-                rgba(0,0,0,0.05) 0 23px 52px;
+    box-shadow: rgba(28,25,23,0.02) 0 1px 2px,
+                rgba(28,25,23,0.03) 0 4px 10px -2px,
+                rgba(28,25,23,0.05) 0 14px 32px -10px,
+                rgba(28,25,23,0.04) 0 32px 64px -24px;
   }
 
   .dark .shadow-notion-elevated {
-    box-shadow: rgba(0,0,0,0.25) 0 23px 52px;
+    box-shadow: rgba(0,0,0,0.35) 0 4px 12px -2px,
+                rgba(0,0,0,0.3) 0 20px 48px -16px;
+  }
+
+  /* The warm ramp as a fill — progress bars, chart washes, meters. */
+  .fill-data-ramp {
+    background-image: linear-gradient(
+      90deg,
+      hsl(var(--data-1)) 0%,
+      hsl(var(--data-2)) 28%,
+      hsl(var(--data-3)) 52%,
+      hsl(var(--data-4)) 76%,
+      hsl(var(--data-5)) 100%
+    );
   }
 }
 
-/* Custom Scrollbar - Notion Style */
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
@@ -193,10 +271,10 @@
   .premium-bg::before {
     content: '';
     @apply absolute inset-0 -z-10 opacity-30 pointer-events-none;
-    background: radial-gradient(circle at 50% -20%, hsla(var(--notion-primary), 0.15) 0%, transparent 60%);
+    background: radial-gradient(circle at 50% -20%, hsl(var(--data-2) / 0.12) 0%, transparent 60%);
   }
 
   .mesh-glow {
-    background: radial-gradient(circle at 50% -10%, hsla(var(--notion-primary), 0.1) 0%, transparent 70%);
+    background: radial-gradient(circle at 50% -10%, hsl(var(--data-3) / 0.1) 0%, transparent 70%);
   }
 }

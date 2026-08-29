@@ -205,7 +205,7 @@ export function EventGallery({ eventId, isRegistered, isStaff }: EventGalleryPro
               <Button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading}
-                className="bg-white text-black hover:bg-cyan-50 rounded-xl font-bold h-11 px-6 shadow-lg shadow-white/5"
+                className="bg-notion-surface text-black hover:bg-cyan-50 rounded-xl font-bold h-11 px-6 shadow-lg shadow-white/5"
               >
                 {uploading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Plus className="w-4 h-4 mr-2" />}
                 SHARE MOMENT

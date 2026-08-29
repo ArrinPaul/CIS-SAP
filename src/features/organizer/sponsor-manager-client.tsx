@@ -294,7 +294,7 @@ export function SponsorManagerClient({ eventId, eventTitle }: SponsorManagerProp
                             {tierSponsors.map(s => (
                               <div key={s.id} className="flex items-center justify-between p-3 bg-card rounded-xl border border-border/50 group hover:border-border transition-all">
                                 <div className="flex items-center gap-4">
-                                  <div className="relative h-12 w-12 rounded-lg bg-white p-1 flex items-center justify-center">
+                                  <div className="relative h-12 w-12 rounded-lg bg-notion-surface p-1 flex items-center justify-center">
                                     {s.logoUrl ? (
                                       <Image src={s.logoUrl} fill className="object-contain p-1" alt={s.name} />
                                     ) : (
@@ -347,7 +347,7 @@ export function SponsorManagerClient({ eventId, eventTitle }: SponsorManagerProp
                     className="w-full justify-start border-border"
                     onClick={() => loadLeads(s)}
                   >
-                    <div className="w-6 h-6 rounded bg-white mr-3 flex items-center justify-center overflow-hidden">
+                    <div className="w-6 h-6 rounded bg-notion-surface mr-3 flex items-center justify-center overflow-hidden">
                       {s.logoUrl ? <Image src={s.logoUrl} width={24} height={24} className="object-contain" alt="" /> : <span className="text-[10px] text-black font-bold">{s.name[0]}</span>}
                     </div>
                     {s.name}

@@ -206,7 +206,7 @@ export function CoOrganizerManager({
               onClick={handleAddByEmail} 
               disabled={isSearching || isUpdating || !email}
               size="lg"
-              className="h-14 px-8 rounded-2xl font-black shadow-glow"
+              className="h-14 px-8 rounded-2xl font-black"
             >
               {isUpdating ? <Loader2 className="h-5 w-5 animate-spin" /> : <UserPlus className="h-5 w-5 mr-2" />}
               Invite

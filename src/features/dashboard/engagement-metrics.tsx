@@ -107,7 +107,7 @@ export function EngagementMetrics({ stats }: EngagementMetricsProps) {
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
             {metrics.map((stat, i) => (
-              <div key={i} className="p-4 rounded-2xl bg-notion-canvas-soft/50 border border-notion-hairline flex flex-col gap-4 hover:bg-white dark:hover:bg-zinc-900 transition-colors cursor-default group/stat">
+              <div key={i} className="p-4 rounded-2xl bg-notion-canvas-soft/50 border border-notion-hairline flex flex-col gap-4 hover:bg-notion-surface dark:hover:bg-zinc-900 transition-colors cursor-default group/stat">
                 <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center transition-transform group-hover/stat:scale-110 shadow-sm", stat.bg)}>
                   <stat.icon size={18} className={stat.color} /> 
                 </div>

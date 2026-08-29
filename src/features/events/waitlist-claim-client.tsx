@@ -140,7 +140,7 @@ export function WaitlistClaimClient({ eventId, eventTitle, reservation }: Waitli
 
       <CardFooter className="p-8 bg-white/[0.02] border-t border-border/50 flex flex-col gap-4">
          <Button 
-           className="w-full h-14 text-lg font-black bg-white text-black hover:bg-cyan-50 transition-all shadow-xl shadow-white/5"
+           className="w-full h-14 text-lg font-black bg-notion-surface text-black hover:bg-cyan-50 transition-all shadow-xl shadow-white/5"
            onClick={handleClaim}
            disabled={isClaiming || timeLeft === 'EXPIRED'}
          >
