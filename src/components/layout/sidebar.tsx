@@ -28,7 +28,9 @@ import {
   Globe,
   Sparkles,
   MessageCircle,
-  Lightbulb
+  Lightbulb,
+  Award,
+  MapPin
 } from 'lucide-react';
 import {
   Tooltip,
@@ -56,15 +58,17 @@ export function Sidebar({ className }: SidebarProps) {
   const navLinks = React.useMemo(() => [
     { href: '/', label: 'Overview', icon: LayoutDashboard },
     { href: '/explore', label: 'Explore', icon: Compass },
+    { href: '/map', label: 'Maps', icon: MapPin },
     { href: '/chat', label: 'Messages', icon: MessageCircle, requireAuth: true },
     { href: '/ai-recommendations', label: 'For You', icon: Lightbulb, requireAuth: true },
     { href: '/ai-tools', label: 'AI Workspace', icon: Sparkles, requireAuth: true },
     { href: '/tickets', label: 'My Tickets', icon: Ticket, requireAuth: true },
+    { href: '/certificates', label: 'Certificates', icon: Award, requireAuth: true },
     { href: '/my-events', label: 'Schedule', icon: Calendar, requireAuth: true },
     { href: '/search', label: 'Global Search', icon: Search },
     { href: '/organizer', label: 'Management', icon: Briefcase, roles: ['organizer', 'admin'] },
   ].filter(link => {
-    if (link.href === '/' || link.href === '/explore' || link.href === '/search') return true;
+    if (link.href === '/' || link.href === '/explore' || link.href === '/search' || link.href === '/map') return true;
     if (link.requireAuth && !isAuthenticated) return false;
     return !link.roles || (user && link.roles.includes(user.role));
   }), [user, isAuthenticated]);

@@ -1,76 +1,58 @@
-const CACHE_NAME = 'eventra-cache-v1';
-const OFFLINE_URL = '/offline';
-
-const ASSETS_TO_CACHE = [
-  '/',
-  '/offline',
-  '/manifest.json',
-  '/grid.svg',
-  '/favicon.ico',
-];
+// Eventra Service Worker - Web Push Notifications & Background Sync
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE);
-    })
-  );
   self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
-  );
-  self.clients.claim();
-});
-
-self.addEventListener('fetch', (event) => {
-  if (event.request.mode === 'navigate') {
-    event.respondWith(
-      fetch(event.request).catch(() => {
-        return caches.open(CACHE_NAME).then((cache) => {
-          return cache.match(OFFLINE_URL);
-        });
-      })
-    );
-  } else {
-    event.respondWith(
-      caches.match(event.request).then((response) => {
-        return response || fetch(event.request);
-      })
-    );
-  }
+  event.waitUntil(self.clients.claim());
 });
 
 self.addEventListener('push', (event) => {
-  const data = event.data ? event.data.json() : { title: 'New Notification', body: 'You have a new update!' };
-  
+  if (!event.data) return;
+
+  let payload;
+  try {
+    payload = event.data.json();
+  } catch (e) {
+    payload = { title: 'Eventra Notification', body: event.data.text() };
+  }
+
+  const title = payload.title || 'Eventra Update';
   const options = {
-    body: data.body,
-    icon: '/favicon.ico',
-    badge: '/favicon.ico',
+    body: payload.body || 'You have a new update from Eventra.',
+    icon: payload.icon || '/favicon.ico',
+    badge: payload.badge || '/favicon.ico',
     data: {
-      url: data.url || '/'
-    }
+      url: payload.url || '/',
+    },
+    vibrate: [100, 50, 100],
+    actions: payload.actions || [
+      { action: 'open', title: 'Open Eventra' },
+      { action: 'close', title: 'Dismiss' }
+    ]
   };
 
-  event.waitUntil(
-    self.registration.showNotification(data.title, options)
-  );
+  event.waitUntil(self.registration.showNotification(title, options));
 });
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
+
+  if (event.action === 'close') return;
+
+  const targetUrl = event.notification.data?.url || '/';
+
   event.waitUntil(
-    clients.openWindow(event.notification.data.url)
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
+        if (client.url === targetUrl && 'focus' in client) {
+          return client.focus();
+        }
+      }
+      if (self.clients.openWindow) {
+        return self.clients.openWindow(targetUrl);
+      }
+    })
   );
 });

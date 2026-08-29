@@ -82,7 +82,7 @@ const nextConfig: NextConfig = {
           // Watch the violation reports, then flip the key to
           // 'Content-Security-Policy' once the directives are clean.
           {
-            key: 'Content-Security-Policy-Report-Only',
+            key: process.env.CSP_ENFORCE === 'true' ? 'Content-Security-Policy' : 'Content-Security-Policy-Report-Only',
             value: [
               "default-src 'self'",
               // 'unsafe-inline'/'unsafe-eval' are what Next's dev bootstrap and
@@ -99,8 +99,7 @@ const nextConfig: NextConfig = {
               "base-uri 'self'",
               "form-action 'self'",
               "frame-ancestors 'none'",
-              // upgrade-insecure-requests is ignored in report-only mode;
-              // add it when this policy is switched to enforcing.
+              ...(process.env.CSP_ENFORCE === 'true' ? ['upgrade-insecure-requests'] : []),
             ].join('; '),
           },
           { key: 'X-Content-Type-Options', value: 'nosniff' },

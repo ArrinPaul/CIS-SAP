@@ -33,8 +33,8 @@ async function enableRealtime() {
     
     for (const table of tables) {
       await sql.unsafe(`ALTER PUBLICATION supabase_realtime ADD TABLE ${table};`).catch(e => {
-        if (e.message.includes('already exists')) {
-          console.log(`Table ${table} already in publication.`);
+        if (e.message.includes('already exists') || e.message.includes('already member')) {
+          console.log(`Table ${table} is already in realtime publication.`);
         } else {
           throw e;
         }

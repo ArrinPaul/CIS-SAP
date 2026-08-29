@@ -28,6 +28,10 @@ import {
   ChevronRight,
   HelpCircle,
   Sparkles,
+  Award,
+  MessageSquare,
+  DollarSign,
+  Eye,
 } from 'lucide-react';
 
 const sidebarGroups = [
@@ -43,7 +47,10 @@ const sidebarGroups = [
     items: [
       { title: 'My Events', href: '/organizer/events', icon: Calendar },
       { title: 'Attendees', href: '/organizer/attendees', icon: Users },
+      { title: 'Certificates', href: '/organizer/certificates', icon: Award },
+      { title: 'Feedback', href: '/organizer/feedback', icon: MessageSquare },
       { title: 'Scanner', href: '/check-in-scanner', icon: QrCode },
+      { title: 'CV Density', href: '/organizer/attendance-scanner', icon: Eye },
     ],
   },
   {
@@ -51,6 +58,7 @@ const sidebarGroups = [
     items: [
       { title: 'Analytics', href: '/organizer/analytics', icon: BarChart3 },
       { title: 'Ticketing', href: '/organizer/ticketing', icon: Ticket },
+      { title: 'Payouts', href: '/organizer/payouts', icon: DollarSign },
       { title: 'Comms', href: '/organizer/communications', icon: Mail },
       { title: 'Settings', href: '/organizer/settings', icon: Settings },
     ],

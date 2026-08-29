@@ -24,7 +24,9 @@ import {
   Sparkles,
   Terminal,
   Info,
-  ExternalLink
+  ExternalLink,
+  Navigation,
+  FileText
 } from 'lucide-react';
 import { cn } from '@/core/utils/utils';
 import { useAuth } from '@/hooks/use-auth';
@@ -46,36 +48,60 @@ export default function EventDetailsClient({ eventId, initialEvent }: { eventId:
   const { toast } = useToast();
 
   const [event, setEvent] = useState(initialEvent);
-  const [registration, setRegistration] = useState<any>(null);
+  const [activeTab, setActiveTab] = useState('about');
   const [registering, setRegistering] = useState(false);
+  const [registration, setRegistration] = useState<any>(null);
   const [cloning, setCloning] = useState(false);
   const [showChatbot, setShowChatbot] = useState(false);
-  const [activeTab, setActiveTab] = useState('about');
   const [generatingSummary, setGeneratingSummary] = useState(false);
 
   useEffect(() => {
-    async function loadStatus() {
-      if (user) {
-        const status = await getRegistrationStatus(eventId);
-        setRegistration(status);
+    async function checkStatus() {
+      if (user?.id) {
+        const res = await getRegistrationStatus(eventId);
+        if (res) {
+          setRegistration(res);
+        }
       }
     }
-    loadStatus();
-  }, [eventId, user]);
+    checkStatus();
+  }, [eventId, user?.id]);
 
   const handleRegister = async (tierId?: string) => {
+    if (!user) {
+      toast({
+        title: 'Sign In Required',
+        description: 'Please log in to register for events.',
+        variant: 'destructive'
+      });
+      router.push('/login');
+      return;
+    }
+
     setRegistering(true);
     try {
       const result = await registerForEvent(eventId, { tierId });
       if (result.success) {
-        toast({ title: 'Successfully Registered', description: (result as any).ticketNumber ? `Ticket ID: ${(result as any).ticketNumber}` : 'Added to waitlist.' });        
+        toast({
+          title: 'Success!',
+          description: (result as any).ticketNumber ? `Ticket ID: ${(result as any).ticketNumber}` : 'Successfully registered.',
+        });
         const status = await getRegistrationStatus(eventId);
         setRegistration(status);
+        setEvent((prev: any) => ({ ...prev, registeredCount: prev.registeredCount + 1 }));
       } else {
-        toast({ title: 'Registration Status', description: result.error || 'Failed to register.' });
+        toast({
+          title: 'Registration Failed',
+          description: result.error || 'Something went wrong',
+          variant: 'destructive'
+        });
       }
     } catch (e: any) {
-      toast({ title: 'Registration Failed', variant: 'destructive' });
+      toast({
+        title: 'Error',
+        description: 'Failed to process registration.',
+        variant: 'destructive'
+      });
     } finally {
       setRegistering(false);
     }
@@ -134,7 +160,13 @@ export default function EventDetailsClient({ eventId, initialEvent }: { eventId:
           </Button>
 
           {isOrganizer && (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" asChild className="hidden md:flex gap-1.5">
+                <Link href={`/events/${eventId}/map/edit`}><Navigation className="w-3.5 h-3.5" /> Venue Map</Link>
+              </Button>
+              <Button variant="outline" size="sm" asChild className="hidden md:flex gap-1.5">
+                <Link href={`/events/${eventId}/report`}><FileText className="w-3.5 h-3.5" /> Report</Link>
+              </Button>
               <Button variant="outline" size="sm" onClick={handleClone} disabled={cloning} className="hidden sm:flex">
                 {cloning ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Copy className="mr-2 h-4 w-4" />} Duplicate
               </Button>
@@ -183,33 +215,48 @@ export default function EventDetailsClient({ eventId, initialEvent }: { eventId:
                 {event.title.replace(/-/g, ' ')}
               </h1>
               
-              <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8 text-muted-foreground">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-muted rounded-lg"><Calendar className="w-5 h-5 text-foreground" /></div>
-                  <div>
-                    <p className="text-sm font-semibold text-foreground">{format(new Date(event.startDate), 'EEEE, MMMM do, yyyy')}</p>
-                    <p className="text-xs">{format(new Date(event.startDate), 'h:mm a')} - {format(new Date(event.endDate), 'h:mm a')}</p>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-muted-foreground">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-muted rounded-lg"><Calendar className="w-5 h-5 text-foreground" /></div>
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">{format(new Date(event.startDate), 'EEEE, MMMM do, yyyy')}</p>
+                      <p className="text-xs">{format(new Date(event.startDate), 'h:mm a')} - {format(new Date(event.endDate), 'h:mm a')}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-muted rounded-lg"><MapPin className="w-5 h-5 text-foreground" /></div>
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">{locationDisplay}</p>
+                      <p className="text-xs capitalize">{event.type} Event</p>
+                    </div>
                   </div>
                 </div>
-                
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-muted rounded-lg"><MapPin className="w-5 h-5 text-foreground" /></div>
-                  <div>
-                    <p className="text-sm font-semibold text-foreground">{locationDisplay}</p>
-                    <p className="text-xs capitalize">{event.type} Event</p>
-                  </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <Button variant="outline" size="sm" asChild className="h-9 gap-1.5 text-xs rounded-xl">
+                    <Link href={`/events/${eventId}/map`}>
+                      <Navigation className="w-3.5 h-3.5 text-primary" /> Venue Map
+                    </Link>
+                  </Button>
+                  <Button size="sm" asChild className="h-9 gap-1.5 text-xs rounded-xl bg-red-500 hover:bg-red-600 text-white shadow-sm">
+                    <Link href={`/events/${eventId}/stage`}>
+                      <span className="w-2 h-2 rounded-full bg-white animate-pulse" /> Live Stage
+                    </Link>
+                  </Button>
                 </div>
               </div>
             </div>
 
             {/* TABS */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="w-full justify-start border-b border-border rounded-none bg-transparent p-0 h-auto gap-8">
-                {['about', 'agenda', 'discussion', 'media'].map((tab) => (
+              <TabsList className="w-full justify-start border-b border-border rounded-none bg-transparent p-0 h-auto gap-8 overflow-x-auto scrollbar-hide">
+                {['about', 'agenda', 'discussion', 'media', 'venue map', 'live stage'].map((tab) => (
                   <TabsTrigger 
                     key={tab} 
                     value={tab} 
-                    className="capitalize rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-3 text-base font-medium text-muted-foreground data-[state=active]:text-foreground"
+                    className="capitalize rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 py-3 text-base font-medium text-muted-foreground data-[state=active]:text-foreground whitespace-nowrap shrink-0"
                   >
                     {tab}
                   </TabsTrigger>
@@ -283,6 +330,59 @@ export default function EventDetailsClient({ eventId, initialEvent }: { eventId:
                 {/* MEDIA TAB */}
                 <TabsContent value="media" className="m-0 focus:outline-none">
                   <EventGallery eventId={event.id} isRegistered={isRegistered} isStaff={!!isOrganizer} />
+                </TabsContent>
+
+                {/* VENUE MAP TAB */}
+                <TabsContent value="venue map" className="m-0 focus:outline-none">
+                  <div className="p-8 text-center border border-border rounded-3xl bg-muted/20 space-y-6">
+                    <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto text-primary">
+                      <Navigation className="w-8 h-8" />
+                    </div>
+                    <div className="space-y-2 max-w-md mx-auto">
+                      <h3 className="text-xl font-bold text-foreground">Interactive Venue Navigation</h3>
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        Explore the interactive venue blueprint, locate session stages, sponsor booths, amenities, and get step-by-step walking directions.
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap justify-center gap-3 pt-2">
+                      <Button asChild size="lg" className="rounded-xl gap-2 shadow-sm">
+                        <Link href={`/events/${eventId}/map`}>
+                          <Navigation className="w-4 h-4" /> Open Full-Screen Navigation Map
+                        </Link>
+                      </Button>
+                      {isOrganizer && (
+                        <Button variant="outline" size="lg" asChild className="rounded-xl gap-2">
+                          <Link href={`/events/${eventId}/map/edit`}>
+                            <Edit className="w-4 h-4" /> Edit Venue Nodes & Paths
+                          </Link>
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </TabsContent>
+
+                {/* LIVE STAGE TAB */}
+                <TabsContent value="live stage" className="m-0 focus:outline-none">
+                  <div className="p-8 text-center border border-red-500/20 rounded-3xl bg-red-500/5 space-y-6">
+                    <div className="w-16 h-16 rounded-2xl bg-red-500/10 flex items-center justify-center mx-auto text-red-500">
+                      <span className="w-8 h-8 rounded-full bg-red-500/20 flex items-center justify-center">
+                        <span className="w-4 h-4 rounded-full bg-red-500 animate-pulse" />
+                      </span>
+                    </div>
+                    <div className="space-y-2 max-w-md mx-auto">
+                      <h3 className="text-xl font-bold text-foreground">Interactive Live Stage</h3>
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        Join the live virtual stream, participate in real-time stage chat, raise your hand to speak, and interact with the speakers.
+                      </p>
+                    </div>
+                    <div className="flex justify-center pt-2">
+                      <Button asChild size="lg" className="rounded-xl gap-2 bg-red-500 hover:bg-red-600 text-white shadow-lg">
+                        <Link href={`/events/${eventId}/stage`}>
+                          <span className="w-2 h-2 rounded-full bg-white animate-pulse" /> Enter Live Stage Room
+                        </Link>
+                      </Button>
+                    </div>
+                  </div>
                 </TabsContent>
               </div>
             </Tabs>
