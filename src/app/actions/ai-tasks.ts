@@ -6,9 +6,15 @@ import { events } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { validateRole, validateEventOwnership } from '@/lib/auth-utils';
 import { logger } from '@/lib/logger';
+import { enforceRateLimit } from '@/lib/rate-limit';
 
 export async function generateEventTasks(eventId: string) {
   const user = await validateRole(['organizer', 'admin']);
+  try {
+    await enforceRateLimit({ userId: user.id, scope: 'ai:event-tasks', limit: 5 });
+  } catch {
+    return { success: false, error: 'Too many requests. Please wait a moment and try again.' };
+  }
 
   try {
     const event = await db.query.events.findFirst({

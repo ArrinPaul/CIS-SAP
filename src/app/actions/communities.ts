@@ -9,7 +9,7 @@ import { validateRole } from '@/lib/auth-utils';
 import { z } from 'zod';
 
 import { logActivity } from './feed';
-import { awardXP } from './gamification';
+import { awardXP } from '@/lib/gamification/awards';
 
 // --- SCHEMAS ---
 

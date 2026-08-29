@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { LoadError } from '@/components/shared/load-error';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -31,23 +32,30 @@ import { getPlatformAnalytics, PlatformAnalytics } from '@/app/actions/analytics
 export default function AdminAnalyticsOverview() {
   const [activeTab, setActiveTab] = useState('overview');
   const [loading, setLoading] = useState(true);
-  
+  const [loadError, setLoadError] = useState(false);
   const [data, setData] = useState<PlatformAnalytics | null>(null);
 
-  useEffect(() => {
-    async function load() {
-      try {
-        const res = await getPlatformAnalytics();
-        setData(res);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
+  // Hoisted out of the effect so the error state can offer a retry.
+  const load = useCallback(async () => {
+    setLoading(true);
+    setLoadError(false);
+    try {
+      const res = await getPlatformAnalytics();
+      setData(res);
+    } catch (e) {
+      setLoadError(true);
+      console.error(e);
+    } finally {
+      setLoading(false);
     }
-    load();
   }, []);
+
+  useEffect(() => { load(); }, [load]);
   
+  if (loadError) {
+    return <LoadError what="platform analytics" onRetry={load} />;
+  }
+
   if (loading || !data) {
     return <div className="p-20 text-center text-muted-foreground"><RefreshCw className="animate-spin h-8 w-8 mx-auto mb-4" /> Loading platform analytics...</div>;
   }

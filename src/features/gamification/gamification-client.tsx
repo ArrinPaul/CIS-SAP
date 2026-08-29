@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { BadgeIcon } from '@/components/shared/badge-icon';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -119,7 +120,9 @@ export function GamificationClient({
               return (
                 <Card key={badge.id} className={cn("bg-card border-border/50 text-foreground transition-all duration-300 rounded-[1.5rem] group hover:border-primary/40", !isEarned && "opacity-40 grayscale")}>
                   <CardContent className="p-8 flex flex-col items-center text-center gap-4">
-                    <div className="text-5xl group-hover:scale-110 transition-transform duration-300">{badge.icon}</div>
+                    <div className="group-hover:scale-110 transition-transform duration-300 text-notion-ink-secondary">
+                      <BadgeIcon name={badge.icon} className="w-10 h-10" />
+                    </div>
                     <div>
                       <p className="font-black text-lg">{badge.name}</p>
                       <p className="text-xs font-medium text-muted-foreground line-clamp-2 mt-1">{badge.description}</p>

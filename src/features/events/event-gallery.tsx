@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { LoadError } from '@/components/shared/load-error';
 import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -52,6 +53,7 @@ export function EventGallery({ eventId, isRegistered, isStaff }: EventGalleryPro
 
   const [photos, setPhotos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState<any>(null);
   const [dragOver, setDragOver] = useState(false);
@@ -63,10 +65,12 @@ export function EventGallery({ eventId, isRegistered, isStaff }: EventGalleryPro
 
   const loadPhotos = useCallback(async () => {
     setLoading(true);
+    setLoadError(false);
     try {
       const data = await getEventGallery(eventId);
       setPhotos(data);
     } catch (e) {
+      setLoadError(true);
       console.error(e);
     } finally {
       setLoading(false);
@@ -205,7 +209,7 @@ export function EventGallery({ eventId, isRegistered, isStaff }: EventGalleryPro
               <Button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading}
-                className="bg-white text-black hover:bg-cyan-50 rounded-xl font-bold h-11 px-6 shadow-lg shadow-white/5"
+                className="bg-notion-surface text-black hover:bg-cyan-50 rounded-xl font-bold h-11 px-6 shadow-lg shadow-white/5"
               >
                 {uploading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Plus className="w-4 h-4 mr-2" />}
                 SHARE MOMENT
@@ -216,6 +220,8 @@ export function EventGallery({ eventId, isRegistered, isStaff }: EventGalleryPro
 
         {loading ? (
           <div className="py-32 text-center"><Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" /></div>
+        ) : loadError ? (
+          <LoadError what="photos" onRetry={loadPhotos} />
         ) : photos.length === 0 ? (
           <div className="py-32 text-center border-2 border-dashed border-border/50 rounded-[2rem] bg-white/[0.02]">
             <Camera size={64} className="mx-auto mb-4 text-gray-800 opacity-20" />
@@ -328,7 +334,7 @@ export function EventGallery({ eventId, isRegistered, isStaff }: EventGalleryPro
                   
                     <div className="flex flex-col gap-3 mt-10">
                     <Button
-                      className="w-full bg-primary hover:bg-primary/90 text-foreground font-black h-12 rounded-xl"
+                      className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-black h-12 rounded-xl"
                       onClick={() => {
                         handleEngagement(selectedPhoto.id, 'download');
                         window.open(selectedPhoto.url, '_blank');

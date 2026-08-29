@@ -24,7 +24,7 @@ const AUTH_APPEARANCE = {
     formFieldInput:
       "h-12 rounded-2xl border border-border/60 bg-background/80 focus:bg-background focus:ring-4 focus:ring-primary/10 focus:border-primary/60 transition-all text-foreground px-5 text-sm font-medium",
     formButtonPrimary:
-      "h-12 rounded-2xl bg-primary text-primary-foreground hover:bg-primary/90 transition-all font-black uppercase tracking-[0.2em] text-[10px] shadow-glow shadow-primary/20",
+      "h-12 rounded-2xl bg-primary text-primary-foreground hover:bg-primary/90 transition-all font-black uppercase tracking-[0.2em] text-[10px] shadow-notion-soft",
     footerActionText: "text-muted-foreground font-bold text-[10px] uppercase tracking-wider",
     footerActionLink:
       "text-primary font-black hover:text-primary/80 transition-colors uppercase tracking-[0.2em] text-[10px] ml-2",

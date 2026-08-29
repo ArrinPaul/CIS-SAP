@@ -3,26 +3,27 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
-  Calendar, 
-  Trophy, 
+  CalendarPlus,
+  CalendarDays, 
+  Medal, 
   MessageSquare, 
   UserPlus, 
   QrCode, 
-  Activity,
-  User as UserIcon,
+  Inbox,
+  Users as UsersIcon,
   Ticket,
   ChevronRight
 } from 'lucide-react';
 import { cn } from '@/core/utils/utils';
 
 const typeConfig: Record<string, { icon: React.ElementType; color: string; bg: string, label: string }> = {
-  registration: { icon: Ticket, color: 'text-notion-primary', bg: 'bg-notion-primary/10', label: 'Ticket Confirmed' },
-  badge_awarded: { icon: Trophy, color: 'text-notion-accent-orange', bg: 'bg-notion-accent-orange/10', label: 'Achievement' },
-  post: { icon: MessageSquare, color: 'text-notion-accent-sky', bg: 'bg-notion-accent-sky/10', label: 'Community Post' },
-  event_created: { icon: Calendar, color: 'text-notion-accent-teal', bg: 'bg-notion-accent-teal/10', label: 'Event Deployed' },
-  event_checkin: { icon: QrCode, color: 'text-notion-accent-purple', bg: 'bg-notion-accent-purple/10', label: 'Node Entry' },
-  connection: { icon: UserPlus, color: 'text-notion-accent-pink', bg: 'bg-notion-accent-pink/10', label: 'New Connection' },
-  community_joined: { icon: UserIcon, color: 'text-notion-accent-brown', bg: 'bg-notion-accent-brown/10', label: 'Network Joined' },
+  registration: { icon: Ticket, color: 'text-notion-ink-secondary', bg: 'bg-notion-sunken', label: 'Ticket Confirmed' },
+  badge_awarded: { icon: Medal, color: 'text-notion-ink-secondary', bg: 'bg-notion-sunken', label: 'Achievement' },
+  post: { icon: MessageSquare, color: 'text-notion-ink-secondary', bg: 'bg-notion-sunken', label: 'Community Post' },
+  event_created: { icon: CalendarPlus, color: 'text-notion-ink-secondary', bg: 'bg-notion-sunken', label: 'Event Deployed' },
+  event_checkin: { icon: QrCode, color: 'text-notion-ink-secondary', bg: 'bg-notion-sunken', label: 'Node Entry' },
+  connection: { icon: UserPlus, color: 'text-notion-ink-secondary', bg: 'bg-notion-sunken', label: 'New Connection' },
+  community_joined: { icon: UsersIcon, color: 'text-notion-ink-secondary', bg: 'bg-notion-sunken', label: 'Network Joined' },
 };
 
 function timeAgo(date: Date): string {
@@ -49,11 +50,11 @@ export function ActivityFeed({ initialActivities = [], global }: ActivityFeedPro
       <Card className="border-notion-hairline bg-white dark:bg-zinc-950 shadow-sm">
         <CardContent className="py-12 text-center space-y-4">
           <div className="w-12 h-12 rounded-xl bg-notion-canvas-soft flex items-center justify-center mx-auto border border-notion-hairline">
-             <Activity className="h-5 w-5 text-notion-ink-faint/30" />
+             <Inbox className="h-5 w-5 text-notion-ink-faint" />
           </div>
           <div className="space-y-1">
              <p className="text-sm font-bold text-notion-ink">System Quiet.</p>
-             <p className="text-[10px] text-notion-ink-faint uppercase font-black tracking-widest leading-relaxed">No recent telemetry found.<br />Syncing network...</p>
+             <p className="text-body-sm text-notion-ink-muted leading-relaxed">No recent telemetry found.<br />Syncing network...</p>
           </div>
         </CardContent>
       </Card>
@@ -76,8 +77,8 @@ export function ActivityFeed({ initialActivities = [], global }: ActivityFeedPro
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-[9px] font-black uppercase tracking-widest text-notion-ink-faint">{config.label}</span>
-                  <span className="text-[9px] font-bold text-notion-ink-faint uppercase">{timeAgo(new Date(activity.createdAt))}</span>
+                  <span className="text-caption font-medium text-notion-ink-muted">{config.label}</span>
+                  <span className="text-caption text-notion-ink-faint">{timeAgo(new Date(activity.createdAt))}</span>
                 </div>
                 <div className="space-y-1">
                   {global && user?.name && (
@@ -87,8 +88,8 @@ export function ActivityFeed({ initialActivities = [], global }: ActivityFeedPro
                       {activity.content}
                   </p>
                   {activity.metadata?.eventTitle && (
-                    <div className="flex items-center gap-1.5 text-[10px] font-medium text-notion-ink-muted">
-                       <Calendar className="w-3 h-3" />
+                    <div className="flex items-center gap-1.5 text-caption text-notion-ink-muted">
+                       <CalendarDays className="w-3 h-3" />
                        <span className="truncate">{activity.metadata.eventTitle}</span>
                     </div>
                   )}

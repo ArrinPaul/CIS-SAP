@@ -20,37 +20,37 @@ async function seedStandardBadges() {
   
   const standardBadges = [
     {
-      name: 'Network Pioneer',
-      description: 'Awarded for joining the Eventra mesh.',
-      icon: 'zap',
+      name: 'Welcome Aboard',
+      description: 'For creating your account.',
+      icon: 'user-plus',
       category: 'onboarding',
       criteria: JSON.stringify({ type: 'account_created' })
     },
     {
-      name: 'First Sync',
-      description: 'Awarded for your first event registration.',
+      name: 'First Event',
+      description: 'For registering for your first event.',
       icon: 'ticket',
       category: 'event',
       criteria: JSON.stringify({ type: 'registration_count', count: 1 })
     },
     {
-      name: 'Event Veteran',
-      description: 'Awarded for attending 5 events.',
-      icon: 'trophy',
+      name: 'Regular',
+      description: 'For attending five events.',
+      icon: 'medal',
       category: 'event',
       criteria: JSON.stringify({ type: 'attendance_count', count: 5 })
     },
     {
-      name: 'Community Voice',
-      description: 'Awarded for making your first community post.',
+      name: 'First Post',
+      description: 'For your first community post.',
       icon: 'message-square',
       category: 'community',
       criteria: JSON.stringify({ type: 'post_count', count: 1 })
     },
     {
-      name: 'Elite Organizer',
-      description: 'Awarded for successfully hosting an event with 50+ attendees.',
-      icon: 'shield-check',
+      name: 'Full House',
+      description: 'For hosting an event with fifty or more attendees.',
+      icon: 'users',
       category: 'organizer',
       criteria: JSON.stringify({ type: 'host_attendance', count: 50 })
     }
@@ -58,7 +58,15 @@ async function seedStandardBadges() {
 
   try {
     for (const badge of standardBadges) {
-      const existing = await sql`select id from badges where name = ${badge.name}`;
+      // Match on the criteria type rather than the name: names can change, and
+      // matching on them would orphan every user_badges row pointing at the old
+      // record. badges.name has no unique constraint, so this cannot be an
+      // ON CONFLICT upsert.
+      const criteriaType = JSON.parse(badge.criteria).type;
+      const existing = await sql`
+        select id, name from badges where criteria->>'type' = ${criteriaType}
+      `;
+
       if (existing.length === 0) {
         await sql`
           insert into badges (name, description, icon, category, criteria)
@@ -66,7 +74,20 @@ async function seedStandardBadges() {
         `;
         console.log(`Badge "${badge.name}" created.`);
       } else {
-        console.log(`Badge "${badge.name}" already exists.`);
+        await sql`
+          update badges
+          set name = ${badge.name},
+              description = ${badge.description},
+              icon = ${badge.icon},
+              category = ${badge.category}
+          where id = ${existing[0].id}
+        `;
+        const was = existing[0].name;
+        console.log(
+          was === badge.name
+            ? `Badge "${badge.name}" up to date.`
+            : `Badge "${was}" renamed to "${badge.name}".`
+        );
       }
     }
     console.log('Standard badges seeded successfully.');

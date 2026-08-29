@@ -48,6 +48,8 @@ export function AIToolsClient() {
       if (res.success) {
         setStructuredNotes(res.data);
         toast({ title: 'Notes Structured' });
+      } else {
+        toast({ title: 'Operation Failed', description: res.error, variant: 'destructive' });
       }
     } catch (e) {
       toast({ title: 'Operation Failed', variant: 'destructive' });
@@ -64,6 +66,8 @@ export function AIToolsClient() {
       if (res.success && res.code) {
         setMermaidCode(res.code);
         toast({ title: 'Diagram Generated' });
+      } else {
+        toast({ title: 'Generation Failed', description: res.error, variant: 'destructive' });
       }
     } catch (e) {
       toast({ title: 'Generation Failed', variant: 'destructive' });
@@ -107,12 +111,12 @@ export function AIToolsClient() {
                     "w-full text-left p-6 rounded-[2rem] border transition-all duration-300 flex flex-col gap-3 group relative",
                     activeTool === tool.id 
                       ? 'bg-white dark:bg-zinc-950 border-primary shadow-notion-elevated -translate-y-1' 
-                      : 'bg-notion-canvas-soft border-notion-hairline hover:border-notion-ink-faint hover:bg-white dark:hover:bg-zinc-900'
+                      : 'bg-notion-canvas-soft border-notion-hairline hover:border-notion-ink-faint hover:bg-notion-surface dark:hover:bg-zinc-900'
                   )}
                 >
                    <div className={cn(
                      "w-10 h-10 rounded-xl flex items-center justify-center transition-all",
-                     activeTool === tool.id ? "bg-primary text-white" : "bg-notion-canvas border border-notion-hairline text-notion-ink-faint group-hover:text-notion-ink"
+                     activeTool === tool.id ? "bg-primary text-primary-foreground" : "bg-notion-canvas border border-notion-hairline text-notion-ink-faint group-hover:text-notion-ink"
                    )}>
                       <tool.icon className="w-5 h-5" />
                    </div>
@@ -161,7 +165,7 @@ export function AIToolsClient() {
                             <label className="text-[10px] font-black uppercase tracking-widest text-notion-ink-faint ml-1">Input Raw Notes</label>
                             <Textarea 
                               placeholder="Paste your event notes, key takeaways, or session transcripts here..." 
-                              className="min-h-[200px] rounded-2xl border-notion-hairline bg-notion-canvas-soft/50 text-sm font-medium leading-loose focus:bg-white transition-all"
+                              className="min-h-[200px] rounded-2xl border-notion-hairline bg-notion-canvas-soft/50 text-sm font-medium leading-loose focus:bg-notion-surface transition-all"
                               value={rawNotes}
                               onChange={(e) => setRawNotes(e.target.value)}
                             />
@@ -204,7 +208,7 @@ export function AIToolsClient() {
                             <label className="text-[10px] font-black uppercase tracking-widest text-notion-ink-faint ml-1">Flow Description</label>
                             <Input 
                               placeholder="e.g., A sequence diagram where user logs in, auth responds, and dashboard loads" 
-                              className="h-14 rounded-2xl border-notion-hairline bg-notion-canvas-soft/50 text-sm font-bold uppercase tracking-widest focus:bg-white transition-all"
+                              className="h-14 rounded-2xl border-notion-hairline bg-notion-canvas-soft/50 text-sm font-bold uppercase tracking-widest focus:bg-notion-surface transition-all"
                               value={diagramPrompt}
                               onChange={(e) => setDiagramPrompt(e.target.value)}
                             />

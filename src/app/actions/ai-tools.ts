@@ -2,14 +2,14 @@
 
 import { ai } from '@/lib/ai';
 import { z } from 'zod';
-import { auth } from '@clerk/nextjs/server';
+import { guardExpensiveAction } from '@/lib/rate-limit-guard';
 
 /**
  * Generate a Mermaid diagram from a natural language prompt
  */
 export async function generateDiagram(prompt: string) {
-  const { userId } = await auth();
-  if (!userId) throw new Error('Unauthorized');
+  const guard = await guardExpensiveAction('ai:generate-diagram');
+  if (!guard.ok) return { success: false, error: guard.error };
 
   try {
     const response = await ai.generate({
@@ -34,8 +34,8 @@ export async function generateDiagram(prompt: string) {
  * Structure raw notes into action items and summaries
  */
 export async function formatNotes(rawNotes: string) {
-  const { userId } = await auth();
-  if (!userId) throw new Error('Unauthorized');
+  const guard = await guardExpensiveAction('ai:format-notes');
+  if (!guard.ok) return { success: false, error: guard.error };
 
   try {
     const response = await ai.generate({
@@ -63,6 +63,9 @@ export async function formatNotes(rawNotes: string) {
  * Moderate user content for community safety
  */
 export async function moderateContent(content: string) {
+  const guard = await guardExpensiveAction('ai:moderate', { limit: 30 });
+  if (!guard.ok) return { isFlagged: false };
+
   try {
     const response = await ai.generate({
       prompt: `

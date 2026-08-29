@@ -142,10 +142,12 @@ export default function EnhancedChatClient({ initialRoomId }: { initialRoomId?: 
         )
         .subscribe(async (status) => {
           if (status === 'SUBSCRIBED') {
-            console.log(`Subscribed to room:${selectedRoomId}`);
+            if (process.env.NODE_ENV === 'development') {
+              console.log(`Subscribed to room:${selectedRoomId}`);
+            }
           }
           if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
-            console.log(`Connection ${status} for room:${selectedRoomId}, retrying...`);
+            console.warn(`Connection ${status} for room:${selectedRoomId}, retrying...`);
             setTimeout(subscribeToRoom, 3000);
           }
         });
@@ -264,7 +266,7 @@ export default function EnhancedChatClient({ initialRoomId }: { initialRoomId?: 
                     onChange={e => setNewRoom({...newRoom, name: e.target.value})} 
                     className="bg-card border-border"
                   />
-                  <Button onClick={handleCreateRoom} className="w-full bg-primary">Create</Button>
+                  <Button onClick={handleCreateRoom} className="w-full">Create</Button>
                 </div>
               </DialogContent>
             </Dialog>
@@ -321,12 +323,14 @@ export default function EnhancedChatClient({ initialRoomId }: { initialRoomId?: 
                     return (
                       <div key={m.message.id} className={cn("flex flex-col max-w-[80%]", isMe ? "ml-auto items-end" : "items-start")}>
                         {!isMe && (
-                          <p className="text-[10px] font-bold text-muted-foreground mb-1 ml-1 uppercase tracking-tighter">{m.sender.name}</p>
+                          <p className="text-caption text-notion-ink-muted mb-1 ml-1">{m.sender.name}</p>
                         )}
                         
                         <div className={cn(
-                          "p-3 rounded-2xl text-sm relative group", 
-                          isMe ? "bg-primary text-foreground rounded-tr-none" : "bg-muted text-gray-200 rounded-tl-none"
+                          "px-3.5 py-2.5 rounded-2xl text-body-sm relative group", 
+                          isMe
+                            ? "bg-notion-primary text-notion-on-primary rounded-br-sm"
+                            : "bg-notion-sunken text-notion-ink rounded-bl-sm"
                         )}>
                           {m.message.imageUrl && (
                             <div className="mb-2 overflow-hidden rounded-lg">
@@ -383,10 +387,16 @@ export default function EnhancedChatClient({ initialRoomId }: { initialRoomId?: 
                   value={newMessage} 
                   onChange={e => setNewMessage(e.target.value)} 
                   onKeyDown={e => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleSendMessage())}
-                  className="min-h-[40px] max-h-32 resize-none bg-card border-border focus-visible:ring-cyan-500 rounded-xl" 
+                  className="min-h-[40px] max-h-32 resize-none bg-notion-sunken border-transparent focus-visible:ring-ring rounded-2xl" 
                 />
                 
-                <Button onClick={handleSendMessage} disabled={(!newMessage.trim() && !pendingFile) || !selectedRoomId} className="h-10 w-10 shrink-0 bg-primary hover:bg-primary/90 text-foreground rounded-xl">
+                <Button
+                  onClick={handleSendMessage}
+                  aria-label="Send message"
+                  disabled={(!newMessage.trim() && !pendingFile) || !selectedRoomId}
+                  size="icon"
+                  className="shrink-0"
+                >
                   <Send className="h-4 w-4" />
                 </Button>
               </div>

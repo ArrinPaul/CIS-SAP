@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { LoadError } from '@/components/shared/load-error';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -71,6 +72,7 @@ export function IssueManagement({ eventId, isOrganizer = false }: IssueManagemen
   const { toast } = useToast();
   const [issues, setIssues] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [showReportDialog, setShowReportDialog] = useState(false);
   const [selectedIssue, setSelectedIssue] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -94,10 +96,12 @@ export function IssueManagement({ eventId, isOrganizer = false }: IssueManagemen
 
   const loadIssues = async () => {
     setLoading(true);
+    setLoadError(false);
     try {
       const data = await getEventIssues(eventId);
       setIssues(data);
     } catch (e) {
+      setLoadError(true);
       console.error(e);
     } finally {
       setLoading(false);
@@ -203,6 +207,8 @@ export function IssueManagement({ eventId, isOrganizer = false }: IssueManagemen
 
       {loading ? (
         <div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+      ) : loadError ? (
+        <LoadError what="issues" onRetry={loadIssues} />
       ) : filteredIssues.length === 0 ? (
         <Card className="border-dashed">
           <CardContent className="flex flex-col items-center py-12">

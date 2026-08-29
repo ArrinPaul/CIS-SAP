@@ -98,7 +98,7 @@ export function FeedbackTemplateEditor({ eventId, initialTemplate }: FeedbackTem
             <p className="text-sm text-muted-foreground">Design a custom questionnaire for your attendees</p>
           </div>
         </div>
-        <Button className="bg-primary hover:bg-primary/90 text-foreground" onClick={handleSave} disabled={isSaving}>
+        <Button className="bg-primary hover:bg-primary/90 text-primary-foreground" onClick={handleSave} disabled={isSaving}>
           {isSaving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
           Publish Form
         </Button>

@@ -96,7 +96,7 @@ export default function UserPreferencesPanel() {
              Configure your experience nodes, notification streams, and privacy protocols.
            </p>
         </div>
-        <Button onClick={handleSave} disabled={saving} size="lg" className="rounded-2xl h-14 px-10 bg-primary text-primary-foreground shadow-glow shadow-primary/20 font-black uppercase tracking-widest text-[11px] border-none">
+        <Button onClick={handleSave} disabled={saving} size="lg" className="rounded-2xl h-14 px-10 bg-primary text-primary-foreground shadow-notion-soft font-black uppercase tracking-widest text-[11px] border-none">
           {saving ? <Loader2 className="w-4 h-4 mr-3 animate-spin" /> : <Save className="w-4 h-4 mr-3" />}
           Save Changes
         </Button>

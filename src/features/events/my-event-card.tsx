@@ -56,7 +56,7 @@ export function MyEventCard({
     const endDate = event.endDate ? parseDate(event.endDate) : new Date(eventDate.getTime() + 3 * 60 * 60 * 1000);
 
     if (now >= eventDate && now <= endDate) {
-      return { label: 'Live Now', className: 'bg-red-500 text-white animate-pulse', icon: <div className="w-1.5 h-1.5 rounded-full bg-white mr-2" /> };
+      return { label: 'Live Now', className: 'bg-red-500 text-white animate-pulse', icon: <div className="w-1.5 h-1.5 rounded-full bg-notion-surface mr-2" /> };
     }
     if (isPast(endDate)) {
       return { label: 'Ended', className: 'bg-muted text-muted-foreground', icon: null };
@@ -172,7 +172,7 @@ export function MyEventCard({
           <div className="flex gap-3">
             {variant === 'upcoming' && (
               <>
-                <Button asChild className="flex-1 h-12 rounded-xl bg-primary text-primary-foreground font-black uppercase tracking-widest text-[10px] shadow-glow shadow-primary/20 border-none transition-all active:scale-95">
+                <Button asChild className="flex-1 h-12 rounded-xl bg-primary text-primary-foreground font-black uppercase tracking-widest text-[10px] shadow-notion-soft border-none transition-all active:scale-95">
                   <Link href={`/tickets?event=${event.id}`}>
                     <QrCode className="h-4 w-4 mr-2" />
                     View Ticket
@@ -204,7 +204,7 @@ export function MyEventCard({
 
             {variant === 'wishlist' && (
               <>
-                <Button asChild className="flex-1 h-12 rounded-xl bg-primary text-primary-foreground font-black uppercase tracking-widest text-[10px] shadow-glow shadow-primary/20 border-none transition-all active:scale-95">
+                <Button asChild className="flex-1 h-12 rounded-xl bg-primary text-primary-foreground font-black uppercase tracking-widest text-[10px] shadow-notion-soft border-none transition-all active:scale-95">
                   <Link href={`/events/${event.id}`}>
                     Register Now
                   </Link>

@@ -74,7 +74,7 @@ export function RegisterWizard() {
         ))}
       </div>
 
-      <Button onClick={handleSignIn} className="w-full py-6 text-lg bg-white text-black hover:bg-gray-200">
+      <Button onClick={handleSignIn} className="w-full py-6 text-lg bg-notion-surface text-black hover:bg-gray-200">
         Continue as guest
       </Button>
     </div>

@@ -6,6 +6,14 @@ const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 const nextConfig: NextConfig = {
   output: 'standalone',
   /* config options here */
+  // `npm run dev` uses --turbopack, which ignores the `webpack` key below.
+  // Mirror the one alias that matters so dev and build resolve the same way;
+  // the ignoreWarnings entries are webpack-only and cosmetic.
+  turbopack: {
+    resolveAlias: {
+      '@opentelemetry/exporter-jaeger': './src/lib/empty-module.ts',
+    },
+  },
   webpack: (config) => {
     config.resolve.alias = {
       ...config.resolve.alias,
@@ -69,6 +77,32 @@ const nextConfig: NextConfig = {
       {
         source: '/(.*)',
         headers: [
+          // Report-only to start: Next injects inline bootstrap scripts and
+          // styled-jsx, so an enforcing policy needs nonce plumbing first.
+          // Watch the violation reports, then flip the key to
+          // 'Content-Security-Policy' once the directives are clean.
+          {
+            key: 'Content-Security-Policy-Report-Only',
+            value: [
+              "default-src 'self'",
+              // 'unsafe-inline'/'unsafe-eval' are what Next's dev bootstrap and
+              // hydration payload require; tighten with a nonce before enforcing.
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.clerk.accounts.dev https://challenges.cloudflare.com",
+              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+              "font-src 'self' data: https://fonts.gstatic.com",
+              "img-src 'self' data: blob: https:",
+              "media-src 'self' data: blob:",
+              "connect-src 'self' https://*.clerk.accounts.dev https://*.supabase.co https://api.dodopayments.com https://www.googleapis.com wss://*.supabase.co",
+              "frame-src 'self' https://*.clerk.accounts.dev https://challenges.cloudflare.com",
+              "worker-src 'self' blob:",
+              "object-src 'none'",
+              "base-uri 'self'",
+              "form-action 'self'",
+              "frame-ancestors 'none'",
+              // upgrade-insecure-requests is ignored in report-only mode;
+              // add it when this policy is switched to enforcing.
+            ].join('; '),
+          },
           { key: 'X-Content-Type-Options', value: 'nosniff' },
           { key: 'X-Frame-Options', value: 'DENY' },
           { key: 'X-XSS-Protection', value: '1; mode=block' },

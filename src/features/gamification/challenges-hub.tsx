@@ -109,7 +109,7 @@ export default function ChallengesHub({ challenges, userChallenges }: any) {
 
                   {!isJoined ? (
                     <Button 
-                      className="w-full bg-primary hover:bg-primary/90 text-foreground font-bold"
+                      className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold"
                       onClick={() => handleJoinChallenge(challenge.id)}
                       disabled={loading === challenge.id}
                     >

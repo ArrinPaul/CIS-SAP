@@ -3,7 +3,7 @@ import './globals.css';
 import { Providers } from '@/components/providers';
 import { Toaster } from '@/components/ui/toaster';
 import { NotificationWatcher } from '@/features/notifications/notification-watcher';
-import { Inter } from 'next/font/google';
+import { Inter, Instrument_Sans } from 'next/font/google';
 import { baseMetadata, viewport as seoViewport, generateOrganizationSchema } from '@/core/services/seo';
 import { NextIntlClientProvider } from 'next-intl';
 import { getUserLocale } from '@/core/services/locale-service';
@@ -13,6 +13,13 @@ import { ClerkProvider } from '@clerk/nextjs';
 const fontInter = Inter({
   subsets: ['latin'],
   variable: '--font-inter',
+  display: 'swap',
+});
+
+// Display face — headings and large numerals only. Body/UI stays on Inter.
+const fontDisplay = Instrument_Sans({
+  subsets: ['latin'],
+  variable: '--font-display',
   display: 'swap',
 });
 
@@ -42,7 +49,7 @@ export default async function RootLayout({
 
   return (
     <ClerkProvider publishableKey={publishableKey}>
-      <html lang={locale} suppressHydrationWarning className={`${fontInter.variable}`}>
+      <html lang={locale} suppressHydrationWarning className={`${fontInter.variable} ${fontDisplay.variable}`}>
         <head>
           <script
             type="application/ld+json"

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { LoadError } from '@/components/shared/load-error';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -42,14 +43,17 @@ export function MediaModerationClient({ eventId, eventTitle }: MediaModerationPr
   const { toast } = useToast();
   const [pending, setPending] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [processingId, setProcessingId] = useState<string | null>(null);
 
   const loadPending = useCallback(async () => {
     setLoading(true);
+    setLoadError(false);
     try {
       const data = await getPendingMedia(eventId);
       setPending(data as any);
     } catch (e) {
+      setLoadError(true);
       console.error(e);
     } finally {
       setLoading(false);
@@ -95,6 +99,8 @@ export function MediaModerationClient({ eventId, eventTitle }: MediaModerationPr
 
       {loading ? (
         <div className="py-32 text-center"><Loader2 className="h-12 w-12 animate-spin mx-auto text-primary" /></div>
+      ) : loadError ? (
+        <LoadError what="media" onRetry={loadPending} />
       ) : pending.length === 0 ? (
         <Card className="bg-card border-border text-center py-32 border-2 border-dashed">
            <CardContent>

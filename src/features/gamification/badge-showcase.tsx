@@ -1,6 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { BadgeIcon } from '@/components/shared/badge-icon';
+import { LoadError } from '@/components/shared/load-error';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Trophy, Award, Star, Shield, Zap, Loader2 } from 'lucide-react';
@@ -26,25 +28,32 @@ const rarityIcons: Record<string, React.ReactNode> = {
 export function BadgeShowcase({ userId, compact }: { userId: string; compact?: boolean }) {
   const [badges, setBadges] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
 
-  useEffect(() => {
-    async function load() {
-      if (!userId) return;
-      setLoading(true);
-      try {
-        const data = await getUserBadges(userId);
-        setBadges(data);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
+  // Hoisted out of the effect so the error state can offer a retry.
+  const load = useCallback(async () => {
+    if (!userId) return;
+    setLoading(true);
+    setLoadError(false);
+    try {
+      const data = await getUserBadges(userId);
+      setBadges(data);
+    } catch (e) {
+      setLoadError(true);
+      console.error(e);
+    } finally {
+      setLoading(false);
     }
-    load();
   }, [userId]);
+
+  useEffect(() => { load(); }, [load]);
 
   if (loading) {
     return <div className="py-10 text-center"><Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" /></div>;
+  }
+
+  if (loadError) {
+    return <LoadError what="badges" onRetry={load} />;
   }
 
   if (compact) {
@@ -83,7 +92,9 @@ export function BadgeShowcase({ userId, compact }: { userId: string; compact?: b
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {badges.map((b: any) => (
               <div key={b.badge.id} className={cn('flex items-start gap-4 p-4 rounded-2xl border transition-all hover:scale-[1.02]', rarityColors[b.badge.category] || rarityColors.common)}>
-                <div className="text-3xl shrink-0 drop-shadow-lg">{b.badge.icon}</div>
+                <div className="shrink-0 text-notion-ink-secondary">
+                  <BadgeIcon name={b.badge.icon} className="w-7 h-7" />
+                </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <p className="font-black text-sm uppercase tracking-tight truncate">{b.badge.name}</p>

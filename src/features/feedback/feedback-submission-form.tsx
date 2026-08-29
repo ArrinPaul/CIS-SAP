@@ -195,7 +195,7 @@ export function FeedbackSubmissionForm({ eventId, eventTitle, template }: Feedba
 
       <Button 
         type="submit" 
-        className="w-full h-14 text-lg font-bold bg-primary hover:bg-primary/90 text-foreground shadow-xl shadow-cyan-900/20"
+        className="w-full h-14 text-lg font-bold bg-primary hover:bg-primary/90 text-primary-foreground shadow-xl shadow-cyan-900/20"
         disabled={isSubmitting}
       >
         {isSubmitting ? <Loader2 className="h-6 w-6 animate-spin mr-2" /> : <Send className="h-5 w-5 mr-2" />}

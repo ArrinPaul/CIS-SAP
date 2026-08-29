@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { LoadError } from '@/components/shared/load-error';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -52,6 +53,7 @@ export function SponsorManagerClient({ eventId, eventTitle }: SponsorManagerProp
   const { toast } = useToast();
   const [sponsors, setSponsors] = useState<Sponsor[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   
   // Leads State
@@ -72,10 +74,12 @@ export function SponsorManagerClient({ eventId, eventTitle }: SponsorManagerProp
 
   const loadSponsors = useCallback(async () => {
     setLoading(true);
+    setLoadError(false);
     try {
       const data = await getSponsorsForEvent(eventId);
       setSponsors(data as any);
     } catch (e) {
+      setLoadError(true);
       console.error(e);
     } finally {
       setLoading(false);
@@ -205,10 +209,10 @@ export function SponsorManagerClient({ eventId, eventTitle }: SponsorManagerProp
     <div className="space-y-8 text-foreground">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="bg-card border-border border p-1 rounded-2xl h-12 w-fit mb-4">
-          <TabsTrigger value="roster" className="rounded-xl px-6 data-[state=active]:bg-primary data-[state=active]:text-foreground h-full font-bold transition-all">
+          <TabsTrigger value="roster" className="rounded-xl px-6 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground h-full font-bold transition-all">
             <LayoutGrid className="w-4 h-4 mr-2" /> Roster
           </TabsTrigger>
-          <TabsTrigger value="leads" className="rounded-xl px-6 data-[state=active]:bg-primary data-[state=active]:text-foreground h-full font-bold transition-all">
+          <TabsTrigger value="leads" className="rounded-xl px-6 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground h-full font-bold transition-all">
             <Users className="w-4 h-4 mr-2" /> Retrieval & Leads
           </TabsTrigger>
         </TabsList>
@@ -278,6 +282,8 @@ export function SponsorManagerClient({ eventId, eventTitle }: SponsorManagerProp
               <CardContent>
                 {loading ? (
                   <div className="py-20 text-center"><Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" /></div>
+                ) : loadError ? (
+                  <LoadError what="sponsors" onRetry={loadSponsors} />
                 ) : sponsors.length > 0 ? (
                   <div className="space-y-8">
                     {TIERS.map(t => {
@@ -294,7 +300,7 @@ export function SponsorManagerClient({ eventId, eventTitle }: SponsorManagerProp
                             {tierSponsors.map(s => (
                               <div key={s.id} className="flex items-center justify-between p-3 bg-card rounded-xl border border-border/50 group hover:border-border transition-all">
                                 <div className="flex items-center gap-4">
-                                  <div className="relative h-12 w-12 rounded-lg bg-white p-1 flex items-center justify-center">
+                                  <div className="relative h-12 w-12 rounded-lg bg-notion-surface p-1 flex items-center justify-center">
                                     {s.logoUrl ? (
                                       <Image src={s.logoUrl} fill className="object-contain p-1" alt={s.name} />
                                     ) : (
@@ -347,7 +353,7 @@ export function SponsorManagerClient({ eventId, eventTitle }: SponsorManagerProp
                     className="w-full justify-start border-border"
                     onClick={() => loadLeads(s)}
                   >
-                    <div className="w-6 h-6 rounded bg-white mr-3 flex items-center justify-center overflow-hidden">
+                    <div className="w-6 h-6 rounded bg-notion-surface mr-3 flex items-center justify-center overflow-hidden">
                       {s.logoUrl ? <Image src={s.logoUrl} width={24} height={24} className="object-contain" alt="" /> : <span className="text-[10px] text-black font-bold">{s.name[0]}</span>}
                     </div>
                     {s.name}

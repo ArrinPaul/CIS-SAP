@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { LoadError } from '@/components/shared/load-error';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -55,6 +56,7 @@ export function StakeholderManager({ eventId }: StakeholderManagerProps) {
   const [stakeholders, setStakeholders] = useState<any[]>([]);
   const [stats, setStats] = useState({ total: 0, volunteers: 0, speakers: 0, attended: 0 });
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterRole, setFilterRole] = useState<string>('all');
@@ -75,6 +77,7 @@ export function StakeholderManager({ eventId }: StakeholderManagerProps) {
 
   const loadData = async () => {
     setLoading(true);
+    setLoadError(false);
     try {
       const [data, statsData] = await Promise.all([
         getEventStakeholders(eventId),
@@ -83,6 +86,7 @@ export function StakeholderManager({ eventId }: StakeholderManagerProps) {
       setStakeholders(data);
       setStats(statsData);
     } catch (e) {
+      setLoadError(true);
       console.error(e);
     } finally {
       setLoading(false);
@@ -250,6 +254,8 @@ export function StakeholderManager({ eventId }: StakeholderManagerProps) {
 
       {loading ? (
         <div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+      ) : loadError ? (
+        <LoadError what="stakeholders" onRetry={loadData} />
       ) : filtered.length === 0 ? (
         <Card className="border-dashed">
           <CardContent className="flex flex-col items-center py-12">

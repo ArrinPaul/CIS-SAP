@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { LoadError } from '@/components/shared/load-error';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -34,6 +35,7 @@ interface DeepInsightsProps {
 export function DeepInsightsDashboard({ eventId, eventTitle }: DeepInsightsProps) {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [prediction, setPrediction] = useState<any>(null);
   const [tasks, setTasks] = useState<string[]>([]);
   const [posts, setPosts] = useState<string[]>([]);
@@ -42,24 +44,26 @@ export function DeepInsightsDashboard({ eventId, eventTitle }: DeepInsightsProps
   const [isGeneratingTasks, setIsGeneratingTasks] = useState(false);
   const [isGeneratingPosts, setIsGeneratingPosts] = useState(false);
 
-  useEffect(() => {
-    async function loadInitialData() {
-      setLoading(true);
-      try {
-        const [predData, sentimentData] = await Promise.all([
-          getPredictiveAttendance(eventId),
-          getFeedbackSentiment(eventId)
-        ]);
-        setPrediction(predData);
-        setSentiment(sentimentData);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
+  // Hoisted out of the effect so the error state can offer a retry.
+  const loadInitialData = useCallback(async () => {
+    setLoading(true);
+    setLoadError(false);
+    try {
+      const [predData, sentimentData] = await Promise.all([
+        getPredictiveAttendance(eventId),
+        getFeedbackSentiment(eventId)
+      ]);
+      setPrediction(predData);
+      setSentiment(sentimentData);
+    } catch (e) {
+      setLoadError(true);
+      console.error(e);
+    } finally {
+      setLoading(false);
     }
-    loadInitialData();
   }, [eventId]);
+
+  useEffect(() => { loadInitialData(); }, [loadInitialData]);
 
   const handleGenerateTasks = async () => {
     setIsGeneratingTasks(true);
@@ -94,6 +98,10 @@ export function DeepInsightsDashboard({ eventId, eventTitle }: DeepInsightsProps
         <p className="text-muted-foreground font-medium">AI is analyzing your event data...</p>
       </div>
     );
+  }
+
+  if (loadError) {
+    return <LoadError what="insights" onRetry={loadInitialData} />;
   }
 
   return (

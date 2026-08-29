@@ -45,7 +45,7 @@ export function CommunityDetailClient({ communityId, community: initialCommunity
               <span className="flex items-center gap-1.5"><MessageSquare size={14} className="text-primary" /> {posts.length} discussions</span>
             </div>
           </div>
-          <UIButton className="bg-primary hover:bg-primary/90 text-foreground shadow-lg shadow-cyan-900/40 px-8 rounded-xl h-12">
+          <UIButton className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-cyan-900/40 px-8 rounded-xl h-12">
             Join Community
           </UIButton>
         </div>

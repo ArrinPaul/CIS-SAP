@@ -281,7 +281,7 @@ export function EventForm({ onSave, event }: EventFormProps) {
               )}/>
             </div>
 
-            <Button type="submit" size="xl" className="w-full shadow-glow">Create Event</Button>
+            <Button type="submit" size="xl" className="w-full">Create Event</Button>
           </form>
         </Form>
       </CardContent>

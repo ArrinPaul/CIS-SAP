@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { LoadError } from '@/components/shared/load-error';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,6 +25,7 @@ export function ReportGenerator({ eventId }: ReportGeneratorProps) {
   const [reports, setReports] = useState<any[]>([]);
   const [highlights, setHighlights] = useState('');
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
     loadReports();
@@ -31,6 +33,7 @@ export function ReportGenerator({ eventId }: ReportGeneratorProps) {
 
   const loadReports = async () => {
     setLoading(true);
+    setLoadError(false);
     try {
       const data = await getEventReports(eventId);
       setReports(data);
@@ -38,6 +41,7 @@ export function ReportGenerator({ eventId }: ReportGeneratorProps) {
         try {
           setReport(JSON.parse(data[0].generatedContent as string));
         } catch (e) {
+          setLoadError(true);
           setReport(null);
         }
       }
@@ -140,6 +144,7 @@ export function ReportGenerator({ eventId }: ReportGeneratorProps) {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
+      {loadError && <LoadError what="previous reports" onRetry={loadReports} compact />}
         <div>
           <h2 className="text-2xl font-bold">Event Report</h2>
           <p className="text-muted-foreground text-sm">AI-generated post-event analysis</p>

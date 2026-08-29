@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Filter, X, ZapOff, Activity, Compass, ChevronRight, SlidersHorizontal, Check } from 'lucide-react';
+import { Search, Filter, X, CalendarSearch, WifiOff, Activity, Compass, ChevronRight, SlidersHorizontal, Check, RotateCw } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -23,6 +23,9 @@ export default function ExploreClient() {
   const t = useTranslations('Events');
   const [events, setEvents] = useState<EventItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  // Guards against a slow request landing after a newer one has been issued.
+  const requestId = React.useRef(0);
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [showFilters, setShowFilters] = useState(false);
@@ -42,26 +45,34 @@ export default function ExploreClient() {
   const types = ['physical', 'virtual', 'hybrid'];
 
   const fetchEvents = React.useCallback(async () => {
+    const id = ++requestId.current;
     setLoading(true);
+    setLoadError(false);
     try {
       const result = await getEvents({
         search: debouncedSearch || undefined,
         category: selectedCategory !== 'All' ? selectedCategory : undefined,
         limit: 20,
       });
-      
+
+      // A newer request has since been issued — discard this response.
+      if (id !== requestId.current) return;
+
       // Client-side type filtering until getEvents supports it
       let filtered = result as EventItem[];
       if (selectedType) {
         filtered = filtered.filter(e => e.type === selectedType);
       }
-      
+
       setEvents(filtered);
     } catch (error) {
+      if (id !== requestId.current) return;
       console.error('Failed to fetch events:', error);
       setEvents([]);
+      // Surface the failure instead of rendering it as "no results".
+      setLoadError(true);
     } finally {
-      setLoading(false);
+      if (id === requestId.current) setLoading(false);
     }
   }, [debouncedSearch, selectedCategory, selectedType]);
 
@@ -79,7 +90,7 @@ export default function ExploreClient() {
                 Network Scan
               </Badge>
            </div>
-           <h1 className="text-4xl md:text-5xl font-display font-black tracking-tighter text-notion-ink uppercase">
+           <h1 className="font-display text-h1 text-notion-ink">
              Global <span className="text-notion-primary italic">Explore.</span>
            </h1>
            <p className="text-lg text-notion-ink-muted font-medium max-w-2xl leading-relaxed">
@@ -92,12 +103,12 @@ export default function ExploreClient() {
       <div className="space-y-8">
         <div className="flex flex-col md:flex-row gap-4 items-center">
            <div className="relative group flex-1 w-full">
-             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-notion-ink-faint group-focus-within:text-primary transition-colors" />
+             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-notion-ink-faint group-focus-within:text-notion-ink transition-colors pointer-events-none" />
              <Input
                placeholder="Search event title or tags..."
                value={search}
                onChange={(e) => setSearch(e.target.value)}
-               className="pl-11 h-12 rounded-xl bg-notion-canvas-soft border-notion-hairline text-sm font-bold uppercase tracking-widest focus:bg-white transition-all shadow-sm"
+               className="pl-11 h-12 text-body-sm"
              />
              {search && (
                <button onClick={() => setSearch('')} className="absolute right-4 top-1/2 -translate-y-1/2 text-notion-ink-faint hover:text-notion-ink transition-colors p-1 rounded-md">
@@ -108,10 +119,9 @@ export default function ExploreClient() {
            <Button 
              variant={showFilters ? "primary" : "outline"} 
              onClick={() => setShowFilters(!showFilters)}
-             className={cn(
-               "h-12 rounded-xl border-notion-hairline font-bold text-xs gap-2 px-6 shadow-sm shrink-0 transition-all",
-               showFilters ? "shadow-glow shadow-primary/20" : "bg-white"
-             )}
+             aria-expanded={showFilters}
+             aria-controls="explore-filters"
+             className="h-12 gap-2 px-6 shrink-0"
            >
               <SlidersHorizontal className="w-4 h-4" /> Filters
            </Button>
@@ -125,19 +135,22 @@ export default function ExploreClient() {
                exit={{ height: 0, opacity: 0 }}
                className="overflow-hidden"
              >
-                <div className="p-6 rounded-[1.5rem] bg-notion-canvas-soft border border-notion-hairline grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div id="explore-filters" className="p-6 rounded-2xl bg-notion-sunken grid grid-cols-1 md:grid-cols-2 gap-8">
                    <div className="space-y-4">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-notion-ink-faint">Event Environment</p>
+                      <p className="text-eyebrow uppercase text-notion-ink-muted">Event Environment</p>
                       <div className="flex flex-wrap gap-2">
                          {types.map(type => (
                            <button 
                              key={type}
                              onClick={() => setSelectedType(selectedType === type ? null : type)}
+                             aria-pressed={selectedType === type}
                              className={cn(
-                               "px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border flex items-center gap-2",
+                               "px-4 h-9 rounded-full text-body-sm font-medium flex items-center gap-2",
+                               "transition-[background-color,color,transform] duration-150 active:scale-[0.97]",
+                               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                                selectedType === type 
-                                ? "bg-notion-primary text-white border-primary" 
-                                : "bg-white border-notion-hairline text-notion-ink-muted hover:border-notion-ink-faint"
+                                ? "bg-notion-primary text-notion-on-primary" 
+                                : "bg-notion-surface text-notion-ink-muted hover:bg-accent hover:text-notion-ink"
                              )}
                            >
                               {selectedType === type && <Check className="w-3 h-3" />}
@@ -147,15 +160,15 @@ export default function ExploreClient() {
                       </div>
                    </div>
                    <div className="space-y-4">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-notion-ink-faint">Active Filters</p>
+                      <p className="text-eyebrow uppercase text-notion-ink-muted">Active Filters</p>
                       <div className="flex flex-wrap gap-2">
-                         {selectedCategory !== 'All' && <Badge className="bg-notion-primary/10 text-primary border-none">Category: {selectedCategory}</Badge>}
-                         {selectedType && <Badge className="bg-notion-primary/10 text-primary border-none">Type: {selectedType}</Badge>}
-                         {!selectedType && selectedCategory === 'All' && <p className="text-xs font-medium text-notion-ink-faint italic">No active filters</p>}
+                         {selectedCategory !== 'All' && <Badge variant="secondary">Category: {selectedCategory}</Badge>}
+                         {selectedType && <Badge variant="secondary">Type: {selectedType}</Badge>}
+                         {!selectedType && selectedCategory === 'All' && <p className="text-body-sm text-notion-ink-faint">No active filters</p>}
                          {(selectedType || selectedCategory !== 'All') && (
                             <button 
                               onClick={() => { setSelectedCategory('All'); setSelectedType(null); }}
-                              className="text-[10px] font-black text-notion-ink-faint hover:text-red-500 uppercase tracking-widest ml-2"
+                              className="text-body-sm font-medium text-notion-ink-muted hover:text-destructive underline underline-offset-4 ml-2 transition-colors"
                             >
                                Clear All
                             </button>
@@ -173,11 +186,15 @@ export default function ExploreClient() {
             <button
               key={cat.value}
               onClick={() => setSelectedCategory(cat.value)}
+              aria-pressed={selectedCategory === cat.value}
               className={cn(
-                "px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all border shadow-sm active:scale-95",
+                "px-5 h-10 rounded-full text-body-sm font-medium whitespace-nowrap shrink-0",
+                "transition-[background-color,color,box-shadow,transform] duration-150",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                "active:scale-[0.97]",
                 selectedCategory === cat.value
-                  ? "bg-primary text-white border-primary shadow-glow shadow-primary/20"
-                  : "bg-white dark:bg-zinc-950 border-notion-hairline text-notion-ink-muted hover:text-notion-ink hover:border-notion-ink-faint"
+                  ? "bg-notion-primary text-notion-on-primary shadow-notion-soft"
+                  : "bg-notion-sunken text-notion-ink-muted hover:bg-accent hover:text-notion-ink"
               )}
             >
               {cat.label}
@@ -190,19 +207,34 @@ export default function ExploreClient() {
       {loading ? (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="rounded-[1.5rem] border border-notion-hairline bg-notion-canvas-soft/50 overflow-hidden animate-pulse aspect-[4/5] shadow-sm" />
+            <div key={i} className="rounded-2xl bg-notion-sunken overflow-hidden animate-pulse aspect-[4/5]" />
           ))}
         </div>
-      ) : events.length === 0 ? (
-        <div className="text-center py-32 bg-notion-canvas-soft/50 rounded-[2.5rem] border-2 border-dashed border-notion-hairline space-y-6">
-          <div className="w-16 h-16 bg-white dark:bg-zinc-950 rounded-2xl flex items-center justify-center mx-auto shadow-sm border border-notion-hairline">
-            <ZapOff className="w-8 h-8 text-notion-ink-faint/30" />
+      ) : loadError ? (
+        <div role="alert" className="text-center py-32 bg-notion-sunken rounded-3xl space-y-6">
+          <div className="w-16 h-16 bg-notion-surface rounded-2xl flex items-center justify-center mx-auto shadow-notion-soft">
+            <WifiOff className="w-8 h-8 text-notion-ink-faint" />
           </div>
           <div className="space-y-2">
-            <h3 className="text-xl font-bold tracking-tight text-notion-ink">Sector Empty</h3>
-            <p className="text-sm text-notion-ink-muted font-medium max-w-xs mx-auto">No events detected matching your current scan parameters.</p>
+            <h3 className="font-display text-h3 text-notion-ink">Couldn&apos;t load events</h3>
+            <p className="text-body-sm text-notion-ink-muted max-w-xs mx-auto">
+              Something went wrong reaching the server. Your filters are still applied.
+            </p>
           </div>
-          <Button variant="outline" size="sm" onClick={() => { setSearch(''); setSelectedCategory('All'); setSelectedType(null); }} className="rounded-xl font-bold px-8 h-10">
+          <Button variant="secondary" onClick={fetchEvents} className="gap-2">
+             <RotateCw className="w-4 h-4" /> Try again
+          </Button>
+        </div>
+      ) : events.length === 0 ? (
+        <div className="text-center py-32 bg-notion-sunken rounded-3xl space-y-6">
+          <div className="w-16 h-16 bg-notion-surface rounded-2xl flex items-center justify-center mx-auto shadow-notion-soft">
+            <CalendarSearch className="w-8 h-8 text-notion-ink-faint" />
+          </div>
+          <div className="space-y-2">
+            <h3 className="font-display text-h3 text-notion-ink">Sector Empty</h3>
+            <p className="text-body-sm text-notion-ink-muted max-w-xs mx-auto">No events detected matching your current scan parameters.</p>
+          </div>
+          <Button variant="secondary" onClick={() => { setSearch(''); setSelectedCategory('All'); setSelectedType(null); }}>
              Reset Scan
           </Button>
         </div>
@@ -211,9 +243,9 @@ export default function ExploreClient() {
            <div className="flex items-center justify-between px-1">
               <div className="flex items-center gap-3">
                  <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                 <h2 className="text-xs font-black uppercase tracking-widest text-notion-ink-faint">Live Nodes Found</h2>
+                 <h2 className="font-display text-title text-notion-ink">Live Nodes Found</h2>
               </div>
-              <span className="text-[10px] font-black text-notion-ink-faint uppercase">{events.length} results</span>
+              <span className="text-body-sm text-notion-ink-muted">{events.length} results</span>
            </div>
            <motion.div
              className="grid md:grid-cols-2 lg:grid-cols-3 gap-8"
@@ -235,7 +267,7 @@ export default function ExploreClient() {
            </motion.div>
            
            <div className="pt-10 flex justify-center">
-              <Button variant="outline" size="lg" className="rounded-xl font-bold border-notion-hairline hover:bg-white px-10 h-12">
+              <Button variant="outline" size="lg" className="rounded-xl font-bold border-notion-hairline hover:bg-notion-surface px-10 h-12">
                  Load More Nodes
               </Button>
            </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { LoadError } from '@/components/shared/load-error';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -55,6 +56,7 @@ export function EventUpdatesManager({ eventId }: EventUpdatesManagerProps) {
   const { toast } = useToast();
   const [updates, setUpdates] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
@@ -71,10 +73,12 @@ export function EventUpdatesManager({ eventId }: EventUpdatesManagerProps) {
 
   const loadUpdates = async () => {
     setLoading(true);
+    setLoadError(false);
     try {
       const data = await getEventUpdates(eventId);
       setUpdates(data);
     } catch (e) {
+      setLoadError(true);
       console.error(e);
     } finally {
       setLoading(false);
@@ -133,6 +137,8 @@ export function EventUpdatesManager({ eventId }: EventUpdatesManagerProps) {
 
       {loading ? (
         <div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+      ) : loadError ? (
+        <LoadError what="updates" onRetry={loadUpdates} />
       ) : updates.length === 0 ? (
         <Card className="border-dashed">
           <CardContent className="flex flex-col items-center py-12">

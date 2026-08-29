@@ -30,7 +30,7 @@ export default function MaintenancePage() {
               </div>
            </div>
            <div className="pt-4 flex flex-col gap-2">
-              <Button asChild className="rounded-xl font-bold bg-white text-black hover:bg-zinc-200">
+              <Button asChild className="rounded-xl font-bold bg-notion-surface text-black hover:bg-zinc-200">
                  <Link href="mailto:support@eventra.app">Contact Operations</Link>
               </Button>
               <Button variant="ghost" asChild className="text-xs text-muted-foreground hover:text-white">

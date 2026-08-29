@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { LoadError } from '@/components/shared/load-error';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Sparkles, Target, Trophy, RefreshCw } from 'lucide-react';
@@ -25,6 +26,7 @@ export function MatchmakingSection() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [result, setResult] = useState<MatchmakingViewState | null>(null);
   const sendConnectionRequest = async (_payload: any) => Promise.resolve();
 // 
@@ -41,6 +43,7 @@ export function MatchmakingSection() {
   const fetchMatches = useCallback(async () => {
     if (!user) return;
     setLoading(true);
+    setLoadError(false);
     try {
       const data = await getMatchmakingRecommendations();
       const recommendations = data.map((match: any) => ({
@@ -60,6 +63,7 @@ export function MatchmakingSection() {
         },
       });
     } catch (error) {
+      setLoadError(true);
       console.error('Failed to fetch matches:', error);
       setResult({
         error: 'Unable to load recommendations right now.',
@@ -85,6 +89,10 @@ export function MatchmakingSection() {
         ))}
       </div>
     );
+  }
+
+  if (loadError) {
+    return <LoadError what="matches" onRetry={fetchMatches} />;
   }
 
   if (result?.error) {

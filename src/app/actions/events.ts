@@ -10,7 +10,7 @@ import { RRule } from 'rrule';
 import { z } from 'zod';
 
 import { logActivity } from './feed';
-import { awardXP } from './gamification';
+import { awardXP } from '@/lib/gamification/awards';
 
 export type ActionResponse<T> = {
   success: boolean;

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { LoadError } from '@/components/shared/load-error';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -42,16 +43,19 @@ export function WaitlistManagerClient({ eventId, eventTitle, capacity, registere
   const { toast } = useToast();
   const [entries, setEntries] = useState<WaitlistEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [isPromoting, setIsPromoting] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
   const loadWaitlist = useCallback(async () => {
     setLoading(true);
+    setLoadError(false);
     try {
       // We'll create this action next
       const data = await getWaitlistForEvent(eventId);
       setEntries(data as any);
     } catch (e) {
+      setLoadError(true);
       console.error(e);
     } finally {
       setLoading(false);
@@ -136,6 +140,8 @@ export function WaitlistManagerClient({ eventId, eventTitle, capacity, registere
         <CardContent className="p-0">
           {loading ? (
             <div className="py-20 text-center"><Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" /></div>
+          ) : loadError ? (
+            <LoadError what="the waitlist" onRetry={loadWaitlist} />
           ) : (
             <div className="divide-y divide-white/5">
               {filteredEntries.map((entry) => (

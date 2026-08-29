@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { LoadError } from '@/components/shared/load-error';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -56,6 +57,7 @@ export function StaffManagerClient({ eventId, eventTitle }: StaffManagerProps) {
   const { toast } = useToast();
   const [staff, setStaff] = useState<StaffMember[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState('volunteer');
   const [isInviting, setIsInviting] = useState(false);
@@ -75,10 +77,12 @@ export function StaffManagerClient({ eventId, eventTitle }: StaffManagerProps) {
 
   const loadStaff = useCallback(async () => {
     setLoading(true);
+    setLoadError(false);
     try {
       const data = await getEventStaff(eventId);
       setStaff(data as any);
     } catch (e) {
+      setLoadError(true);
       console.error(e);
     } finally {
       setLoading(false);
@@ -278,6 +282,8 @@ export function StaffManagerClient({ eventId, eventTitle }: StaffManagerProps) {
           <CardContent className="p-0">
             {loading ? (
               <div className="py-20 text-center"><Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" /></div>
+            ) : loadError ? (
+              <LoadError what="staff" onRetry={loadStaff} />
             ) : (
               <div className="divide-y divide-white/5">
                 {filteredStaff.map((member) => (

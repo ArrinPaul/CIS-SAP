@@ -9,10 +9,25 @@ import { getAIConnectionRecommendations } from './ai-recommendations';
 import { auth } from '@clerk/nextjs/server';
 import { validateRole } from '@/lib/auth-utils';
 
+/**
+ * An expired or missing session is an expected condition, not a crash.
+ * Throwing here surfaced an opaque "Unauthorized" server error in the RSC
+ * stream and left the caller with no way to tell auth failure from a real
+ * fault, so report it in the result instead.
+ */
 export async function getDashboardData() {
   const { userId } = await auth();
   if (!userId) {
-    throw new Error('Unauthorized');
+    return {
+      unauthorized: true as const,
+      registrations: [],
+      featuredEvents: [],
+      activities: [],
+      userStats: null,
+      leaderboard: [],
+      organizerStats: null,
+      peopleSuggestions: [],
+    };
   }
 
   // Check if organizer for relevant data
@@ -37,6 +52,7 @@ export async function getDashboardData() {
   ]);
 
   return {
+    unauthorized: false as const,
     registrations,
     featuredEvents,
     activities,

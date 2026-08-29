@@ -35,17 +35,17 @@ export function CollabManagerClient({ eventId, eventTitle, ticketTiers }: Collab
              Orchestrate your team and synchronize the guest list for <span className="text-notion-ink font-bold">{eventTitle}</span>.
            </p>
         </div>
-        <Button variant="outline" onClick={() => router.back()} className="rounded-xl h-11 px-6 font-bold text-xs gap-2 border-notion-hairline hover:bg-white shadow-sm transition-all">
+        <Button variant="outline" onClick={() => router.back()} className="rounded-xl h-11 px-6 font-bold text-xs gap-2 border-notion-hairline hover:bg-notion-surface shadow-sm transition-all">
            <ArrowLeft className="w-4 h-4" /> Back to Dashboard
         </Button>
       </header>
 
       <Tabs defaultValue="staff" className="space-y-10">
         <TabsList className="bg-muted/30 p-1.5 rounded-2xl border border-notion-hairline w-fit">
-          <TabsTrigger value="staff" className="rounded-xl px-8 py-2 text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-950 data-[state=active]:shadow-sm data-[state=active]:text-primary transition-all">
+          <TabsTrigger value="staff" className="rounded-xl px-8 py-2 text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-notion-surface dark:data-[state=active]:bg-zinc-950 data-[state=active]:shadow-sm data-[state=active]:text-primary transition-all">
             <ShieldCheck className="w-3.5 h-3.5 mr-2" /> Event Staff
           </TabsTrigger>
-          <TabsTrigger value="guests" className="rounded-xl px-8 py-2 text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-950 data-[state=active]:shadow-sm data-[state=active]:text-primary transition-all">
+          <TabsTrigger value="guests" className="rounded-xl px-8 py-2 text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-notion-surface dark:data-[state=active]:bg-zinc-950 data-[state=active]:shadow-sm data-[state=active]:text-primary transition-all">
             <UserCheck className="w-3.5 h-3.5 mr-2" /> Guest Sync
           </TabsTrigger>
         </TabsList>

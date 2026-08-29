@@ -9,10 +9,14 @@ import {
   MapPin, 
   Clock, 
   ArrowRight, 
-  Trophy, 
+  Coins,
   Ticket, 
-  Activity, 
-  Zap, 
+  BadgeCheck,
+  CalendarCheck,
+  UserPlus,
+  CalendarDays,
+  WifiOff,
+  RotateCw,
   Sparkles,
   ChevronRight,
   MoreVertical,
@@ -43,20 +47,31 @@ export default function AttendeeDashboard() {
   const [loading, setLoading] = React.useState(true);
   const [connectingId, setConnectingId] = React.useState<string | null>(null);
 
-  React.useEffect(() => {
-    async function loadData() {
-      if (!user) return;
-      try {
-        const res = await getDashboardData();
-        setData(res);
-      } catch (error) {
-        console.error("Dashboard load error:", error);
-      } finally {
-        setLoading(false);
+  const [loadError, setLoadError] = React.useState(false);
+
+  const loadData = React.useCallback(async () => {
+    if (!user) return;
+    setLoadError(false);
+    try {
+      const res = await getDashboardData();
+      // The client still thinks it is signed in but the server session is
+      // gone — send the user to sign in rather than render an empty shell.
+      if (res.unauthorized) {
+        router.push('/login');
+        return;
       }
+      setData(res);
+    } catch (error) {
+      console.error("Dashboard load error:", error);
+      setLoadError(true);
+    } finally {
+      setLoading(false);
     }
+  }, [user, router]);
+
+  React.useEffect(() => {
     loadData();
-  }, [user]);
+  }, [loadData]);
 
   const handleQuickConnect = async (person: any) => {
     setConnectingId(person.userId);
@@ -82,7 +97,28 @@ export default function AttendeeDashboard() {
       <div className="flex h-[80vh] items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div className="w-10 h-10 rounded-full border-2 border-notion-hairline border-t-notion-primary animate-spin" />
-          <p className="text-sm font-medium text-notion-ink-muted uppercase tracking-widest">Syncing data...</p>
+          <p className="text-body-sm text-notion-ink-muted">Syncing data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div role="alert" className="flex h-[80vh] items-center justify-center px-6">
+        <div className="flex flex-col items-center gap-5 text-center">
+          <div className="w-16 h-16 rounded-2xl bg-notion-sunken flex items-center justify-center">
+            <WifiOff className="w-8 h-8 text-notion-ink-faint" />
+          </div>
+          <div className="space-y-2">
+            <h2 className="font-display text-h3 text-notion-ink">Couldn&apos;t load your dashboard</h2>
+            <p className="text-body-sm text-notion-ink-muted max-w-xs">
+              Something went wrong reaching the server.
+            </p>
+          </div>
+          <Button variant="secondary" onClick={loadData} className="gap-2">
+            <RotateCw className="w-4 h-4" /> Try again
+          </Button>
         </div>
       </div>
     );
@@ -123,10 +159,10 @@ export default function AttendeeDashboard() {
       {/* STATS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
-          { label: 'Active Tickets', value: registrations.length, icon: Ticket, color: 'text-notion-primary', bg: 'bg-notion-primary/5' },
-          { label: 'Reward Points', value: userStats?.xp || 0, icon: Trophy, color: 'text-notion-accent-orange', bg: 'bg-notion-accent-orange/5' },
-          { label: 'Member Level', value: userStats?.level || 1, icon: Zap, color: 'text-notion-accent-teal', bg: 'bg-notion-accent-teal/5' },
-          { label: 'Events Attended', value: userStats?.attended || 0, icon: Activity, color: 'text-notion-accent-green', bg: 'bg-notion-accent-green/5' },
+          { label: 'Active Tickets', value: registrations.length, icon: Ticket, color: 'text-notion-ink-secondary', bg: 'bg-notion-sunken' },
+          { label: 'Reward Points', value: userStats?.xp || 0, icon: Coins, color: 'text-notion-ink-secondary', bg: 'bg-notion-sunken' },
+          { label: 'Member Level', value: userStats?.level || 1, icon: BadgeCheck, color: 'text-notion-ink-secondary', bg: 'bg-notion-sunken' },
+          { label: 'Events Attended', value: userStats?.attended || 0, icon: CalendarCheck, color: 'text-notion-ink-secondary', bg: 'bg-notion-sunken' },
         ].map((stat, i) => (
           <Card key={i} className="border-notion-hairline bg-white dark:bg-zinc-950 shadow-notion-soft overflow-hidden group hover:-translate-y-1 transition-all duration-300">
             <CardContent className="p-6">
@@ -136,7 +172,7 @@ export default function AttendeeDashboard() {
                   </div>
                   <div>
                     <p className="text-2xl font-display font-bold text-notion-ink leading-none mb-1">{stat.value}</p>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-notion-ink-faint leading-none">{stat.label}</p>
+                    <p className="text-caption text-notion-ink-muted leading-none">{stat.label}</p>
                   </div>
                </div>
             </CardContent>
@@ -165,7 +201,7 @@ export default function AttendeeDashboard() {
                   <div className="grid md:grid-cols-12">
                     <div className="md:col-span-7 p-8 md:p-10 flex flex-col justify-between space-y-10">
                        <div className="space-y-6">
-                          <Badge className="bg-notion-accent-green/10 text-notion-accent-green border-none px-3 py-1 text-[10px] font-black uppercase tracking-widest">Confirmed Access</Badge>
+                          <Badge variant="secondary">Confirmed Access</Badge>
                           <h3 className="text-3xl font-display font-bold leading-[1.1] group-hover:text-notion-primary transition-colors text-notion-ink">
                              {upcomingEvent.title}
                           </h3>
@@ -198,7 +234,7 @@ export default function AttendeeDashboard() {
                           />
                        ) : (
                           <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-notion-canvas-soft to-border/30">
-                             <Sparkles className="w-16 h-16 text-notion-ink-faint/10" />
+                             <CalendarDays className="w-16 h-16 text-notion-ink-faint/20" />
                           </div>
                        )}
                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent md:bg-gradient-to-l opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -234,7 +270,7 @@ export default function AttendeeDashboard() {
                 </h2>
                 <p className="text-xs font-medium text-notion-ink-muted">Tailored to your activity and interests.</p>
               </div>
-              <Link href="/explore" className="text-[10px] font-black uppercase tracking-widest text-notion-primary hover:underline flex items-center gap-1">
+              <Link href="/explore" className="text-body-sm font-medium text-notion-ink hover:underline flex items-center gap-1">
                 Browse More <ChevronRight className="h-3 w-3" />
               </Link>
               </div>
@@ -253,7 +289,7 @@ export default function AttendeeDashboard() {
                         </div>
                       )}
                       <div className="absolute top-4 left-4 flex gap-2">
-                        <Badge className="bg-white/90 dark:bg-black/80 backdrop-blur-md text-notion-ink border-none text-[9px] font-black px-2.5 py-0.5 uppercase tracking-widest shadow-sm">
+                        <Badge className="bg-notion-surface/90 backdrop-blur-md text-notion-ink border-none shadow-notion-soft">
                            {event.category}
                         </Badge>
                       </div>
@@ -262,7 +298,7 @@ export default function AttendeeDashboard() {
                       <h3 className="text-lg font-bold truncate group-hover:text-notion-primary transition-colors leading-tight text-notion-ink">
                         {event.title}
                       </h3>
-                      <div className="flex items-center justify-between text-[11px] font-bold text-notion-ink-muted uppercase tracking-widest">
+                      <div className="flex items-center justify-between text-caption text-notion-ink-muted">
                          <div className="flex items-center gap-2">
                             <Calendar className="h-3.5 w-3.5 text-notion-primary" />
                             <span>{format(new Date(event.startDate), 'MMM d, yyyy')}</span>
@@ -285,7 +321,7 @@ export default function AttendeeDashboard() {
                 </h2>
                 <p className="text-xs font-medium text-notion-ink-muted">Connect with people sharing your interests.</p>
               </div>
-              <Link href="/explore" className="text-[10px] font-black uppercase tracking-widest text-notion-primary hover:underline flex items-center gap-1">
+              <Link href="/explore" className="text-body-sm font-medium text-notion-ink hover:underline flex items-center gap-1">
                 Browse More <ChevronRight className="h-3 w-3" />
               </Link>
               </div>
@@ -301,7 +337,7 @@ export default function AttendeeDashboard() {
                       </Avatar>
                       <div className="flex-1 min-w-0">
                          <h4 className="font-bold text-notion-ink truncate">{person.name}</h4>
-                         <p className="text-[10px] text-notion-ink-faint uppercase font-black tracking-widest">{person.role}</p>
+                         <p className="text-caption text-notion-ink-muted">{person.role}</p>
                       </div>
                       <div className="flex gap-1">
                         <Button 
@@ -311,7 +347,7 @@ export default function AttendeeDashboard() {
                           onClick={() => handleQuickConnect(person)}
                           disabled={connectingId === person.userId}
                         >
-                          {connectingId === person.userId ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4 fill-current" />}
+                          {connectingId === person.userId ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserPlus className="h-4 w-4" />}
                         </Button>
                         <Button variant="ghost" size="icon" className="rounded-full hover:bg-notion-primary/10 text-notion-primary opacity-0 group-hover:opacity-100 transition-opacity" asChild>
                            <Link href={`/profile/${person.userId}`}><ArrowRight className="h-4 w-4" /></Link>
@@ -327,7 +363,7 @@ export default function AttendeeDashboard() {
               ))}
               {peopleSuggestions.length === 0 && (
                 <div className="col-span-full py-10 text-center border border-dashed border-notion-hairline rounded-2xl opacity-50">
-                  <p className="text-xs font-medium text-notion-ink-muted uppercase tracking-widest">Growing the network...</p>
+                  <p className="text-body-sm text-notion-ink-muted">Growing the network...</p>
                 </div>
               )}
             </div>
@@ -342,7 +378,7 @@ export default function AttendeeDashboard() {
                <div className="p-8 space-y-8 relative z-10">
                   <div className="flex justify-between items-start">
                      <div className="space-y-1">
-                        <Badge variant="outline" className="text-notion-primary border-notion-primary/20 bg-notion-primary/5 uppercase text-[9px] font-black tracking-widest px-2 py-0">Active Pass</Badge>
+                        <Badge variant="secondary">Active Pass</Badge>
                         <h3 className="text-lg font-bold text-notion-ink">Infrastructure Access</h3>
                      </div>
                      <button className="text-notion-ink-faint hover:text-notion-ink transition-colors">
@@ -353,7 +389,7 @@ export default function AttendeeDashboard() {
                   <div className="flex flex-col items-center">
                      {registrations && registrations.length > 0 ? (
                        <>
-                         <div className="bg-white p-5 rounded-[2rem] mb-8 shadow-2xl ring-1 ring-black/5 relative overflow-hidden group/qr">
+                         <div className="bg-notion-surface p-5 rounded-[2rem] mb-8 shadow-2xl ring-1 ring-black/5 relative overflow-hidden group/qr">
                            <QRCodeSVG 
                              value={registrations[0].ticket.ticketNumber || 'EV-000-000'}
                              size={180}
@@ -364,8 +400,8 @@ export default function AttendeeDashboard() {
                          </div>
                          <div className="w-full text-center space-y-6">
                            <div className="space-y-1.5 p-4 rounded-2xl bg-notion-canvas-soft/50 border border-notion-hairline">
-                             <p className="text-[9px] font-black text-notion-ink-faint uppercase tracking-[0.2em]">Verification_Key</p>
-                             <p className="font-mono text-sm font-black text-notion-ink tracking-[0.2em]">
+                             <p className="text-eyebrow uppercase text-notion-ink-muted">Verification_Key</p>
+                             <p className="font-mono text-body-sm text-notion-ink tracking-[0.12em]">
                                {registrations[0].ticket.ticketNumber || 'EV-000-000'}
                              </p>
                            </div>
@@ -377,9 +413,9 @@ export default function AttendeeDashboard() {
                      ) : (
                        <div className="text-center py-16 space-y-4 opacity-40">
                          <div className="w-16 h-16 rounded-full bg-notion-canvas-soft flex items-center justify-center mx-auto">
-                            <Activity className="h-8 w-8 text-notion-ink-faint" />
+                            <CalendarDays className="h-8 w-8 text-notion-ink-faint" />
                          </div>
-                         <p className="text-[10px] font-black uppercase tracking-widest text-notion-ink">No active nodes</p>
+                         <p className="text-caption text-notion-ink-muted">No active nodes</p>
                        </div>
                      )}
                   </div>
@@ -390,8 +426,8 @@ export default function AttendeeDashboard() {
           
           <div className="space-y-4">
              <div className="flex items-center justify-between px-1">
-                <h3 className="text-xs font-black uppercase tracking-widest text-notion-ink-faint">Mesh Activity</h3>
-                <Link href="/feed" className="text-[9px] font-black uppercase tracking-widest text-notion-primary hover:underline">Full Log</Link>
+                <h3 className="font-display text-title text-notion-ink">Mesh Activity</h3>
+                <Link href="/feed" className="text-body-sm font-medium text-notion-ink hover:underline">Full Log</Link>
              </div>
              <ActivityFeed initialActivities={activities} userId={user.id} />
           </div>

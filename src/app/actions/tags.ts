@@ -5,6 +5,8 @@ import { tags, eventTags } from '@/lib/db/schema';
 import { eq, desc, sql, ilike, and } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { logger } from '@/lib/logger';
+import { auth } from '@clerk/nextjs/server';
+import { validateEventOwnership, validateRole } from '@/lib/auth-utils';
 
 function slugify(text: string): string {
   return text
@@ -16,6 +18,8 @@ function slugify(text: string): string {
 }
 
 export async function createTag(name: string) {
+  const { userId } = await auth();
+  if (!userId) return { success: false, error: 'Unauthorized' };
   try {
     const slug = slugify(name);
     const existing = await db.query.tags.findFirst({
@@ -39,6 +43,9 @@ export async function createTag(name: string) {
 }
 
 export async function getTags(search?: string, limit: number = 50) {
+  const { userId } = await auth();
+  if (!userId) return [];
+  const take = Math.min(Math.max(1, limit), 100);
   try {
     if (search) {
       return await db
@@ -46,13 +53,13 @@ export async function getTags(search?: string, limit: number = 50) {
         .from(tags)
         .where(ilike(tags.name, `%${search}%`))
         .orderBy(desc(tags.eventCount))
-        .limit(limit);
+        .limit(take);
     }
     return await db
       .select()
       .from(tags)
       .orderBy(desc(tags.eventCount))
-      .limit(limit);
+      .limit(take);
   } catch (error) {
     logger.error('Failed to fetch tags', error);
     return [];
@@ -60,6 +67,8 @@ export async function getTags(search?: string, limit: number = 50) {
 }
 
 export async function getEventTags(eventId: string) {
+  const { userId } = await auth();
+  if (!userId) return [];
   try {
     const result = await db
       .select({ id: tags.id, name: tags.name, slug: tags.slug })
@@ -75,6 +84,12 @@ export async function getEventTags(eventId: string) {
 }
 
 export async function addTagToEvent(eventId: string, tagName: string) {
+  // Tagging an event is event management, not a global write.
+  try {
+    await validateEventOwnership(eventId);
+  } catch {
+    return { success: false, error: 'Unauthorized' };
+  }
   try {
     let tag = await db.query.tags.findFirst({
       where: eq(tags.name, tagName.trim()),
@@ -115,6 +130,11 @@ export async function addTagToEvent(eventId: string, tagName: string) {
 
 export async function removeTagFromEvent(eventId: string, tagId: string) {
   try {
+    await validateEventOwnership(eventId);
+  } catch {
+    return { success: false, error: 'Unauthorized' };
+  }
+  try {
     await db
       .delete(eventTags)
       .where(and(
@@ -136,6 +156,11 @@ export async function removeTagFromEvent(eventId: string, tagId: string) {
 }
 
 export async function deleteTag(tagId: string) {
+  try {
+    await validateRole(['admin']);
+  } catch {
+    return { success: false, error: 'Unauthorized' };
+  }
   try {
     await db.delete(tags).where(eq(tags.id, tagId));
     return { success: true };

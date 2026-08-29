@@ -4,7 +4,7 @@ import { db } from '@/lib/db';
 import { activityFeed } from '@/lib/db/schema';
 import { and, desc, eq } from 'drizzle-orm';
 import { validateRole } from '@/lib/auth-utils';
-import { awardXP } from './gamification';
+import { awardXP } from '@/lib/gamification/awards';
 
 export type ChallengeDefinition = {
   id: string;

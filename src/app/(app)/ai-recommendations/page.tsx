@@ -27,7 +27,7 @@ export default function AiRecommendationsPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <h1 className="text-4xl font-black font-headline tracking-tighter flex items-center gap-3">
-            <Sparkles className="h-10 w-10 text-primary shadow-glow rounded-full p-2 bg-primary/10" />
+            <Sparkles className="h-10 w-10 text-primary rounded-full p-2 bg-primary/10" />
             {t('recommendations')}
           </h1>
           <p className="text-xl text-muted-foreground mt-3 font-medium max-w-2xl">

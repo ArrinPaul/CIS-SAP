@@ -190,7 +190,7 @@ export function CertificateTemplateBuilder({ eventId, initialTemplate }: Certifi
             {previewMode ? <Settings2 className="w-4 h-4 mr-2" /> : <Eye className="w-4 h-4 mr-2" />}
             {previewMode ? 'Design Mode' : 'Preview'}
           </Button>
-          <Button size="sm" className="bg-primary hover:bg-primary/90 text-foreground" onClick={handleSave} disabled={isSaving}>
+          <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground" onClick={handleSave} disabled={isSaving}>
             {isSaving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
             Save Template
           </Button>
@@ -252,7 +252,7 @@ export function CertificateTemplateBuilder({ eventId, initialTemplate }: Certifi
         <div className="flex-1 bg-muted p-8 overflow-auto flex items-center justify-center" onMouseMove={handleMouseMove}>
           <div 
             ref={canvasRef}
-            className="bg-white shadow-2xl relative overflow-hidden transition-all"
+            className="bg-notion-surface shadow-2xl relative overflow-hidden transition-all"
             style={{ 
               width: `${layout.width}px`, 
               height: `${layout.height}px`,

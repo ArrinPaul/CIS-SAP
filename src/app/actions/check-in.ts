@@ -6,7 +6,7 @@ import { eq, and, sql, or } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { validateRole, validateEventOwnership, validateStaffPermission } from '@/lib/auth-utils';
 import { enforceRateLimit } from '@/lib/rate-limit';
-import { awardXP } from './gamification';
+import { awardXP } from '@/lib/gamification/awards';
 import { logActivity } from './feed';
 import { parseQrPayload } from '@/core/utils/crypto';
 import { logger } from '@/lib/logger';

@@ -183,7 +183,7 @@ export default function OrganizerCertificatesPage() {
                   <Button size="sm" variant="outline" className="border-border" onClick={() => { setSelectedEventId(event.id); setView('builder'); }}>
                     <Settings className="w-4 h-4 mr-2" /> Design Template
                   </Button>
-                  <Button size="sm" className="bg-primary hover:bg-primary/90 text-foreground" onClick={() => handleStartDistribute(event.id)}>
+                  <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground" onClick={() => handleStartDistribute(event.id)}>
                     <Send className="w-4 h-4 mr-2" /> Distribute
                   </Button>
                 </div>
