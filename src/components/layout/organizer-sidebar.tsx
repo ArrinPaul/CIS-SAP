@@ -32,6 +32,7 @@ import {
   MessageSquare,
   DollarSign,
   Eye,
+  Tag,
 } from 'lucide-react';
 
 const sidebarGroups = [
@@ -58,6 +59,7 @@ const sidebarGroups = [
     items: [
       { title: 'Analytics', href: '/organizer/analytics', icon: BarChart3 },
       { title: 'Ticketing', href: '/organizer/ticketing', icon: Ticket },
+      { title: 'Promo Codes', href: '/organizer/promos', icon: Tag },
       { title: 'Payouts', href: '/organizer/payouts', icon: DollarSign },
       { title: 'Comms', href: '/organizer/communications', icon: Mail },
       { title: 'Settings', href: '/organizer/settings', icon: Settings },

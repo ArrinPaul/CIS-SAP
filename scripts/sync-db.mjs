@@ -38,12 +38,27 @@ try {
   await sql`DROP TABLE IF EXISTS "verificationToken" CASCADE;`;
   console.log('✓ deprecated NextAuth tables dropped successfully');
 
-  // 3. Drop unused ipAddress column for GDPR compliance
+  // 4. Create promo_codes table if it doesn't exist
   await sql`
-    ALTER TABLE feedback_responses 
-    DROP COLUMN IF EXISTS ip_address;
+    CREATE TABLE IF NOT EXISTS promo_codes (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      event_id uuid REFERENCES events(id) ON DELETE CASCADE,
+      code text NOT NULL,
+      discount_type text DEFAULT 'percentage' NOT NULL,
+      discount_value numeric(10, 2) NOT NULL,
+      max_uses integer,
+      used_count integer DEFAULT 0 NOT NULL,
+      min_order_amount numeric(10, 2) DEFAULT '0' NOT NULL,
+      expires_at timestamp with time zone,
+      is_active boolean DEFAULT true NOT NULL,
+      created_by text REFERENCES users(id),
+      created_at timestamp with time zone DEFAULT now() NOT NULL,
+      updated_at timestamp with time zone DEFAULT now() NOT NULL
+    );
   `;
-  console.log('✓ feedback_responses ip_address column dropped successfully');
+  await sql`CREATE INDEX IF NOT EXISTS promo_codes_event_code_idx ON promo_codes(event_id, code);`;
+  await sql`CREATE INDEX IF NOT EXISTS promo_codes_code_idx ON promo_codes(code);`;
+  console.log('✓ promo_codes table synced successfully');
 
   console.log('Database synced successfully.');
   process.exit(0);

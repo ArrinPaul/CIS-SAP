@@ -26,11 +26,13 @@ import {
   Info,
   ExternalLink,
   Navigation,
-  FileText
+  FileText,
+  Tag
 } from 'lucide-react';
 import { cn } from '@/core/utils/utils';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
+import { Input } from '@/components/ui/input';
 import { ChatbotTrigger, EventChatbot } from '@/features/ai/event-chatbot';
 import { Progress } from '@/components/ui/progress';
 import { EventDiscussionBoard } from './event-discussion-board';
@@ -40,6 +42,7 @@ import { AnnouncementBanner } from './announcement-banner';
 import { generateEventSummary } from '@/app/actions/event-insights';
 import { registerForEvent, getRegistrationStatus } from '@/app/actions/registrations';
 import { cloneEvent } from '@/app/actions/events';
+import { validateAndApplyPromoCode } from '@/app/actions/promo-codes';
 import { format } from 'date-fns';
 
 export default function EventDetailsClient({ eventId, initialEvent }: { eventId: string, initialEvent: any }) {
@@ -54,6 +57,12 @@ export default function EventDetailsClient({ eventId, initialEvent }: { eventId:
   const [cloning, setCloning] = useState(false);
   const [showChatbot, setShowChatbot] = useState(false);
   const [generatingSummary, setGeneratingSummary] = useState(false);
+
+  // Promo Code State
+  const [promoCodeInput, setPromoCodeInput] = useState('');
+  const [appliedPromo, setAppliedPromo] = useState<any>(null);
+  const [validatingPromo, setValidatingPromo] = useState(false);
+  const [showPromoInput, setShowPromoInput] = useState(false);
 
   useEffect(() => {
     async function checkStatus() {
@@ -120,6 +129,33 @@ export default function EventDetailsClient({ eventId, initialEvent }: { eventId:
     } finally {
       setCloning(false);
     }
+  };
+
+  const handleApplyPromo = async () => {
+    if (!promoCodeInput.trim()) return;
+    setValidatingPromo(true);
+    try {
+      const basePrice = Number(event.price || 0);
+      const res = await validateAndApplyPromoCode(promoCodeInput, eventId, basePrice);
+      if (res.success) {
+        setAppliedPromo(res);
+        toast({ 
+          title: 'Promo Code Applied!', 
+          description: `Saved $${res.discountAmount?.toFixed(2)} with code ${res.code}` 
+        });
+      } else {
+        toast({ title: 'Invalid Promo Code', description: res.error, variant: 'destructive' });
+      }
+    } catch (e) {
+      toast({ title: 'Validation Error', variant: 'destructive' });
+    } finally {
+      setValidatingPromo(false);
+    }
+  };
+
+  const handleRemovePromo = () => {
+    setAppliedPromo(null);
+    setPromoCodeInput('');
   };
 
   const handleGenerateSummary = async () => {
@@ -396,9 +432,81 @@ export default function EventDetailsClient({ eventId, initialEvent }: { eventId:
               <Card className="border-border shadow-md rounded-2xl overflow-hidden">
                 <CardContent className="p-6 space-y-6">
                   <div className="text-center pb-6 border-b border-border">
-                    <p className="text-4xl font-bold tracking-tight">Free</p>
-                    <p className="text-sm text-muted-foreground mt-1 font-medium">General Admission</p>
+                    {Number(event.price) > 0 ? (
+                      <div>
+                        {appliedPromo ? (
+                          <div className="space-y-1">
+                            <div className="flex items-center justify-center gap-2">
+                              <span className="text-2xl line-through text-muted-foreground font-medium">
+                                ${Number(event.price).toFixed(2)}
+                              </span>
+                              <span className="text-4xl font-bold tracking-tight text-emerald-500 font-mono">
+                                ${appliedPromo.finalAmount.toFixed(2)}
+                              </span>
+                            </div>
+                            <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-xs font-mono">
+                              {appliedPromo.code}: -${appliedPromo.discountAmount.toFixed(2)}
+                            </Badge>
+                          </div>
+                        ) : (
+                          <p className="text-4xl font-bold tracking-tight">${Number(event.price).toFixed(2)}</p>
+                        )}
+                        <p className="text-sm text-muted-foreground mt-1 font-medium">Standard Admission</p>
+                      </div>
+                    ) : (
+                      <div>
+                        <p className="text-4xl font-bold tracking-tight">Free</p>
+                        <p className="text-sm text-muted-foreground mt-1 font-medium">General Admission</p>
+                      </div>
+                    )}
                   </div>
+
+                  {/* PROMO CODE SECTION */}
+                  {!isRegistered && !isExternal && (
+                    <div className="space-y-2 pt-1 border-b border-border pb-4">
+                      {appliedPromo ? (
+                        <div className="flex items-center justify-between p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs">
+                          <div className="flex items-center gap-1.5 text-emerald-600 font-bold font-mono">
+                            <Tag className="w-3.5 h-3.5" />
+                            <span>{appliedPromo.code} Applied</span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={handleRemovePromo}
+                            className="text-xs text-muted-foreground hover:text-red-500 underline"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      ) : showPromoInput ? (
+                        <div className="flex gap-2">
+                          <Input
+                            placeholder="Enter promo code"
+                            value={promoCodeInput}
+                            onChange={(e) => setPromoCodeInput(e.target.value.toUpperCase())}
+                            className="h-9 text-xs font-mono uppercase font-bold"
+                          />
+                          <Button
+                            size="sm"
+                            type="button"
+                            onClick={handleApplyPromo}
+                            disabled={validatingPromo}
+                            className="h-9 px-3 text-xs shrink-0"
+                          >
+                            {validatingPromo ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Apply'}
+                          </Button>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setShowPromoInput(true)}
+                          className="text-xs font-medium text-primary hover:underline flex items-center gap-1 mx-auto"
+                        >
+                          <Tag className="w-3.5 h-3.5" /> Have a promo code?
+                        </button>
+                      )}
+                    </div>
+                  )}
 
                   {!isExternal && (
                     <div className="space-y-3">

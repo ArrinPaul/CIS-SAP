@@ -818,3 +818,36 @@ export const eventMapNodesRelations = relations(eventMapNodes, ({ one }) => ({
     references: [eventMaps.id],
   }),
 }));
+
+// --- Promo Codes & Discounts ---
+
+export const promoCodes = pgTable('promo_codes', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  eventId: uuid('event_id').references(() => events.id, { onDelete: 'cascade' }),
+  code: text('code').notNull(),
+  discountType: text('discount_type').default('percentage').notNull(), // 'percentage' | 'fixed'
+  discountValue: decimal('discount_value', { precision: 10, scale: 2 }).notNull(),
+  maxUses: integer('max_uses'),
+  usedCount: integer('used_count').default(0).notNull(),
+  minOrderAmount: decimal('min_order_amount', { precision: 10, scale: 2 }).default('0').notNull(),
+  expiresAt: timestamp('expires_at'),
+  isActive: boolean('is_active').default(true).notNull(),
+  createdBy: text('created_by').references(() => users.id),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => ({
+  eventCodeIdx: index('promo_codes_event_code_idx').on(table.eventId, table.code),
+  codeIdx: index('promo_codes_code_idx').on(table.code),
+}));
+
+export const promoCodesRelations = relations(promoCodes, ({ one }) => ({
+  event: one(events, {
+    fields: [promoCodes.eventId],
+    references: [events.id],
+  }),
+  creator: one(users, {
+    fields: [promoCodes.createdBy],
+    references: [users.id],
+  }),
+}));
+
