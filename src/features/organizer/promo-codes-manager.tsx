@@ -33,6 +33,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { 
   createPromoCode, 
@@ -42,8 +43,17 @@ import {
 } from '@/app/actions/promo-codes';
 import { cn } from '@/core/utils/utils';
 
-export default function PromoCodesManager() {
+interface PromoCodesManagerProps {
+  initialEvents?: { id: string; title: string }[];
+  defaultEventId?: string;
+}
+
+export default function PromoCodesManager({
+  initialEvents = [],
+  defaultEventId,
+}: PromoCodesManagerProps) {
   const { toast } = useToast();
+  const [selectedEventId, setSelectedEventId] = useState<string>(defaultEventId || '');
   const [promos, setPromos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
@@ -58,10 +68,10 @@ export default function PromoCodesManager() {
   const [minOrderAmount, setMinOrderAmount] = useState('0');
   const [expiresAt, setExpiresAt] = useState('');
 
-  const loadPromos = async () => {
+  const loadPromos = async (eventId?: string) => {
     setLoading(true);
     try {
-      const res = await getEventPromoCodes();
+      const res = await getEventPromoCodes(eventId || undefined);
       if (res.success) {
         setPromos(res.promoCodes);
       }
@@ -73,8 +83,8 @@ export default function PromoCodesManager() {
   };
 
   useEffect(() => {
-    loadPromos();
-  }, []);
+    loadPromos(selectedEventId);
+  }, [selectedEventId]);
 
   const handleCreatePromo = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,6 +92,7 @@ export default function PromoCodesManager() {
 
     try {
       const res = await createPromoCode({
+        eventId: selectedEventId && selectedEventId !== 'all' ? selectedEventId : undefined,
         code: code.trim(),
         discountType,
         discountValue: parseFloat(discountValue),
@@ -111,13 +122,16 @@ export default function PromoCodesManager() {
 
   const handleToggleStatus = async (promoId: string, currentStatus: boolean) => {
     try {
-      const res = await togglePromoCodeStatus(promoId, !currentStatus);
+      const nextStatus = !currentStatus;
+      const res = await togglePromoCodeStatus(promoId, nextStatus);
       if (res.success) {
-        setPromos(promos.map(p => p.id === promoId ? { ...p, isActive: !currentStatus } : p));
-        toast({ title: !currentStatus ? 'Promo Code Activated' : 'Promo Code Paused' });
+        setPromos(promos.map(p => p.id === promoId ? { ...p, isActive: nextStatus } : p));
+        toast({ 
+          title: `Promo Code ${nextStatus ? 'Activated' : 'Deactivated'}`,
+        });
       }
     } catch (e) {
-      toast({ title: 'Failed to update status', variant: 'destructive' });
+      toast({ title: 'Toggle Failed', variant: 'destructive' });
     }
   };
 
@@ -162,6 +176,25 @@ export default function PromoCodesManager() {
             Create coupons, percentage discounts, and early-bird promotional codes for your events.
           </p>
         </div>
+
+        <div className="flex items-center gap-3">
+          {initialEvents.length > 0 && (
+            <div className="w-[200px]">
+              <Select value={selectedEventId || 'all'} onValueChange={(val) => setSelectedEventId(val === 'all' ? '' : val)}>
+                <SelectTrigger className="rounded-xl border-border bg-card">
+                  <SelectValue placeholder="All Events" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Events (Global)</SelectItem>
+                  {initialEvents.map((evt) => (
+                    <SelectItem key={evt.id} value={evt.id}>
+                      {evt.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
@@ -313,6 +346,7 @@ export default function PromoCodesManager() {
             </form>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       {/* PROMO CODES LIST */}
