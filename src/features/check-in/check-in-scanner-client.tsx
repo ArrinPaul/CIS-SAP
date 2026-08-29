@@ -487,7 +487,7 @@ export default function CheckInScannerClient() {
               onClick={scanning ? stopScanner : startScanner} 
               className={cn(
                 "w-full mt-6 h-12 text-lg font-bold transition-all",
-                scanning ? "bg-destructive/10 text-destructive border-red-500/20 hover:bg-destructive/20" : "bg-primary hover:bg-cyan-700 text-foreground"
+                scanning ? "bg-destructive/10 text-destructive border-red-500/20 hover:bg-destructive/20" : "bg-primary hover:bg-cyan-700 text-primary-foreground"
               )}
               variant={scanning ? "outline" : "default"}
               disabled={processing}

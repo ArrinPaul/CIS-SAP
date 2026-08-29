@@ -101,7 +101,7 @@ export function EventPolls({ eventId, isOrganizer }: EventPollsProps) {
           <p className="text-sm text-muted-foreground">Participate in real-time surveys.</p>
         </div>
         {isOrganizer && (
-          <Button onClick={() => setShowCreate(true)} className="bg-primary hover:bg-primary/90 text-foreground rounded-full">
+          <Button onClick={() => setShowCreate(true)} className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full">
             <Plus className="w-4 h-4 mr-2" />
             New Poll
           </Button>

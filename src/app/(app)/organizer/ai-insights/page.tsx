@@ -113,7 +113,7 @@ export default function OrganizerAIHubPage() {
                     <h3 className="text-lg font-bold group-hover:text-primary transition-colors">{event.title}</h3>
                     <p className="text-xs text-muted-foreground">{event.category} • {new Date(event.startDate).toLocaleDateString()}</p>
                   </div>
-                  <Button variant="ghost" className="group-hover:bg-primary/90 group-hover:text-foreground transition-all">
+                  <Button variant="ghost" className="group-hover:bg-primary/90 group-hover:text-primary-foreground transition-all">
                     Launch AI <ChevronRight className="ml-2 h-4 w-4" />
                   </Button>
                 </div>

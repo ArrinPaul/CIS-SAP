@@ -196,7 +196,7 @@ export function BulkDistributionClient({ eventId, eventTitle, eventDate, initial
 
           <div className="flex flex-wrap gap-4">
             <Button 
-              className="bg-primary hover:bg-primary/90 text-foreground" 
+              className="bg-primary hover:bg-primary/90 text-primary-foreground" 
               onClick={handleBulkEmail}
               disabled={isProcessing || stats.ready === 0}
             >

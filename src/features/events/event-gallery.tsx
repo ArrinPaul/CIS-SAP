@@ -328,7 +328,7 @@ export function EventGallery({ eventId, isRegistered, isStaff }: EventGalleryPro
                   
                     <div className="flex flex-col gap-3 mt-10">
                     <Button
-                      className="w-full bg-primary hover:bg-primary/90 text-foreground font-black h-12 rounded-xl"
+                      className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-black h-12 rounded-xl"
                       onClick={() => {
                         handleEngagement(selectedPhoto.id, 'download');
                         window.open(selectedPhoto.url, '_blank');

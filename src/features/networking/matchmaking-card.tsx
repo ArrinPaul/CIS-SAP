@@ -81,7 +81,7 @@ export function MatchmakingCard({ match, onConnect }: MatchmakingCardProps) {
 
         <div className="flex gap-2 mt-6">
           <Button 
-            className="flex-1 bg-primary hover:bg-primary/90 text-foreground" 
+            className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground" 
             onClick={() => onConnect?.(match.userId)}
           >
             <UserPlus className="w-4 h-4 mr-2" />

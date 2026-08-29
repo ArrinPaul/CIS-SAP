@@ -264,7 +264,7 @@ export function FeedbackTemplateBuilder({ eventId, initialTemplate }: FeedbackTe
              </div>
           </CardContent>
           <CardFooter className="pt-6 border-t border-cyan-500/10">
-             <Button className="w-full bg-primary hover:bg-primary/90 text-foreground" onClick={handleSave} disabled={isSaving}>
+             <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" onClick={handleSave} disabled={isSaving}>
                 {isSaving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
                 Publish Questionnaire
              </Button>

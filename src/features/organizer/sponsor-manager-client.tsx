@@ -205,10 +205,10 @@ export function SponsorManagerClient({ eventId, eventTitle }: SponsorManagerProp
     <div className="space-y-8 text-foreground">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="bg-card border-border border p-1 rounded-2xl h-12 w-fit mb-4">
-          <TabsTrigger value="roster" className="rounded-xl px-6 data-[state=active]:bg-primary data-[state=active]:text-foreground h-full font-bold transition-all">
+          <TabsTrigger value="roster" className="rounded-xl px-6 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground h-full font-bold transition-all">
             <LayoutGrid className="w-4 h-4 mr-2" /> Roster
           </TabsTrigger>
-          <TabsTrigger value="leads" className="rounded-xl px-6 data-[state=active]:bg-primary data-[state=active]:text-foreground h-full font-bold transition-all">
+          <TabsTrigger value="leads" className="rounded-xl px-6 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground h-full font-bold transition-all">
             <Users className="w-4 h-4 mr-2" /> Retrieval & Leads
           </TabsTrigger>
         </TabsList>

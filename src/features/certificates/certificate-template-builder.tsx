@@ -190,7 +190,7 @@ export function CertificateTemplateBuilder({ eventId, initialTemplate }: Certifi
             {previewMode ? <Settings2 className="w-4 h-4 mr-2" /> : <Eye className="w-4 h-4 mr-2" />}
             {previewMode ? 'Design Mode' : 'Preview'}
           </Button>
-          <Button size="sm" className="bg-primary hover:bg-primary/90 text-foreground" onClick={handleSave} disabled={isSaving}>
+          <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground" onClick={handleSave} disabled={isSaving}>
             {isSaving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
             Save Template
           </Button>

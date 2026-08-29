@@ -312,7 +312,7 @@ export function AIInsightsClient({ eventId }: AIInsightsClientProps) {
                      </div>
 
                      <Button 
-                       className="w-full bg-primary hover:bg-primary/90 text-foreground mt-auto"
+                       className="w-full bg-primary hover:bg-primary/90 text-primary-foreground mt-auto"
                        onClick={exportReportPDF}
                      >
                         <Download className="mr-2 h-4 w-4" /> Export as PDF

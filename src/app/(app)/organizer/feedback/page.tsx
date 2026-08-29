@@ -147,7 +147,7 @@ export default function OrganizerFeedbackPage() {
                       <Button variant="outline" size="sm" className="border-border hover:bg-card" onClick={() => handleStartBuilder(event.id)}>
                         <Settings className="w-4 h-4 mr-2" /> Questionnaire
                       </Button>
-                      <Button size="sm" className="bg-primary hover:bg-primary/90 text-foreground" asChild>
+                      <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground" asChild>
                         <Link href={`/organizer/feedback/${event.id}`}>
                            <BarChart3 className="w-4 h-4 mr-2" /> Analytics
                         </Link>

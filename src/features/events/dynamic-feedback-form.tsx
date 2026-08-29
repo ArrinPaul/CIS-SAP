@@ -214,7 +214,7 @@ export function DynamicFeedbackForm({ eventId, template, onSuccess }: DynamicFee
         <CardFooter className="p-8 bg-card border-t border-border/50">
           <Button 
             type="submit" 
-            className="w-full h-12 bg-primary hover:bg-primary/90 text-foreground font-bold text-lg"
+            className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-lg"
             disabled={isSubmitting}
           >
             {isSubmitting ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Send className="mr-2 h-5 w-5" />}

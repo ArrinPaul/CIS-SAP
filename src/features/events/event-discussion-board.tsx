@@ -148,7 +148,7 @@ export function EventDiscussionBoard({ eventId }: EventDiscussionBoardProps) {
                 <Button 
                   onClick={handleSubmit} 
                   disabled={!content.trim() || submitting || !user}
-                  className="bg-primary hover:bg-primary/90 text-foreground rounded-full px-6"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-6"
                 >
                   {submitting ? <Clock className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4 mr-2" />}
                   {t('post')}

@@ -127,15 +127,15 @@ export default function NetworkingClient() {
 
       <Tabs defaultValue="ai-matches" className="w-full">
         <TabsList className="bg-card border border-border p-1 mb-8">
-          <TabsTrigger value="ai-matches" className="data-[state=active]:bg-primary data-[state=active]:text-foreground">
+          <TabsTrigger value="ai-matches" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
             <Sparkles className="w-4 h-4 mr-2" />
             {t('aiMatchmaking')}
           </TabsTrigger>
-          <TabsTrigger value="discover" className="data-[state=active]:bg-primary data-[state=active]:text-foreground">
+          <TabsTrigger value="discover" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
             <Users className="w-4 h-4 mr-2" />
             {t('discoverAll')}
           </TabsTrigger>
-          <TabsTrigger value="connections" className="data-[state=active]:bg-primary data-[state=active]:text-foreground">
+          <TabsTrigger value="connections" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
             <MessageSquare className="w-4 h-4 mr-2" />
             {t('myConnections')}
           </TabsTrigger>
@@ -168,7 +168,7 @@ export default function NetworkingClient() {
                       {u.bio || u.interests || t('noBio')}
                     </p>
                     <Button 
-                      className="w-full bg-card hover:bg-primary hover:text-foreground border-border text-foreground/80" 
+                      className="w-full bg-card hover:bg-primary hover:text-primary-foreground border-border text-foreground/80" 
                       onClick={() => handleConnect(u.id)}
                       disabled={connections.some((c: any) => c.id === u.id)}
                     >
@@ -208,7 +208,7 @@ export default function NetworkingClient() {
                       </div>
                     </div>
                     <div className="flex gap-2">
-                      <Button size="sm" className="bg-primary hover:bg-primary/90 text-foreground" onClick={async () => { await respondToConnectionRequest(c.id, true); toast({ title: t('accepted') }); }}>
+                      <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground" onClick={async () => { await respondToConnectionRequest(c.id, true); toast({ title: t('accepted') }); }}>
                         <Check className="w-4 h-4 mr-1" /> {t('accept')}
                       </Button>
                       <Button size="sm" variant="outline" className="border-border text-destructive hover:bg-destructive/10" onClick={async () => { await respondToConnectionRequest(c.id, false); toast({ title: t('declined') }); }}>
