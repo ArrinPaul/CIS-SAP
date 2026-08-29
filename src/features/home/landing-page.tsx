@@ -82,7 +82,7 @@ const MODULES = [
               <p className="text-[10px] text-foreground/70 leading-tight font-bold">Protocol check: Have you verified your session encryption keys?</p>
            </div>
            <div className="self-end bg-notion-primary p-3 rounded-2xl rounded-tr-none max-w-[80%] text-notion-on-primary">
-              <p className="text-[10px] font-medium leading-tight">Uplink confirmed. Nodes are synchronized. 🚀</p>
+              <p className="text-[10px] font-medium leading-tight">Uplink confirmed. Nodes are synchronized.</p>
            </div>
         </div>
       </div>

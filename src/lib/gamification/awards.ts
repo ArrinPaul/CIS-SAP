@@ -40,8 +40,8 @@ export async function awardBadge(userId: string, badgeCode: string) {
     // Notify
     await db.insert(notifications).values({
       userId,
-      title: 'New Badge Unlocked!',
-      message: `You've earned the "${badge.name}" badge!`,
+      title: 'New badge earned',
+      message: `You earned the "${badge.name}" badge.`,
       type: 'success',
     });
 
@@ -50,7 +50,7 @@ export async function awardBadge(userId: string, badgeCode: string) {
       userId,
       type: 'badge_awarded',
       targetId: badge.id,
-      content: `Unlocked the "${badge.name}" badge! 🏆`,
+      content: `Earned the "${badge.name}" badge.`,
       metadata: { badgeName: badge.name, badgeIcon: badge.icon }
     });
 
@@ -155,8 +155,8 @@ export async function awardXP(userId: string, amount: number, reason: string) {
     if (leveledUp) {
       await db.insert(notifications).values({
         userId,
-        title: `Level Up!`,
-        message: `Congratulations! You reached Level ${newLevel}!`,
+        title: 'Level up',
+        message: `You reached level ${newLevel}.`,
         type: 'success',
       });
 
@@ -164,7 +164,7 @@ export async function awardXP(userId: string, amount: number, reason: string) {
       await logActivity({
         userId,
         type: 'badge_awarded',
-        content: `Reached Level ${newLevel}! 🚀`,
+        content: `Reached level ${newLevel}.`,
         metadata: { level: newLevel }
       });
     }

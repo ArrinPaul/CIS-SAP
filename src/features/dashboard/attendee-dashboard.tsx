@@ -201,7 +201,7 @@ export default function AttendeeDashboard() {
                   <div className="grid md:grid-cols-12">
                     <div className="md:col-span-7 p-8 md:p-10 flex flex-col justify-between space-y-10">
                        <div className="space-y-6">
-                          <Badge variant="success">Confirmed Access</Badge>
+                          <Badge variant="secondary">Confirmed Access</Badge>
                           <h3 className="text-3xl font-display font-bold leading-[1.1] group-hover:text-notion-primary transition-colors text-notion-ink">
                              {upcomingEvent.title}
                           </h3>

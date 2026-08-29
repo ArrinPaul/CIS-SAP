@@ -68,12 +68,12 @@ export function EngagementMetrics({ stats }: EngagementMetricsProps) {
           <div className="flex items-center justify-between">
              <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                   <div className="p-1.5 rounded-lg bg-notion-accent-sky/10 text-notion-accent-sky">
+                   <div className="p-1.5 rounded-lg bg-notion-sunken text-notion-ink-secondary">
                      <TrendingUp className="w-4 h-4" />
                    </div>
-                   <CardTitle className="text-xl font-bold tracking-tight">Engagement Profile</CardTitle>
+                   <CardTitle className="font-display text-h3">Engagement Profile</CardTitle>
                 </div>
-                <CardDescription className="text-sm font-medium text-notion-ink-muted">Real-time analysis of your network activity.</CardDescription>
+                <CardDescription>Real-time analysis of your network activity.</CardDescription>
              </div>
              <Badge variant="secondary">Validated</Badge>
           </div>
@@ -85,7 +85,7 @@ export function EngagementMetrics({ stats }: EngagementMetricsProps) {
                 <span className="font-display text-metric-lg tabular text-notion-ink">{score}</span>
                 <div className="space-y-1">
                    <p className="text-body-sm font-medium text-notion-ink">{getRank(displayStats.level)}</p>
-                   <Badge className="bg-notion-accent-green/10 text-notion-accent-green border-none text-[10px] font-bold px-2 py-0">Top {100 - percentile}% Network</Badge>
+                   <Badge variant="secondary">Top {100 - percentile}% Network</Badge>
                 </div>
              </div>
              
@@ -94,12 +94,12 @@ export function EngagementMetrics({ stats }: EngagementMetricsProps) {
                   <span>Sync Progression</span>
                   <span className="text-notion-ink">XP: {displayStats.xp} / {Math.pow(displayStats.level, 2) * 100}</span>
                 </div>
-                <div className="h-2.5 w-full bg-notion-canvas-soft rounded-full overflow-hidden border border-notion-hairline shadow-inner">
+                <div className="h-2 w-full bg-notion-sunken rounded-full overflow-hidden">
                    <motion.div 
                      initial={{ width: 0 }}
                      animate={{ width: `${Math.min(100, (displayStats.xp / (Math.pow(displayStats.level, 2) * 100)) * 100)}%` }}
                      transition={{ duration: 1.5, ease: "easeOut" }}
-                     className="h-full bg-gradient-to-r from-notion-primary to-notion-accent-sky shadow-sm" 
+                     className="h-full rounded-full bg-notion-primary" 
                    />
                 </div>
              </div>
@@ -107,7 +107,7 @@ export function EngagementMetrics({ stats }: EngagementMetricsProps) {
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
             {metrics.map((stat, i) => (
-              <div key={i} className="p-4 rounded-2xl bg-notion-canvas-soft/50 border border-notion-hairline flex flex-col gap-4 hover:bg-notion-surface dark:hover:bg-zinc-900 transition-colors cursor-default group/stat">
+              <div key={i} className="p-4 rounded-2xl bg-notion-sunken flex flex-col gap-4 hover:bg-accent transition-colors cursor-default group/stat">
                 <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center transition-transform group-hover/stat:scale-110 shadow-sm", stat.bg)}>
                   <stat.icon size={18} className={stat.color} /> 
                 </div>

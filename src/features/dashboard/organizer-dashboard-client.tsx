@@ -118,18 +118,18 @@ export default function OrganizerDashboard() {
       {/* KPI STATS */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {[
-          { label: 'Active Events', value: managedEvents.length, icon: Calendar, color: 'text-notion-primary', bg: 'bg-notion-primary/5', trend: '+2.4%' },
-          { label: 'Total Registrations', value: totalRegistrations.toLocaleString(), icon: Users, color: 'text-notion-accent-teal', bg: 'bg-notion-accent-teal/5', trend: '+12.1%' },
+          { label: 'Active Events', value: managedEvents.length, icon: Calendar, color: 'text-notion-ink-secondary', bg: 'bg-notion-sunken', trend: '+2.4%' },
+          { label: 'Total Registrations', value: totalRegistrations.toLocaleString(), icon: Users, color: 'text-notion-ink-secondary', bg: 'bg-notion-sunken', trend: '+12.1%' },
         ].map((stat, i) => (
-          <Card key={i} className="group hover:shadow-notion-soft transition-all duration-500 border-notion-hairline overflow-hidden bg-white dark:bg-zinc-950 rounded-[2rem]">
+          <Card key={i} variant="elevated-hover" className="group overflow-hidden">
             <CardContent className="p-8 relative">
-               <div className="absolute top-0 right-0 w-32 h-32 bg-notion-primary/5 blur-[40px] rounded-full -mr-16 -mt-16 group-hover:bg-notion-primary/10 transition-colors" />
+               
                <div className="relative z-10 flex flex-col justify-between h-full space-y-10">
                   <div className="flex justify-between items-start">
-                     <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center border border-notion-hairline shadow-sm transition-transform group-hover:scale-110", stat.bg)}>
+                     <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-105", stat.bg)}>
                        <stat.icon className={cn("w-7 h-7", stat.color)} />
                      </div>
-                     <Badge variant="secondary" className="bg-notion-accent-green/10 text-notion-accent-green border-none px-3 py-1 font-bold text-[10px]">
+                     <Badge variant="secondary">
                        <ArrowUpRight size={12} className="mr-1" /> {stat.trend}
                      </Badge>
                   </div>
@@ -202,8 +202,10 @@ export default function OrganizerDashboard() {
                         <span className="flex items-center gap-2"><Users size={12} className="text-notion-primary" /> {event.registeredCount || 0} Registered</span>
                         <span className="flex items-center gap-2"><MapPin size={12} className="text-notion-primary" /> {typeof event.location === 'string' ? event.location : event.location?.venue || 'Digital'}</span>
                         <Badge className={cn(
-                           "text-[9px] font-black px-2 py-0 border-none uppercase tracking-[0.2em]",
-                           event.status === 'published' ? "bg-emerald-500/10 text-emerald-500" : "bg-notion-ink-faint/10 text-notion-ink-faint"
+                           "capitalize",
+                           event.status === 'published'
+                             ? "bg-notion-primary text-notion-on-primary"
+                             : "bg-notion-sunken text-notion-ink-muted"
                         )}>
                           {event.status}
                         </Badge>
@@ -250,7 +252,7 @@ export default function OrganizerDashboard() {
                     <div className="w-14 h-14 rounded-2xl bg-notion-accent-purple/10 flex items-center justify-center text-notion-accent-purple group-hover:scale-110 transition-transform shadow-sm">
                       <BrainCircuit size={28} />
                     </div>
-                    <Badge className="bg-notion-accent-sky/10 text-notion-accent-sky border-none text-[9px] font-black uppercase tracking-widest">Insights</Badge>
+                    <Badge variant="secondary">Insights</Badge>
                   </div>
                   <div className="space-y-2">
                      <h3 className="text-xl font-bold tracking-tight text-notion-ink group-hover:text-notion-primary transition-colors line-clamp-2">{event.title}</h3>
