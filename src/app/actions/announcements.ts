@@ -3,8 +3,12 @@
 import { db } from '@/lib/db';
 import { activityFeed } from '@/lib/db/schema';
 import { and, desc, eq, gt, or, sql } from 'drizzle-orm';
+import { auth } from '@clerk/nextjs/server';
 
 export async function getActiveAnnouncements(eventId: string) {
+  // Organizer announcements are addressed to attendees, not the public.
+  const { userId } = await auth();
+  if (!userId) return [];
   try {
     const rows = await db
       .select()

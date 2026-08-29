@@ -3,8 +3,11 @@
 import { db } from '@/lib/db';
 import { events, users, communities, tickets } from '@/lib/db/schema';
 import { ilike, or, and, eq, sql, desc } from 'drizzle-orm';
+import { auth } from '@clerk/nextjs/server';
 
 export async function globalSearch(query: string) {
+  const { userId } = await auth();
+  if (!userId) return { events: [], users: [], communities: [] };
   if (!query || query.length < 2) return { events: [], users: [], communities: [] };
 
   const searchTerm = `%${query}%`;
