@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { handlePaymentWebhook } from '@/app/actions/payments';
-import { refundOrder } from '@/app/actions/orders';
+import { refundOrderInternal } from '@/app/actions/orders';
 import { db } from '@/lib/db';
 import { orders } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
         });
 
         if (order) {
-          const result = await refundOrder(order.id);
+          const result = await refundOrderInternal(order.id);
           if (!result.success) {
             logger.error('Refund processing failed', result);
           }

@@ -5,7 +5,7 @@ import { eventUpdates, events, tickets, users } from '@/lib/db/schema';
 import { eq, and, desc } from 'drizzle-orm';
 import { auth } from '@clerk/nextjs/server';
 import { revalidatePath } from 'next/cache';
-import { validateRole } from '@/lib/auth-utils';
+import { validateEventOwnership, validateRole } from '@/lib/auth-utils';
 import { logger } from '@/lib/logger';
 import { sendEmail, constructAnnouncementEmail } from '@/core/services/email';
 
@@ -17,7 +17,9 @@ export async function createEventUpdate(data: {
   sendEmail?: boolean;
   recipientRoles?: string[];
 }) {
-  const user = await validateRole(['organizer', 'admin']);
+  // This publishes to — and emails — the event's attendees, so it has to be
+  // scoped to that event's organisers.
+  const user = await validateEventOwnership(data.eventId);
   if (!user) return { success: false, error: 'Unauthorized' };
 
   try {
@@ -99,7 +101,13 @@ export async function getEventUpdates(eventId: string) {
 }
 
 export async function deleteEventUpdate(updateId: string) {
-  const user = await validateRole(['organizer', 'admin']);
+  const existing = await db.query.eventUpdates.findFirst({
+    where: eq(eventUpdates.id, updateId),
+    columns: { eventId: true },
+  });
+  if (!existing) return { success: false, error: 'Update not found' };
+
+  const user = await validateEventOwnership(existing.eventId);
   if (!user) return { success: false, error: 'Unauthorized' };
 
   try {

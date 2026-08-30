@@ -2,7 +2,7 @@
 
 import { db } from '@/lib/db';
 import { events, tickets } from '@/lib/db/schema';
-import { eq, and, sql } from 'drizzle-orm';
+import { eq, and, lt, or, sql } from 'drizzle-orm';
 import { auth } from '@clerk/nextjs/server';
 import { revalidatePath } from 'next/cache';
 import { logger } from '@/lib/logger';
@@ -164,10 +164,20 @@ export async function processFreeRegistration(eventId: string, tierId?: string) 
         expiresAt,
       });
 
-      await tx
+      // Re-check capacity in the incrementing statement so concurrent
+      // registrations cannot both pass the pre-check and oversell the event.
+      const [updatedEvent] = await tx
         .update(events)
         .set({ registeredCount: sql`${events.registeredCount} + 1` })
-        .where(eq(events.id, eventId));
+        .where(and(
+          eq(events.id, eventId),
+          or(eq(events.capacity, -1), lt(events.registeredCount, events.capacity))
+        ))
+        .returning();
+
+      if (!updatedEvent) {
+        throw new Error('Event is sold out');
+      }
     });
 
     revalidatePath(`/events/${eventId}`);

@@ -83,8 +83,10 @@ export async function getAIRecommendations(userId?: string): Promise<AIEventReco
     if (!userEmbedding && (user.interests || user.bio)) {
       const textToEmbed = `${user.name} interests: ${user.interests || ''}. Bio: ${user.bio || ''}`;
       const embeddingResult = await generateEmbedding(textToEmbed);
-      if (embeddingResult && (embeddingResult as any).embedding) {
-        userEmbedding = (embeddingResult as any).embedding.values;
+      // ai.embed() resolves to [{ embedding: number[] }], not { embedding: { values } }.
+      const vector = embeddingResult?.[0]?.embedding;
+      if (vector) {
+        userEmbedding = vector;
         // Update user record with the new embedding
         await db.update(users).set({ embedding: userEmbedding }).where(eq(users.id, targetUserId));
       }
@@ -166,7 +168,10 @@ export async function getAIConnectionRecommendations(userId?: string): Promise<A
   // No session means no suggestions — not an error worth crashing the caller.
   if (!callerId) return [];
 
-  const targetUserId = userId || callerId;
+  // Suggestions are derived from the target's private profile, so they are only
+  // ever computed for the caller themselves.
+  const targetUserId = callerId;
+  void userId;
 
   try {
     const user = await db.query.users.findFirst({
@@ -182,8 +187,10 @@ export async function getAIConnectionRecommendations(userId?: string): Promise<A
     if (!userEmbedding && (user.interests || user.bio)) {
       const textToEmbed = `User Profile - Interests: ${user.interests || ''}. Bio: ${user.bio || ''}`;
       const embeddingResult = await generateEmbedding(textToEmbed);
-      if (embeddingResult && (embeddingResult as any).embedding) {
-        userEmbedding = (embeddingResult as any).embedding.values;
+      // ai.embed() resolves to [{ embedding: number[] }], not { embedding: { values } }.
+      const vector = embeddingResult?.[0]?.embedding;
+      if (vector) {
+        userEmbedding = vector;
         await db.update(users).set({ embedding: userEmbedding }).where(eq(users.id, targetUserId));
       }
     }
@@ -267,6 +274,10 @@ export async function getAIConnectionRecommendations(userId?: string): Promise<A
 export async function getAIContentRecommendations(userId?: string): Promise<AIContentRecommendation[]> {
   const caller = await validateRole(['attendee', 'organizer', 'admin', 'professional', 'student', 'speaker', 'vendor']);
   const targetUserId = userId || caller.id;
+
+  if (targetUserId !== caller.id && caller.role !== 'admin') {
+    throw new Error('Unauthorized');
+  }
 
   try {
     const user = await db.query.users.findFirst({

@@ -22,9 +22,26 @@ export async function upsertCertificateTemplate(data: {
   isDefault?: boolean;
 }) {
   const user = await validateRole(['organizer', 'admin']);
-  
+
   if (data.eventId) {
     await validateEventOwnership(data.eventId);
+  }
+
+  if (data.id) {
+    // Editing an existing template: authorise against the event it belongs to,
+    // not just against whatever eventId the caller happened to send.
+    const existing = await db.query.certificateTemplates.findFirst({
+      where: eq(certificateTemplates.id, data.id),
+    });
+    if (!existing) throw new Error('Certificate template not found');
+    if (existing.eventId) {
+      await validateEventOwnership(existing.eventId);
+    } else {
+      await validateRole(['admin']);
+    }
+  } else if (!data.eventId) {
+    // Global (default) templates are platform-wide.
+    await validateRole(['admin']);
   }
 
   try {
@@ -70,6 +87,12 @@ export async function upsertCertificateTemplate(data: {
  * Get all templates for an event or global defaults
  */
 export async function getCertificateTemplates(eventId?: string) {
+  if (eventId) {
+    await validateEventOwnership(eventId);
+  } else {
+    await validateRole(['organizer', 'admin']);
+  }
+
   try {
     const conditions = [];
     if (eventId) {
@@ -200,6 +223,8 @@ export async function sendCertificateEmail(ticketId: string) {
 
   if (ticketData.length === 0) throw new Error('Ticket not found');
   const { ticket, event, user } = ticketData[0];
+
+  await validateEventOwnership(event.id);
 
   if (!ticket.personalizedMessage) {
     throw new Error('Certificate not yet issued. Issue it first to generate the message.');

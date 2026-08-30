@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { sql } from 'drizzle-orm';
+import { logger } from '@/lib/logger';
 
 export async function GET() {
   try {
@@ -18,6 +19,7 @@ export async function GET() {
       },
     });
   } catch (error: any) {
+    logger.error('Health check failed', error);
     return NextResponse.json(
       {
         status: 'error',
@@ -25,7 +27,6 @@ export async function GET() {
         service: 'Eventra',
         database: {
           status: 'down',
-          error: error.message || String(error),
         },
       },
       { status: 503 }

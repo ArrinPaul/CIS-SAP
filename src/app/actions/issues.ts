@@ -5,7 +5,7 @@ import { issues, events, users } from '@/lib/db/schema';
 import { eq, and, or, sql, desc } from 'drizzle-orm';
 import { auth } from '@clerk/nextjs/server';
 import { revalidatePath } from 'next/cache';
-import { validateRole } from '@/lib/auth-utils';
+import { validateEventOwnership, validateRole } from '@/lib/auth-utils';
 import { logger } from '@/lib/logger';
 
 export async function createIssue(data: {
@@ -56,7 +56,9 @@ export async function getEventIssues(eventId: string, filters?: {
   severity?: string;
   category?: string;
 }) {
-  const user = await validateRole(['organizer', 'admin']);
+  // Issue rows carry the reporter's name and email, so scope to this event's
+  // organisers rather than to the organizer role at large.
+  const user = await validateEventOwnership(eventId);
   if (!user) return [];
 
   try {
@@ -80,7 +82,13 @@ export async function getEventIssues(eventId: string, filters?: {
 }
 
 export async function updateIssueStatus(issueId: string, status: string, adminNotes?: string) {
-  const user = await validateRole(['organizer', 'admin']);
+  const issue = await db.query.issues.findFirst({
+    where: eq(issues.id, issueId),
+    columns: { eventId: true },
+  });
+  if (!issue) return { success: false, error: 'Issue not found' };
+
+  const user = await validateEventOwnership(issue.eventId);
   if (!user) return { success: false, error: 'Unauthorized' };
 
   try {

@@ -100,7 +100,7 @@ export async function ingestExternalEvent(data: {
     // Generate embedding for recommendation support
     const embeddingContent = `${data.title} ${data.category} ${data.description}`;
     const embeddingResult = await generateEmbedding(embeddingContent);
-    const embedding = (embeddingResult as any)?.embedding?.values;
+    const embedding = embeddingResult?.[0]?.embedding;
 
     const [newEvent] = await db.insert(events).values({
       slug,

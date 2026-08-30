@@ -5,11 +5,12 @@ import { events, users } from '@/lib/db/schema';
 import { eq, desc, and, or, ilike, sql } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { validateRole, validateEventOwnership } from '@/lib/auth-utils';
+import { auth } from '@clerk/nextjs/server';
 import { generateEmbedding } from '@/lib/ai';
 import { RRule } from 'rrule';
 import { z } from 'zod';
 
-import { logActivity } from './feed';
+import { logActivity } from '@/lib/activity-log';
 import { awardXP } from '@/lib/gamification/awards';
 
 export type ActionResponse<T> = {
@@ -58,10 +59,15 @@ export async function getEvents(filters?: {
   try {
     const conditions = [];
 
-    if (filters?.status) {
-      conditions.push(eq(events.status, filters.status as any));
-    } else {
-      conditions.push(eq(events.status, 'published'));
+    // Only published events are browsable, and a caller cannot widen that by
+    // passing a status. Non-public listings stay out of the feed unless the
+    // caller is asking for their own events.
+    conditions.push(eq(events.status, 'published'));
+
+    const { userId: callerId } = await auth();
+    const isOwnListing = Boolean(filters?.organizerId && callerId && filters.organizerId === callerId);
+    if (!isOwnListing) {
+      conditions.push(eq(events.visibility, 'public'));
     }
 
     if (filters?.organizerId) {
@@ -126,7 +132,7 @@ export async function getEvents(filters?: {
 export async function getCalendarEvents() {
   try {
     const result = await db.select().from(events)
-      .where(eq(events.status, 'published'))
+      .where(and(eq(events.status, 'published'), eq(events.visibility, 'public')))
       .orderBy(events.startDate);
     return result;
   } catch (error) {
@@ -215,6 +221,8 @@ export async function createEvent(rawInput: any): Promise<ActionResponse<any>> {
  * Helper to generate child instances for a recurring event
  */
 export async function generateRecurringInstances(parentId: string, ruleString: string) {
+  await validateEventOwnership(parentId);
+
   const parent = await db.query.events.findFirst({ where: eq(events.id, parentId) });
   if (!parent) return;
 
@@ -229,17 +237,23 @@ export async function generateRecurringInstances(parentId: string, ruleString: s
 
     const duration = parent.endDate.getTime() - parent.startDate.getTime();
 
-    const instances = dates.map(date => ({
-      ...parent,
-      id: crypto.randomUUID() as any, // Need new UUIDs
-      startDate: date,
-      endDate: new Date(date.getTime() + duration),
-      isRecurring: false,
-      parentEventId: parent.id,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      embedding: null,
-    }));
+    const instances = dates.map(date => {
+      const { id: _id, slug: _slug, ...rest } = parent;
+      return {
+        ...rest,
+        // `slug` is unique, so every instance needs its own.
+        slug: `${slugify(parent.title)}-${Math.random().toString(36).substring(2, 9)}`,
+        startDate: date,
+        endDate: new Date(date.getTime() + duration),
+        isRecurring: false,
+        parentEventId: parent.id,
+        registeredCount: 0,
+        externalId: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        embedding: null,
+      };
+    });
 
     await db.insert(events).values(instances as any);
   } catch (error) {
@@ -319,13 +333,17 @@ export async function cloneEvent(id: string) {
 
     if (!originalEvent) return { success: false, error: 'Original event not found' };
 
-    const { id: _, createdAt: __, updatedAt: ___, embedding: ____, ...cloneData } = originalEvent;
+    const { id: _, slug: __, createdAt: ___, updatedAt: ____, embedding: _____, ...cloneData } = originalEvent;
 
     const clonedEvent = await db.insert(events).values({
       ...cloneData,
+      // `slug` and `externalId` are unique per event; the clone needs its own.
+      slug: `${slugify(originalEvent.title)}-${Math.random().toString(36).substring(2, 7)}`,
       title: `${originalEvent.title} (Clone)`,
       status: 'draft',
       organizerId: user.id,
+      externalId: null,
+      registeredCount: 0,
     } as any).returning();
 
     revalidatePath('/organizer');
@@ -340,7 +358,7 @@ export async function cloneEvent(id: string) {
 /**
  * Store embedding for an event
  */
-export async function updateEventEmbedding(eventId: string) {
+async function updateEventEmbedding(eventId: string) {
   try {
     const event = await db.query.events.findFirst({
       where: eq(events.id, eventId)
@@ -370,6 +388,11 @@ export async function updateEventEmbedding(eventId: string) {
  * Optimized vector similarity
  */
 export async function getRecommendedEventsByVector(userId: string) {
+  const { userId: callerId } = await auth();
+  if (!callerId) return [];
+  // Recommendations are personal; a caller only gets their own.
+  userId = callerId;
+
   try {
     const user = await db.query.users.findFirst({
       where: eq(users.id, userId)

@@ -8,7 +8,7 @@ import { revalidatePath } from 'next/cache';
 import { validateRole } from '@/lib/auth-utils';
 import { z } from 'zod';
 
-import { logActivity } from './feed';
+import { logActivity } from '@/lib/activity-log';
 import { awardXP } from '@/lib/gamification/awards';
 
 // --- SCHEMAS ---

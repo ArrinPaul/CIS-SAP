@@ -5,7 +5,7 @@ import { reports, events } from '@/lib/db/schema';
 import { eq, desc } from 'drizzle-orm';
 import { auth } from '@clerk/nextjs/server';
 import { revalidatePath } from 'next/cache';
-import { validateRole } from '@/lib/auth-utils';
+import { validateEventOwnership, validateRole } from '@/lib/auth-utils';
 import { logger } from '@/lib/logger';
 import { generateEventReport } from './ai-reports';
 
@@ -34,6 +34,9 @@ export async function generateAndSaveReport(eventId: string, highlights?: string
 }
 
 export async function getEventReports(eventId: string) {
+  // Reports include revenue and attendance figures.
+  await validateEventOwnership(eventId);
+
   try {
     const result = await db
       .select()

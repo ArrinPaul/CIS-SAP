@@ -21,6 +21,15 @@ function sanitizeMediaError(error: any, fallback: string): never {
   throw new Error(fallback);
 }
 
+function isSafeMediaUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === 'https:' || parsed.protocol === 'http:';
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Upload event media (Attendee or Organizer)
  */
@@ -33,6 +42,12 @@ export async function uploadEventMedia(data: {
 }) {
   const { userId } = await auth();
   if (!userId) throw new Error('Authentication required');
+
+  // The URL is rendered as an <img> src and handed back to every gallery
+  // viewer, so only http(s) is accepted here.
+  if (!isSafeMediaUrl(data.url)) {
+    throw new Error('Media URL must be an http(s) URL');
+  }
 
   try {
     // 1. Check if user is organizer/staff (Auto-approve) or attendee
@@ -193,6 +208,9 @@ export async function toggleMediaVisibility(mediaId: string, visibility: 'public
  * Track media view or download
  */
 export async function trackMediaEngagement(mediaId: string, type: 'view' | 'download') {
+  const { userId } = await auth();
+  if (!userId) return { success: false };
+
   try {
     if (type === 'view') {
       await db

@@ -5,10 +5,12 @@ import { kanbanTasks } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { auth } from '@clerk/nextjs/server';
 import { revalidatePath } from 'next/cache';
-import { validateRole } from '@/lib/auth-utils';
+import { validateEventOwnership } from '@/lib/auth-utils';
 import { logger } from '@/lib/logger';
 
 export async function getEventTasks(eventId: string) {
+  await validateEventOwnership(eventId);
+
   try {
     const result = await db
       .select()
@@ -23,7 +25,8 @@ export async function getEventTasks(eventId: string) {
 }
 
 export async function saveEventTasks(eventId: string, tasks: any[]) {
-  const user = await validateRole(['organizer', 'admin']);
+  // Ownership, not just the organizer role: this replaces the whole board.
+  const user = await validateEventOwnership(eventId);
   if (!user) return { success: false, error: 'Unauthorized' };
 
   try {
@@ -52,6 +55,13 @@ export async function saveEventTasks(eventId: string, tasks: any[]) {
 }
 
 export async function updateTaskColumn(taskId: string, column: string) {
+  const task = await db.query.kanbanTasks.findFirst({
+    where: eq(kanbanTasks.taskId, taskId),
+    columns: { eventId: true },
+  });
+  if (!task) return { success: false, error: 'Task not found' };
+  await validateEventOwnership(task.eventId);
+
   try {
     await db
       .update(kanbanTasks)

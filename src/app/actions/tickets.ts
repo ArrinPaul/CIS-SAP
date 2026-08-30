@@ -1,9 +1,10 @@
 'use server';
 
 import { db } from '@/lib/db';
-import { tickets, events } from '@/lib/db/schema';
-import { eq, and, isNull, lt, sql, or } from 'drizzle-orm';
-import { validateRole } from '@/lib/auth-utils';
+import { tickets } from '@/lib/db/schema';
+import { eq, isNull, sql, or } from 'drizzle-orm';
+import { validateRole, validateStaffPermission } from '@/lib/auth-utils';
+import { refreshExpiredTicketStatuses } from '@/lib/ticket-status';
 import { revalidatePath } from 'next/cache';
 
 /**
@@ -40,38 +41,19 @@ export async function syncTicketQRCodes() {
  * Marks confirmed tickets as 'expired' if the event has ended.
  */
 export async function refreshTicketStatuses(eventId?: string, shouldRevalidate: boolean = true) {
-  // Can be called by anyone but ideally triggered by a cron job or admin
-  
+  // Mass status mutation: admins only. Server components that just want the
+  // sweep should call refreshExpiredTicketStatuses() directly.
+  await validateRole(['admin']);
+
   try {
-    const now = new Date();
-    
-    // Find events that have already ended
-    const finishedEvents = await db
-      .select({ id: events.id })
-      .from(events)
-      .where(eventId ? and(eq(events.id, eventId), lt(events.endDate, now)) : lt(events.endDate, now));
-
-    if (finishedEvents.length === 0) return { success: true, updatedCount: 0 };
-
-    const eventIds = finishedEvents.map(e => e.id);
-
-    // Update tickets for these events that are still in 'confirmed' or 'pending' state
-    await db
-      .update(tickets)
-      .set({ status: 'expired' })
-      .where(
-        and(
-          sql`${tickets.eventId} IN ${eventIds}`,
-          or(eq(tickets.status, 'confirmed'), eq(tickets.status, 'pending'))
-        )
-      );
+    const { updatedCount } = await refreshExpiredTicketStatuses(eventId);
 
     if (shouldRevalidate) {
       revalidatePath('/tickets');
       if (eventId) revalidatePath(`/events/${eventId}`);
     }
 
-    return { success: true, updatedCount: finishedEvents.length, error: null as string | null };
+    return { success: true, updatedCount, error: null as string | null };
   } catch (error) {
     console.warn('Failed to refresh ticket statuses (non-blocking):', error);
     // Return gracefully instead of throwing - DB may be unavailable during build
@@ -83,6 +65,15 @@ export async function refreshTicketStatuses(eventId?: string, shouldRevalidate: 
  * Get ticket details by ticket number (used for internal verification)
  */
 export async function getTicketByNumber(ticketNumber: string) {
+  // The record carries the entry code and the holder's contact details, so it
+  // is only for staff who are allowed to scan for that event.
+  const ticket = await db.query.tickets.findFirst({
+    where: eq(tickets.ticketNumber, ticketNumber),
+    columns: { eventId: true },
+  });
+  if (!ticket) return null;
+  await validateStaffPermission(ticket.eventId, 'scan_tickets');
+
   try {
     const result = await db.query.tickets.findFirst({
       where: eq(tickets.ticketNumber, ticketNumber),
