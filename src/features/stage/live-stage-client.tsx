@@ -36,6 +36,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/core/utils/utils';
 import { useRealtimeBroadcast } from '@/hooks/use-realtime-subscription';
+import { WebRTCStageManager } from '@/core/utils/webrtc-stage';
 
 interface LiveStageClientProps {
   event: {
@@ -78,6 +79,17 @@ export default function LiveStageClient({ event }: LiveStageClientProps) {
   ]);
   const [newMessage, setNewMessage] = useState('');
   const [raisedHands, setRaisedHands] = useState<{ id: string; name: string }[]>([]);
+  const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
+  const [isStageLive, setIsStageLive] = useState<boolean>(false);
+
+  const localVideoRef = useRef<HTMLVideoElement>(null);
+  const remoteVideoRef = useRef<HTMLVideoElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const screenStreamRef = useRef<MediaStream | null>(null);
+  const stageContainerRef = useRef<HTMLDivElement>(null);
+  const webrtcManagerRef = useRef<WebRTCStageManager | null>(null);
+
+  const isOrganizer = user && (user.id === event.organizerId || user.role === 'admin');
 
   // Realtime Broadcast Channel for Live Stage Events & Presence
   const { broadcast, onlineCount } = useRealtimeBroadcast(
@@ -86,7 +98,7 @@ export default function LiveStageClient({ event }: LiveStageClientProps) {
       presenceData: {
         userId: user?.id,
         name: user?.name || 'Attendee',
-        isHost: !!(user && (user.id === event.organizerId || user.role === 'admin')),
+        isHost: !!isOrganizer,
       },
       onMessage: (broadcastEvent, payload) => {
         if (broadcastEvent === 'reaction') {
@@ -113,17 +125,37 @@ export default function LiveStageClient({ event }: LiveStageClientProps) {
           } else {
             setRaisedHands(prev => prev.filter(h => h.id !== payload.userId));
           }
+        } else if (broadcastEvent === 'webrtc') {
+          webrtcManagerRef.current?.handleSignal(payload);
         }
       },
     }
   );
 
-  const localVideoRef = useRef<HTMLVideoElement>(null);
-  const streamRef = useRef<MediaStream | null>(null);
-  const screenStreamRef = useRef<MediaStream | null>(null);
-  const stageContainerRef = useRef<HTMLDivElement>(null);
+  // Initialize WebRTC Stage Engine
+  useEffect(() => {
+    const manager = new WebRTCStageManager({
+      localUserId: user?.id || `anon_${Math.random().toString(36).slice(2, 7)}`,
+      isHost: !!isOrganizer,
+      onRemoteStream: (stream) => {
+        setRemoteStream(stream);
+        if (remoteVideoRef.current) {
+          remoteVideoRef.current.srcObject = stream;
+        }
+      },
+      onHostStatusChange: (isActive) => {
+        setIsStageLive(isActive);
+      },
+      sendSignal: (signal) => {
+        broadcast('webrtc', signal);
+      },
+    });
+    webrtcManagerRef.current = manager;
 
-  const isOrganizer = user && (user.id === event.organizerId || user.role === 'admin');
+    return () => {
+      manager.destroy();
+    };
+  }, [broadcast, isOrganizer, user?.id]);
 
   // Toggle Camera
   const toggleCamera = async () => {
@@ -132,6 +164,7 @@ export default function LiveStageClient({ event }: LiveStageClientProps) {
         streamRef.current.getVideoTracks().forEach(track => track.stop());
       }
       setIsCameraOn(false);
+      webrtcManagerRef.current?.setLocalStream(null);
     } else {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: isMicOn });
@@ -140,6 +173,7 @@ export default function LiveStageClient({ event }: LiveStageClientProps) {
           localVideoRef.current.srcObject = stream;
         }
         setIsCameraOn(true);
+        webrtcManagerRef.current?.setLocalStream(stream);
         toast({ title: 'Camera Enabled' });
       } catch (err) {
         console.warn('Camera access denied or unavailable', err);
@@ -163,6 +197,7 @@ export default function LiveStageClient({ event }: LiveStageClientProps) {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         if (streamRef.current) {
           stream.getAudioTracks().forEach(track => streamRef.current?.addTrack(track));
+          webrtcManagerRef.current?.setLocalStream(streamRef.current);
         }
         setIsMicOn(true);
         toast({ title: 'Microphone Unmuted' });
@@ -180,14 +215,21 @@ export default function LiveStageClient({ event }: LiveStageClientProps) {
         screenStreamRef.current.getTracks().forEach(track => track.stop());
       }
       setIsScreenSharing(false);
+      if (streamRef.current) {
+        webrtcManagerRef.current?.setLocalStream(streamRef.current);
+      }
     } else {
       try {
         const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
         screenStreamRef.current = stream;
         setIsScreenSharing(true);
+        webrtcManagerRef.current?.setLocalStream(stream);
         toast({ title: 'Screen Sharing Started' });
         stream.getVideoTracks()[0].onended = () => {
           setIsScreenSharing(false);
+          if (streamRef.current) {
+            webrtcManagerRef.current?.setLocalStream(streamRef.current);
+          }
         };
       } catch (err) {
         toast({ title: 'Screen Share Cancelled', variant: 'destructive' });
@@ -318,7 +360,7 @@ export default function LiveStageClient({ event }: LiveStageClientProps) {
             
             {/* STAGE SCREEN / HOST TILE */}
             <div className="relative rounded-2xl bg-neutral-900 border border-neutral-800/90 overflow-hidden flex items-center justify-center shadow-2xl group">
-              {isCameraOn ? (
+              {isOrganizer && isCameraOn ? (
                 <video 
                   ref={localVideoRef} 
                   autoPlay 
@@ -326,8 +368,15 @@ export default function LiveStageClient({ event }: LiveStageClientProps) {
                   muted 
                   className="w-full h-full object-cover mirror"
                 />
+              ) : !isOrganizer && remoteStream ? (
+                <video 
+                  ref={remoteVideoRef} 
+                  autoPlay 
+                  playsInline 
+                  className="w-full h-full object-cover"
+                />
               ) : (
-                <div className="flex flex-col items-center gap-3">
+                <div className="flex flex-col items-center gap-3 p-6 text-center">
                   <div className="w-24 h-24 rounded-full bg-neutral-800 border-2 border-neutral-700 flex items-center justify-center shadow-inner">
                     <Avatar className="w-20 h-20">
                       <AvatarImage src={user?.image || undefined} />
@@ -337,8 +386,12 @@ export default function LiveStageClient({ event }: LiveStageClientProps) {
                     </Avatar>
                   </div>
                   <div className="text-center">
-                    <p className="text-sm font-semibold text-neutral-200">{user?.name || 'Stage Host'}</p>
-                    <p className="text-xs text-neutral-500">Camera Off</p>
+                    <p className="text-sm font-semibold text-neutral-200">
+                      {isOrganizer ? (user?.name || 'Stage Host') : (isStageLive ? 'Live Presenter' : 'Stage Presenter')}
+                    </p>
+                    <p className="text-xs text-neutral-500">
+                      {isOrganizer ? 'Camera Off' : (isStageLive ? 'Broadcasting live' : 'Waiting for presenter to go live')}
+                    </p>
                   </div>
                 </div>
               )}
@@ -346,17 +399,17 @@ export default function LiveStageClient({ event }: LiveStageClientProps) {
               {/* Status Tags on Video */}
               <div className="absolute top-4 left-4 flex items-center gap-2">
                 <Badge className="bg-neutral-950/80 backdrop-blur-md border border-neutral-700 text-neutral-200 font-medium text-[11px] gap-1.5">
-                  <Crown className="w-3 h-3 text-amber-400" /> Host
+                  <Crown className="w-3 h-3 text-amber-400" /> {isOrganizer ? 'Host' : 'Presenter'}
                 </Badge>
-                {isMicOn && (
+                {(isMicOn || isStageLive) && (
                   <Badge className="bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-[11px] gap-1">
-                    <Mic className="w-3 h-3" /> Speaking
+                    <Mic className="w-3 h-3" /> {isOrganizer && isMicOn ? 'Speaking' : 'Live'}
                   </Badge>
                 )}
               </div>
 
               <div className="absolute bottom-4 left-4 px-3 py-1 rounded-lg bg-neutral-950/70 backdrop-blur-md text-xs font-semibold text-neutral-300">
-                {user?.name || 'You'} (Host)
+                {isOrganizer ? `${user?.name || 'You'} (Host)` : (isStageLive ? 'Live Presenter' : 'Virtual Stage')}
               </div>
             </div>
 
