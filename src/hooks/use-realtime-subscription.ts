@@ -24,6 +24,10 @@ export function useRealtimeTable<T = any>(
   enabled: boolean = true
 ) {
   const channelRef = useRef<RealtimeChannel | null>(null);
+  const optionsRef = useRef(options);
+  optionsRef.current = options;
+
+  const { table, schema, event, filter } = options;
 
   useEffect(() => {
     if (!enabled || !channelName) return;
@@ -34,21 +38,22 @@ export function useRealtimeTable<T = any>(
     channel.on(
       'postgres_changes' as any,
       {
-        event: options.event || '*',
-        schema: options.schema || 'public',
-        table: options.table,
-        filter: options.filter,
+        event: event || '*',
+        schema: schema || 'public',
+        table: table,
+        filter: filter,
       },
       (payload: any) => {
-        if (payload.eventType === 'INSERT' && options.onInsert) {
-          options.onInsert(payload.new);
-        } else if (payload.eventType === 'UPDATE' && options.onUpdate) {
-          options.onUpdate(payload.new);
-        } else if (payload.eventType === 'DELETE' && options.onDelete) {
-          options.onDelete({ old: payload.old });
+        const currentOptions = optionsRef.current;
+        if (payload.eventType === 'INSERT' && currentOptions.onInsert) {
+          currentOptions.onInsert(payload.new);
+        } else if (payload.eventType === 'UPDATE' && currentOptions.onUpdate) {
+          currentOptions.onUpdate(payload.new);
+        } else if (payload.eventType === 'DELETE' && currentOptions.onDelete) {
+          currentOptions.onDelete({ old: payload.old });
         }
-        if (options.onChange) {
-          options.onChange(payload);
+        if (currentOptions.onChange) {
+          currentOptions.onChange(payload);
         }
       }
     );
@@ -70,10 +75,10 @@ export function useRealtimeTable<T = any>(
     };
   }, [
     channelName,
-    options.table,
-    options.schema,
-    options.event,
-    options.filter,
+    table,
+    schema,
+    event,
+    filter,
     enabled,
   ]);
 
@@ -97,6 +102,9 @@ export function useRealtimeBroadcast(
   enabled: boolean = true
 ) {
   const channelRef = useRef<RealtimeChannel | null>(null);
+  const optionsRef = useRef(options);
+  optionsRef.current = options;
+
   const [onlineCount, setOnlineCount] = useState<number>(1);
   const [isConnected, setIsConnected] = useState<boolean>(false);
 
@@ -116,13 +124,15 @@ export function useRealtimeBroadcast(
     []
   );
 
+  const presenceKey = options.presenceData?.userId || `guest_${Math.random().toString(36).slice(2, 7)}`;
+
   useEffect(() => {
     if (!enabled || !channelName) return;
 
     const channel = supabase.channel(channelName, {
       config: {
         presence: {
-          key: options.presenceData?.userId || `guest_${Math.random().toString(36).slice(2, 7)}`,
+          key: presenceKey,
         },
       },
     });
@@ -130,8 +140,8 @@ export function useRealtimeBroadcast(
 
     // Listen to broadcast messages
     channel.on('broadcast', { event: '*' }, ({ event, payload }: any) => {
-      if (options.onMessage) {
-        options.onMessage(event, payload);
+      if (optionsRef.current.onMessage) {
+        optionsRef.current.onMessage(event, payload);
       }
     });
 
@@ -140,28 +150,28 @@ export function useRealtimeBroadcast(
       const state = channel.presenceState();
       const count = Object.keys(state).length;
       setOnlineCount(Math.max(1, count));
-      if (options.onPresenceSync) {
-        options.onPresenceSync(state);
+      if (optionsRef.current.onPresenceSync) {
+        optionsRef.current.onPresenceSync(state);
       }
     });
 
     channel.on('presence', { event: 'join' }, ({ key, newPresences }: any) => {
-      if (options.onPresenceJoin) {
-        options.onPresenceJoin(key, newPresences);
+      if (optionsRef.current.onPresenceJoin) {
+        optionsRef.current.onPresenceJoin(key, newPresences);
       }
     });
 
     channel.on('presence', { event: 'leave' }, ({ key, leftPresences }: any) => {
-      if (options.onPresenceLeave) {
-        options.onPresenceLeave(key, leftPresences);
+      if (optionsRef.current.onPresenceLeave) {
+        optionsRef.current.onPresenceLeave(key, leftPresences);
       }
     });
 
     channel.subscribe(async (status) => {
       if (status === 'SUBSCRIBED') {
         setIsConnected(true);
-        if (options.presenceData) {
-          await channel.track(options.presenceData);
+        if (optionsRef.current.presenceData) {
+          await channel.track(optionsRef.current.presenceData);
         }
       } else {
         setIsConnected(false);
@@ -174,7 +184,7 @@ export function useRealtimeBroadcast(
         supabase.removeChannel(channelRef.current);
       }
     };
-  }, [channelName, enabled]);
+  }, [channelName, enabled, presenceKey]);
 
   return {
     broadcast,

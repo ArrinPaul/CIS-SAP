@@ -357,7 +357,6 @@ export default function CheckInScannerClient() {
     fetchEvents,
     isOffline,
     localAttendeeList,
-    offlineQueue,
     selectedEventId,
     soundEnabled,
     toast,
