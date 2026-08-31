@@ -40,9 +40,18 @@ export function SocialPostGenerator({ eventId }: { eventId: string }) {
   const handleShare = async (content: string, platform: string, index: number) => {
     setSharing(index);
     try {
+      const pLower = platform.toLowerCase();
+      if (pLower.includes('x') || pLower.includes('twitter')) {
+        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(content)}`, '_blank');
+      } else if (pLower.includes('linkedin')) {
+        window.open(`https://www.linkedin.com/feed/?shareActive=true&text=${encodeURIComponent(content)}`, '_blank');
+      } else if (pLower.includes('whatsapp')) {
+        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(content)}`, '_blank');
+      }
+
       const result = await distributeSocialPost(eventId, platform.toLowerCase(), content);
       if (result.success) {
-        toast({ title: `Posted to ${platform}!`, description: 'Your update is now live.' });
+        toast({ title: `Shared to ${platform}!`, description: 'Your update has been launched.' });
       }
     } catch (e: any) {
       toast({ title: 'Distribution failed', description: e.message, variant: 'destructive' });
