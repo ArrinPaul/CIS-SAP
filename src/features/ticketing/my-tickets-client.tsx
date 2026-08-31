@@ -41,6 +41,7 @@ import { useToast } from '@/hooks/use-toast';
 import { cancelRegistration } from '@/app/actions/registrations';
 import { cn } from '@/core/utils/utils';
 import Link from 'next/link';
+import { AddToCalendarButton } from '@/components/shared/add-to-calendar-button';
 
 const getTicketEventDate = (ticket: EventTicket): Date => {
   if (ticket.event?.startDate) return new Date(ticket.event.startDate);
@@ -113,13 +114,29 @@ function TicketCard({ ticket, onViewTicket, onPrint, onCancel }: {
                   )}
               </div>
 
-              <div className="flex items-center gap-3 pt-5 border-t border-notion-hairline/50">
-                 <Button size="sm" className="rounded-xl font-black px-6 h-9 shadow-sm" onClick={() => onViewTicket(ticket)}>
+              <div className="flex items-center gap-2 pt-5 border-t border-notion-hairline/50 flex-wrap">
+                 <Button size="sm" className="rounded-xl font-black px-4 h-9 shadow-sm" onClick={() => onViewTicket(ticket)}>
                     Launch Pass
                  </Button>
                  <Button size="icon" variant="outline" className="rounded-xl border-notion-hairline h-9 w-9 shadow-sm" onClick={() => onPrint(ticket)}>
                     <Download className="w-4 h-4 text-notion-ink-faint" />
                  </Button>
+                 {ticket.event && (
+                   <AddToCalendarButton
+                     event={{
+                       id: ticket.event.id,
+                       title: ticket.event.title,
+                       description: ticket.event.description,
+                       location: typeof ticket.event.location === 'string' ? ticket.event.location : (ticket.event.location as any)?.venue || (ticket.event.location as any)?.name || 'Event Venue',
+                       startDate: ticket.event.startDate,
+                       endDate: ticket.event.endDate,
+                     }}
+                     size="sm"
+                     variant="outline"
+                     label="Calendar"
+                     className="h-9 px-3 text-xs"
+                   />
+                 )}
 
                  {isCancellable && (
                    <DropdownMenu>
@@ -319,6 +336,20 @@ export default function MyTicketsClient({ initialTickets = [] }: { initialTicket
                       <p className="font-mono text-2xl font-black text-primary tracking-[0.4em]">{(selectedTicket as any).entryCode}</p>
                       <p className="text-[9px] text-notion-ink-faint">Use at check-in desk for quick entry</p>
                     </div>
+                  )}
+                  {selectedTicket?.event && (
+                    <AddToCalendarButton
+                      event={{
+                        id: selectedTicket.event.id,
+                        title: selectedTicket.event.title,
+                        description: selectedTicket.event.description,
+                        location: typeof selectedTicket.event.location === 'string' ? selectedTicket.event.location : (selectedTicket.event.location as any)?.venue || (selectedTicket.event.location as any)?.name || 'Event Venue',
+                        startDate: selectedTicket.event.startDate,
+                        endDate: selectedTicket.event.endDate,
+                      }}
+                      className="w-full h-12"
+                      label="Add to My Calendar"
+                    />
                   )}
                  <div className="flex gap-4">
                     <Button className="flex-1 rounded-xl h-14 font-black uppercase text-[11px] tracking-widest shadow-notion-soft" onClick={() => selectedTicket && handlePrint(selectedTicket)}>

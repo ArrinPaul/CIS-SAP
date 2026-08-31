@@ -49,6 +49,7 @@ import { MultiTrackAgenda } from '@/features/agenda/multi-track-agenda';
 import { PostEventBanner } from '@/features/feedback/post-event-banner';
 import { getEventSponsors } from '@/app/actions/sponsors';
 import { format } from 'date-fns';
+import { AddToCalendarButton } from '@/components/shared/add-to-calendar-button';
 
 export default function EventDetailsClient({ eventId, initialEvent }: { eventId: string, initialEvent: any }) {
   const router = useRouter();
@@ -577,9 +578,23 @@ export default function EventDetailsClient({ eventId, initialEvent }: { eventId:
               </Card>
 
               {/* ACTION BUTTONS */}
-              <div className="flex gap-4">
-                <Button variant="outline" className="flex-1 rounded-xl h-12 border-border shadow-sm"><Share2 className="w-4 h-4 mr-2 text-muted-foreground" /> Share</Button>
-                <Button variant="outline" className="flex-1 rounded-xl h-12 border-border shadow-sm"><Heart className="w-4 h-4 mr-2 text-muted-foreground" /> Save</Button>
+              <div className="space-y-3">
+                <AddToCalendarButton
+                  event={{
+                    id: event.id,
+                    title: event.title,
+                    description: event.description,
+                    location: locationDisplay,
+                    startDate: event.startDate,
+                    endDate: event.endDate,
+                    url: typeof window !== 'undefined' ? window.location.href : undefined,
+                  }}
+                  className="w-full h-12"
+                />
+                <div className="flex gap-4">
+                  <Button variant="outline" className="flex-1 rounded-xl h-12 border-border shadow-sm"><Share2 className="w-4 h-4 mr-2 text-muted-foreground" /> Share</Button>
+                  <Button variant="outline" className="flex-1 rounded-xl h-12 border-border shadow-sm"><Heart className="w-4 h-4 mr-2 text-muted-foreground" /> Save</Button>
+                </div>
               </div>
 
             </div>
