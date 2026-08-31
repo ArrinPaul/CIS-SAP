@@ -281,6 +281,7 @@ export async function getAttendeeList(eventId: string) {
     const result = await db
       .select({
         ticketNumber: tickets.ticketNumber,
+        entryCode: tickets.entryCode,
         qrCode: tickets.qrCode,
         status: tickets.status,
         userName: users.name,

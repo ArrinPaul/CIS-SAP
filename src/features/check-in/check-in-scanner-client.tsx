@@ -40,6 +40,7 @@ import { getScannerEvents, checkInTicket, getAttendeeList, finalizeEvent } from 
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
 import { useRealtimeTable } from '@/hooks/use-realtime-subscription';
+import { verifyTicketOffline, OfflineStorage } from '@/core/utils/offline-ticket-verifier';
 
 type ScanResult = {
   success: boolean;
@@ -229,39 +230,50 @@ export default function CheckInScannerClient() {
     setProcessing(true);
     
     if (isOffline) {
-      const localTicket = localAttendeeList.find(t => t.qrCode === payload || t.ticketNumber === payload);
-      
-      if (localTicket) {
-        if (localTicket.status === 'checked-in') {
-          setScanResult({ success: false, message: 'Already Scanned (Offline Check)', timestamp: new Date() });
-          setProcessing(false);
-          return;
-        }
-        
-        const newQueue = [...offlineQueue, { payload, timestamp: new Date() }];
-        setOfflineQueue(newQueue);
-        localStorage.setItem(`offline_queue_${user?.id}`, JSON.stringify(newQueue));
-        
-        const updatedList = localAttendeeList.map(t => 
-          (t.qrCode === payload || t.ticketNumber === payload) ? { ...t, status: 'checked-in' } : t
+      const offlineResult = verifyTicketOffline(payload, localAttendeeList);
+      if (offlineResult.success && offlineResult.ticket) {
+        const item = {
+          payload,
+          eventId: selectedEventId,
+          timestamp: new Date().toISOString(),
+          ticketNumber: offlineResult.ticket.ticketNumber,
+        };
+        const updatedQueue = OfflineStorage.enqueue(item as any, user?.id);
+        setOfflineQueue(updatedQueue as any);
+
+        const updatedList = localAttendeeList.map(t =>
+          t.ticketNumber.toLowerCase() === offlineResult.ticket!.ticketNumber.toLowerCase()
+            ? { ...t, status: 'checked-in' }
+            : t
         );
         setLocalAttendeeList(updatedList);
-        localStorage.setItem(`attendees_${selectedEventId}`, JSON.stringify(updatedList));
+        OfflineStorage.saveCachedAttendees(selectedEventId, updatedList);
 
         setScanResult({
           success: true,
-          message: 'Verified Offline. Cached for sync.',
+          message: offlineResult.message,
           timestamp: new Date(),
-          ticket: {
-            ticketNumber: localTicket.ticketNumber,
-            userName: localTicket.userName,
-            userImage: localTicket.userImage
-          }
+          ticket: offlineResult.ticket,
         });
+
+        if (soundEnabled) {
+          const audio = new Audio('/sounds/success.mp3');
+          audio.play().catch(() => {});
+        }
       } else {
-        setScanResult({ success: false, message: 'Ticket not found in local offline list.', timestamp: new Date() });
+        setScanResult({
+          success: false,
+          message: offlineResult.message,
+          timestamp: new Date(),
+          ticket: offlineResult.ticket,
+        });
+
+        if (soundEnabled) {
+          const audio = new Audio('/sounds/error.mp3');
+          audio.play().catch(() => {});
+        }
       }
-      
+
       setProcessing(false);
       setManualSearch('');
       return;
@@ -286,9 +298,50 @@ export default function CheckInScannerClient() {
         }
       }
     } catch (error: any) {
+      const errorMsg = getErrorMessage(error);
+      const isNetworkErr = !navigator.onLine || errorMsg.toLowerCase().includes('failed to fetch') || errorMsg.toLowerCase().includes('network');
+
+      // Auto-fallback to offline verification if network unexpectedly failed
+      if (isNetworkErr && localAttendeeList.length > 0) {
+        const offlineResult = verifyTicketOffline(payload, localAttendeeList);
+        if (offlineResult.success && offlineResult.ticket) {
+          const item = {
+            payload,
+            eventId: selectedEventId,
+            timestamp: new Date().toISOString(),
+            ticketNumber: offlineResult.ticket.ticketNumber,
+          };
+          const updatedQueue = OfflineStorage.enqueue(item as any, user?.id);
+          setOfflineQueue(updatedQueue as any);
+
+          const updatedList = localAttendeeList.map(t =>
+            t.ticketNumber.toLowerCase() === offlineResult.ticket!.ticketNumber.toLowerCase()
+              ? { ...t, status: 'checked-in' }
+              : t
+          );
+          setLocalAttendeeList(updatedList);
+          OfflineStorage.saveCachedAttendees(selectedEventId, updatedList);
+
+          setScanResult({
+            success: true,
+            message: 'Network offline. Verified locally and queued for sync.',
+            timestamp: new Date(),
+            ticket: offlineResult.ticket,
+          });
+
+          if (soundEnabled) {
+            const audio = new Audio('/sounds/success.mp3');
+            audio.play().catch(() => {});
+          }
+          setProcessing(false);
+          setManualSearch('');
+          return;
+        }
+      }
+
       setScanResult({ 
         success: false, 
-        message: getErrorMessage(error), 
+        message: errorMsg, 
         timestamp: new Date() 
       });
       
