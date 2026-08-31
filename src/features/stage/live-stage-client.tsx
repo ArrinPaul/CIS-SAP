@@ -35,6 +35,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/core/utils/utils';
+import { useRealtimeBroadcast } from '@/hooks/use-realtime-subscription';
 
 interface LiveStageClientProps {
   event: {
@@ -76,7 +77,46 @@ export default function LiveStageClient({ event }: LiveStageClientProps) {
     }
   ]);
   const [newMessage, setNewMessage] = useState('');
-  const [attendeeCount, setAttendeeCount] = useState(42);
+  const [raisedHands, setRaisedHands] = useState<{ id: string; name: string }[]>([]);
+
+  // Realtime Broadcast Channel for Live Stage Events & Presence
+  const { broadcast, onlineCount } = useRealtimeBroadcast(
+    `stage:${event.id}`,
+    {
+      presenceData: {
+        userId: user?.id,
+        name: user?.name || 'Attendee',
+        isHost: !!(user && (user.id === event.organizerId || user.role === 'admin')),
+      },
+      onMessage: (broadcastEvent, payload) => {
+        if (broadcastEvent === 'reaction') {
+          const reaction = {
+            id: Date.now() + Math.random(),
+            emoji: payload.emoji,
+            x: payload.x ?? (Math.floor(Math.random() * 60) + 20),
+          };
+          setFloatingReactions(prev => [...prev, reaction]);
+          setTimeout(() => {
+            setFloatingReactions(prev => prev.filter(r => r.id !== reaction.id));
+          }, 2500);
+        } else if (broadcastEvent === 'chat') {
+          setChatMessages(prev => {
+            if (prev.some(m => m.id === payload.id)) return prev;
+            return [...prev, payload];
+          });
+        } else if (broadcastEvent === 'hand_raise') {
+          if (payload.raised) {
+            setRaisedHands(prev => {
+              if (prev.some(h => h.id === payload.userId)) return prev;
+              return [...prev, { id: payload.userId, name: payload.userName }];
+            });
+          } else {
+            setRaisedHands(prev => prev.filter(h => h.id !== payload.userId));
+          }
+        }
+      },
+    }
+  );
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -157,15 +197,18 @@ export default function LiveStageClient({ event }: LiveStageClientProps) {
 
   // Send Floating Reaction
   const sendReaction = (emoji: string) => {
+    const x = Math.floor(Math.random() * 60) + 20;
     const reaction = {
       id: Date.now() + Math.random(),
       emoji,
-      x: Math.floor(Math.random() * 60) + 20,
+      x,
     };
     setFloatingReactions(prev => [...prev, reaction]);
     setTimeout(() => {
       setFloatingReactions(prev => prev.filter(r => r.id !== reaction.id));
     }, 2500);
+
+    broadcast('reaction', { emoji, x, userName: user?.name });
   };
 
   // Send Chat Message
@@ -183,6 +226,7 @@ export default function LiveStageClient({ event }: LiveStageClientProps) {
     };
 
     setChatMessages(prev => [...prev, msg]);
+    broadcast('chat', msg);
     setNewMessage('');
   };
 
@@ -236,7 +280,7 @@ export default function LiveStageClient({ event }: LiveStageClientProps) {
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-neutral-800/80 border border-neutral-700 text-xs text-neutral-300 font-medium">
             <Users className="w-3.5 h-3.5 text-emerald-400" />
-            <span>{attendeeCount} Watching</span>
+            <span>{onlineCount} Watching</span>
           </div>
 
           <Button variant="ghost" size="icon" onClick={toggleFullscreen} className="text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-xl">
@@ -392,8 +436,14 @@ export default function LiveStageClient({ event }: LiveStageClientProps) {
                 variant={isHandRaised ? 'default' : 'secondary'}
                 size="icon"
                 onClick={() => {
-                  setIsHandRaised(!isHandRaised);
-                  toast({ title: isHandRaised ? 'Hand Lowered' : 'Hand Raised to Speak' });
+                  const nextRaised = !isHandRaised;
+                  setIsHandRaised(nextRaised);
+                  broadcast('hand_raise', {
+                    userId: user?.id || `anon_${Math.random().toString(36).slice(2, 6)}`,
+                    userName: user?.name || 'Attendee',
+                    raised: nextRaised,
+                  });
+                  toast({ title: nextRaised ? 'Hand Raised to Speak' : 'Hand Lowered' });
                 }}
                 className={cn("w-12 h-12 rounded-2xl transition-all shadow-lg", isHandRaised && "bg-amber-500 hover:bg-amber-600")}
               >
@@ -437,7 +487,7 @@ export default function LiveStageClient({ event }: LiveStageClientProps) {
                 activeSidebarTab === 'people' ? "bg-neutral-800 text-white" : "text-neutral-400 hover:text-neutral-200"
               )}
             >
-              <Users className="w-3.5 h-3.5" /> People ({attendeeCount})
+              <Users className="w-3.5 h-3.5" /> People ({onlineCount})
             </button>
             <button
               onClick={() => setActiveSidebarTab('qa')}
@@ -486,7 +536,22 @@ export default function LiveStageClient({ event }: LiveStageClientProps) {
 
           {/* TAB 2: AUDIENCE & SPEAKERS */}
           {activeSidebarTab === 'people' && (
-            <div className="flex-1 p-4 overflow-y-auto space-y-3">
+            <div className="flex-1 p-4 overflow-y-auto space-y-4">
+              {/* Raised Hands Queue */}
+              {raisedHands.length > 0 && (
+                <div className="space-y-2 pb-2 border-b border-neutral-800">
+                  <p className="text-[11px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
+                    <Hand className="w-3.5 h-3.5" /> Hand Raised Queue ({raisedHands.length})
+                  </p>
+                  {raisedHands.map((h) => (
+                    <div key={h.id} className="flex items-center justify-between p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30">
+                      <span className="text-xs font-semibold text-amber-200">{h.name}</span>
+                      <Badge className="bg-amber-500/20 text-amber-300 text-[10px]">Wants to Speak</Badge>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               <p className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider">On Stage</p>
               <div className="flex items-center justify-between p-2.5 rounded-xl bg-neutral-800/50 border border-neutral-700/40">
                 <div className="flex items-center gap-3">
@@ -501,18 +566,11 @@ export default function LiveStageClient({ event }: LiveStageClientProps) {
                 <Badge variant="outline" className="text-[10px] border-emerald-500/40 text-emerald-400">Live</Badge>
               </div>
 
-              <p className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider pt-3">Audience ({attendeeCount})</p>
-              {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="flex items-center justify-between p-2 rounded-xl hover:bg-neutral-800/40 transition-colors">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-7 h-7 rounded-full bg-neutral-800 flex items-center justify-center text-[10px] font-bold text-neutral-400">
-                      {String.fromCharCode(65 + i)}
-                    </div>
-                    <span className="text-xs text-neutral-300">Attendee #{i + 1}</span>
-                  </div>
-                  <span className="text-[10px] text-neutral-500 font-mono">Listening</span>
-                </div>
-              ))}
+              <p className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider pt-2">Live Audience ({onlineCount})</p>
+              <div className="p-2.5 rounded-xl bg-neutral-800/30 border border-neutral-800/60 text-xs text-neutral-400 flex items-center justify-between">
+                <span>Active Connected Viewers</span>
+                <span className="font-mono font-bold text-emerald-400">{onlineCount}</span>
+              </div>
             </div>
           )}
 

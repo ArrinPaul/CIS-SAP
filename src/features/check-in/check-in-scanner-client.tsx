@@ -39,6 +39,7 @@ import { useToast } from '@/hooks/use-toast';
 import { getScannerEvents, checkInTicket, getAttendeeList, finalizeEvent } from '@/app/actions/check-in';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
+import { useRealtimeTable } from '@/hooks/use-realtime-subscription';
 
 type ScanResult = {
   success: boolean;
@@ -98,6 +99,19 @@ export default function CheckInScannerClient() {
       setLoading(false);
     }
   }, [user, fetchEvents]);
+
+  // Real-time synchronization for check-ins across multiple scanners
+  useRealtimeTable(
+    `scanner-tickets-${selectedEventId}`,
+    {
+      table: 'tickets',
+      filter: selectedEventId ? `event_id=eq.${selectedEventId}` : undefined,
+      onChange: () => {
+        fetchEvents();
+      },
+    },
+    !!selectedEventId
+  );
 
   const selectedEvent = events.find(e => e.id === selectedEventId);
   const checkInCount = selectedEvent?.checkInCount || 0;
