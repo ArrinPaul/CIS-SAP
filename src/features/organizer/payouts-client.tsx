@@ -1,18 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
-  DollarSign, 
   TrendingUp, 
   Clock, 
   CheckCircle2, 
   ArrowUpRight, 
   Building2, 
-  CreditCard, 
-  Download, 
-  AlertCircle, 
   ShieldCheck,
-  Plus,
   Loader2,
   RefreshCw
 } from 'lucide-react';
@@ -32,64 +27,44 @@ import {
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/core/utils/utils';
-
-interface PayoutTransaction {
-  id: string;
-  eventName: string;
-  amount: number;
-  fee: number;
-  net: number;
-  status: 'completed' | 'processing' | 'pending';
-  date: string;
-  method: string;
-}
+import { getOrganizerPayoutSummary, requestOrganizerPayout, PayoutSummary } from '@/app/actions/payouts';
 
 export default function PayoutsClient() {
   const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(true);
   const [isRequesting, setIsRequesting] = useState(false);
   const [withdrawDialogOpen, setWithdrawDialogOpen] = useState(false);
   const [withdrawAmount, setWithdrawAmount] = useState('');
+  const [accountName, setAccountName] = useState('');
+  const [accountNumber, setAccountNumber] = useState('');
+  const [ifscCode, setIfscCode] = useState('');
 
-  const [payoutStats, setPayoutStats] = useState({
-    totalEarned: 14850.00,
-    availableBalance: 4230.50,
-    pendingClearance: 1120.00,
-    platformFeeRate: '5%',
-    lifetimePayouts: 9499.50,
+  const [summary, setSummary] = useState<PayoutSummary>({
+    grossRevenue: 0,
+    platformFees: 0,
+    netRevenue: 0,
+    totalPaidOut: 0,
+    pendingPayouts: 0,
+    availableBalance: 0,
+    totalTicketsSold: 0,
+    payoutHistory: [],
   });
 
-  const [transactions, setTransactions] = useState<PayoutTransaction[]>([
-    {
-      id: 'tx_01',
-      eventName: 'Global Tech Summit 2026',
-      amount: 4500.00,
-      fee: 225.00,
-      net: 4275.00,
-      status: 'completed',
-      date: '2026-08-20',
-      method: 'Direct Bank Wire (•••• 4892)',
-    },
-    {
-      id: 'tx_02',
-      eventName: 'AI Hackathon & Founders Mesh',
-      amount: 2800.00,
-      fee: 140.00,
-      net: 2660.00,
-      status: 'completed',
-      date: '2026-08-10',
-      method: 'Direct Bank Wire (•••• 4892)',
-    },
-    {
-      id: 'tx_03',
-      eventName: 'Design Systems Live Masterclass',
-      amount: 1120.00,
-      fee: 56.00,
-      net: 1064.00,
-      status: 'processing',
-      date: '2026-08-28',
-      method: 'Direct Bank Wire (•••• 4892)',
-    },
-  ]);
+  const loadFinancials = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const data = await getOrganizerPayoutSummary();
+      setSummary(data);
+    } catch {
+      // Graceful fallback for unauthenticated preview
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadFinancials();
+  }, [loadFinancials]);
 
   const handleWithdrawalRequest = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -100,40 +75,46 @@ export default function PayoutsClient() {
       return;
     }
 
-    if (amountNum > payoutStats.availableBalance) {
+    if (amountNum > summary.availableBalance) {
       toast({ title: 'Insufficient Balance', description: 'Amount exceeds available balance.', variant: 'destructive' });
       return;
     }
 
     setIsRequesting(true);
-    await new Promise((r) => setTimeout(r, 1200));
+    try {
+      const res = await requestOrganizerPayout({
+        amount: amountNum,
+        destinationDetails: {
+          accountName: accountName || 'Primary Organizer Account',
+          accountNumber: accountNumber || '••••4892',
+          routingOrIfsc: ifscCode || 'HDFC0001234',
+        },
+      });
 
-    const newTx: PayoutTransaction = {
-      id: `tx_${Date.now().toString().slice(-4)}`,
-      eventName: 'Manual Balance Withdrawal',
-      amount: amountNum,
-      fee: Math.round(amountNum * 0.05 * 100) / 100,
-      net: Math.round(amountNum * 0.95 * 100) / 100,
-      status: 'processing',
-      date: new Date().toISOString().split('T')[0],
-      method: 'Direct Bank Wire (•••• 4892)',
-    };
-
-    setTransactions((prev) => [newTx, ...prev]);
-    setPayoutStats((prev) => ({
-      ...prev,
-      availableBalance: prev.availableBalance - amountNum,
-      pendingClearance: prev.pendingClearance + amountNum,
-    }));
-
-    setIsRequesting(false);
-    setWithdrawDialogOpen(false);
-    setWithdrawAmount('');
-
-    toast({
-      title: 'Withdrawal Initiated',
-      description: `$${amountNum.toFixed(2)} is being dispatched to your verified bank account.`,
-    });
+      if (res.success) {
+        toast({
+          title: 'Withdrawal Initiated',
+          description: `₹${amountNum.toFixed(2)} requested for bank transfer.`,
+        });
+        setWithdrawDialogOpen(false);
+        setWithdrawAmount('');
+        loadFinancials();
+      } else {
+        toast({
+          title: 'Request Failed',
+          description: res.error || 'Failed to submit withdrawal request',
+          variant: 'destructive',
+        });
+      }
+    } catch {
+      toast({
+        title: 'Error',
+        description: 'Failed to process withdrawal request',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsRequesting(false);
+    }
   };
 
   return (
@@ -149,6 +130,10 @@ export default function PayoutsClient() {
         </div>
 
         <div className="flex items-center gap-3">
+          <Button variant="outline" size="lg" onClick={loadFinancials} disabled={isLoading} className="gap-2 rounded-xl">
+            <RefreshCw className={cn("w-4 h-4", isLoading && "animate-spin")} /> Refresh
+          </Button>
+
           <Dialog open={withdrawDialogOpen} onOpenChange={setWithdrawDialogOpen}>
             <DialogTrigger asChild>
               <Button size="lg" className="rounded-xl font-bold gap-2 shadow-sm">
@@ -164,14 +149,14 @@ export default function PayoutsClient() {
                   </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     <Label htmlFor="available">Available for Payout</Label>
                     <div className="text-2xl font-bold text-emerald-500 font-mono">
-                      ${payoutStats.availableBalance.toFixed(2)}
+                      ₹{summary.availableBalance.toFixed(2)}
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="amount">Withdrawal Amount ($ USD)</Label>
+                    <Label htmlFor="amount">Withdrawal Amount (₹ INR)</Label>
                     <Input
                       id="amount"
                       type="number"
@@ -182,9 +167,32 @@ export default function PayoutsClient() {
                       required
                     />
                   </div>
-                  <div className="p-3 bg-muted/50 rounded-xl text-xs text-muted-foreground flex items-center gap-2">
-                    <Building2 className="w-4 h-4 text-primary shrink-0" />
-                    <span>Destination: Chase Checking (•••• 4892)</span>
+                  <div className="space-y-2">
+                    <Label htmlFor="accName">Account Holder Name</Label>
+                    <Input
+                      id="accName"
+                      placeholder="John Doe"
+                      value={accountName}
+                      onChange={(e) => setAccountName(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="accNum">Bank Account Number</Label>
+                    <Input
+                      id="accNum"
+                      placeholder="987654321012"
+                      value={accountNumber}
+                      onChange={(e) => setAccountNumber(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="ifsc">IFSC / Routing Code</Label>
+                    <Input
+                      id="ifsc"
+                      placeholder="HDFC0001234"
+                      value={ifscCode}
+                      onChange={(e) => setIfscCode(e.target.value)}
+                    />
                   </div>
                 </div>
                 <DialogFooter>
@@ -207,7 +215,7 @@ export default function PayoutsClient() {
           <CardHeader className="pb-2">
             <CardDescription className="text-xs font-semibold uppercase tracking-wider">Available Balance</CardDescription>
             <CardTitle className="text-3xl font-bold text-emerald-500 font-mono">
-              ${payoutStats.availableBalance.toFixed(2)}
+              ₹{summary.availableBalance.toFixed(2)}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -219,14 +227,14 @@ export default function PayoutsClient() {
 
         <Card className="rounded-2xl border-border shadow-sm">
           <CardHeader className="pb-2">
-            <CardDescription className="text-xs font-semibold uppercase tracking-wider">Pending Clearance</CardDescription>
+            <CardDescription className="text-xs font-semibold uppercase tracking-wider">Pending Payouts</CardDescription>
             <CardTitle className="text-3xl font-bold text-foreground font-mono">
-              ${payoutStats.pendingClearance.toFixed(2)}
+              ₹{summary.pendingPayouts.toFixed(2)}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-xs text-muted-foreground flex items-center gap-1">
-              <Clock className="w-3.5 h-3.5 text-amber-500" /> Settling from recent registrations
+              <Clock className="w-3.5 h-3.5 text-amber-500" /> Processing in bank queue
             </p>
           </CardContent>
         </Card>
@@ -235,12 +243,12 @@ export default function PayoutsClient() {
           <CardHeader className="pb-2">
             <CardDescription className="text-xs font-semibold uppercase tracking-wider">Gross Event Revenue</CardDescription>
             <CardTitle className="text-3xl font-bold text-foreground font-mono">
-              ${payoutStats.totalEarned.toFixed(2)}
+              ₹{summary.grossRevenue.toFixed(2)}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-xs text-muted-foreground flex items-center gap-1">
-              <TrendingUp className="w-3.5 h-3.5 text-primary" /> Across all published events
+              <TrendingUp className="w-3.5 h-3.5 text-primary" /> {summary.totalTicketsSold} tickets sold
             </p>
           </CardContent>
         </Card>
@@ -249,7 +257,7 @@ export default function PayoutsClient() {
           <CardHeader className="pb-2">
             <CardDescription className="text-xs font-semibold uppercase tracking-wider">Platform Split Rate</CardDescription>
             <CardTitle className="text-3xl font-bold text-foreground font-mono">
-              {payoutStats.platformFeeRate}
+              5%
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -280,12 +288,9 @@ export default function PayoutsClient() {
         </CardHeader>
         <CardContent className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1">
-            <p className="text-sm font-bold text-foreground">Chase Business Checking</p>
-            <p className="text-xs text-muted-foreground">Account ending in <span className="font-mono font-bold text-foreground">4892</span> • Routing <span className="font-mono">••••0210</span></p>
+            <p className="text-sm font-bold text-foreground">Direct Bank Wire</p>
+            <p className="text-xs text-muted-foreground">Automated settlement within 1-2 business days into linked account</p>
           </div>
-          <Button variant="outline" size="sm" className="rounded-xl text-xs">
-            Edit Bank Details
-          </Button>
         </CardContent>
       </Card>
 
@@ -296,33 +301,42 @@ export default function PayoutsClient() {
           <CardDescription>All revenue dispatches from ticket sales.</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="divide-y divide-border">
-            {transactions.map((tx) => (
-              <div key={tx.id} className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <p className="text-sm font-bold text-foreground">{tx.eventName}</p>
-                    <Badge 
-                      variant="outline" 
-                      className={cn(
-                        "text-[10px] capitalize",
-                        tx.status === 'completed' && "border-emerald-500/30 text-emerald-500 bg-emerald-500/10",
-                        tx.status === 'processing' && "border-amber-500/30 text-amber-500 bg-amber-500/10"
-                      )}
-                    >
-                      {tx.status}
-                    </Badge>
+          {summary.payoutHistory.length === 0 ? (
+            <div className="py-8 text-center text-sm text-muted-foreground">
+              No payout requests yet. When you request a payout, status and ledger details will appear here.
+            </div>
+          ) : (
+            <div className="divide-y divide-border">
+              {summary.payoutHistory.map((tx) => (
+                <div key={tx.id} className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-bold text-foreground capitalize">{tx.payoutMethod.replace('_', ' ')}</p>
+                      <Badge 
+                        variant="outline" 
+                        className={cn(
+                          "text-[10px] capitalize",
+                          tx.status === 'completed' && "border-emerald-500/30 text-emerald-500 bg-emerald-500/10",
+                          (tx.status === 'processing' || tx.status === 'pending') && "border-amber-500/30 text-amber-500 bg-amber-500/10",
+                          tx.status === 'failed' && "border-red-500/30 text-red-500 bg-red-500/10"
+                        )}
+                      >
+                        {tx.status}
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(tx.createdAt).toLocaleDateString()}
+                    </p>
                   </div>
-                  <p className="text-xs text-muted-foreground">{tx.method} • {tx.date}</p>
-                </div>
 
-                <div className="text-right">
-                  <p className="text-base font-bold font-mono text-foreground">+${tx.net.toFixed(2)}</p>
-                  <p className="text-xs text-muted-foreground font-mono">Gross: ${tx.amount.toFixed(2)} (Fee: ${tx.fee.toFixed(2)})</p>
+                  <div className="text-right">
+                    <p className="text-base font-bold font-mono text-foreground">₹{Number(tx.netAmount).toFixed(2)}</p>
+                    <p className="text-xs text-muted-foreground font-mono">Gross: ₹{Number(tx.amount).toFixed(2)} (Fee: ₹{Number(tx.platformFee).toFixed(2)})</p>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 

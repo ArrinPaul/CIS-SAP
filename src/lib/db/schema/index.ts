@@ -655,6 +655,26 @@ export const orders = pgTable('orders', {
   paymentIdIdx: index('orders_payment_id_idx').on(table.paymentId),
 }));
 
+// --- Organizer Payouts & Transaction Ledger ---
+
+export const payouts = pgTable('payouts', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  organizerId: text('organizer_id').references(() => users.id).notNull(),
+  amount: decimal('amount', { precision: 10, scale: 2 }).notNull(),
+  platformFee: decimal('platform_fee', { precision: 10, scale: 2 }).default('0').notNull(),
+  netAmount: decimal('net_amount', { precision: 10, scale: 2 }).notNull(),
+  status: text('status').default('pending').notNull(),
+  payoutMethod: text('payout_method').default('bank_transfer').notNull(),
+  destinationDetails: jsonb('destination_details'),
+  transactionReference: text('transaction_reference'),
+  notes: text('notes'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => ({
+  organizerIdx: index('payouts_organizer_idx').on(table.organizerId),
+  statusIdx: index('payouts_status_idx').on(table.status),
+}));
+
 // --- Kanban Tasks ---
 
 export const kanbanTasks = pgTable('kanban_tasks', {
