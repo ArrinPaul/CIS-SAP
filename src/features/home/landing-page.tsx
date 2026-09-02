@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, useScroll, useTransform, Variants, AnimatePresence, useMotionValueEvent } from 'framer-motion';
+import { motion, useScroll, useTransform, Variants, AnimatePresence, useMotionValueEvent, useReducedMotion } from 'framer-motion';
 import Link from 'next/link';
 import { useRef, useState, useEffect } from 'react';
 import { useTheme } from 'next-themes';
@@ -117,7 +117,7 @@ const MODULES = [
     preview: (
       <div className="w-full bg-background/40 backdrop-blur-md rounded-2xl border border-border/40 p-6 flex flex-col gap-6 overflow-hidden shadow-inner">
         <div className="flex items-center justify-between">
-           <h4 className="text-lg font-display font-bold tracking-tight text-foreground">Level 12</h4>
+           <div className="text-lg font-display font-bold tracking-tight text-foreground">Level 12</div>
            <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
               <Award className="w-5 h-5" />
            </div>
@@ -252,17 +252,28 @@ export default function LandingPage({ featuredEvents = [] }: { featuredEvents?: 
   const [activeAIIndex, setActiveAIIndex] = useState(0);
   const [hidden, setHidden] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  // globals.css neutralises CSS animation under prefers-reduced-motion, but
+  // framer-motion drives inline transforms that the media query cannot reach.
+  const prefersReducedMotion = useReducedMotion();
+  // Looping decoration becomes a static end-state rather than disappearing.
+  const loop = (transition: Record<string, unknown>) =>
+    prefersReducedMotion ? { duration: 0 } : transition;
   const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setMounted(true);
+  }, []);
+
+  // WCAG 2.2.2: no auto-advancing carousel when reduced motion is requested.
+  useEffect(() => {
+    if (prefersReducedMotion) return;
     const interval = setInterval(() => {
       setActiveAIIndex((prev) => (prev + 1) % AI_FEATURES.length);
     }, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [prefersReducedMotion]);
 
   const { scrollY } = useScroll();
 
@@ -302,20 +313,20 @@ export default function LandingPage({ featuredEvents = [] }: { featuredEvents?: 
           </div>
           <div className="hidden md:flex items-center gap-10 text-body-sm text-notion-ink-muted">
             {NAV_LINKS.map((link) => (
-              <Link key={link.href} href={link.href} className="hover:text-notion-ink transition-colors">{link.label}</Link>
+              <Link key={link.href} href={link.href} className="py-3 hover:text-notion-ink transition-colors">{link.label}</Link>
             ))}
           </div>
           <div className="flex items-center gap-3 sm:gap-4">
              {mounted && (
                <button
                  onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
-                 className="h-10 w-10 flex items-center justify-center rounded-full bg-notion-sunken transition-all text-notion-ink-muted hover:text-notion-ink active:scale-95"
+                 className="relative h-10 w-10 flex items-center justify-center rounded-full bg-notion-sunken transition-all text-notion-ink-muted hover:text-notion-ink active:scale-95 after:absolute after:content-[''] after:inset-[-2px] after:rounded-full"
                  aria-label="Toggle Theme"
                >
                  {resolvedTheme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
                </button>
              )}
-             <Link href="/login" className="text-body-sm text-notion-ink-muted hover:text-notion-ink transition-all">Login</Link>
+             <Link href="/login" className="px-2 -mx-2 py-3 text-body-sm text-notion-ink-muted hover:text-notion-ink transition-all">Login</Link>
              <Button size="sm" className="px-6 h-10" asChild>
                 <Link href="/register">Get Started</Link>
              </Button>
@@ -324,7 +335,7 @@ export default function LandingPage({ featuredEvents = [] }: { featuredEvents?: 
              <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
                 <SheetTrigger asChild>
                    <button
-                     className="md:hidden h-10 w-10 flex items-center justify-center rounded-full bg-notion-sunken transition-all text-notion-ink-muted hover:text-notion-ink active:scale-95"
+                     className="md:hidden relative h-10 w-10 flex items-center justify-center rounded-full bg-notion-sunken transition-all text-notion-ink-muted hover:text-notion-ink active:scale-95 after:absolute after:content-[''] after:inset-[-2px] after:rounded-full"
                      aria-label="Open navigation menu"
                    >
                       <Menu className="w-4 h-4" />
@@ -367,7 +378,7 @@ export default function LandingPage({ featuredEvents = [] }: { featuredEvents?: 
       {/* HERO SECTION */}
       <section className="relative pt-32 pb-20 px-6 flex flex-col items-center justify-center text-center overflow-hidden">
         <motion.div 
-          style={{ opacity, scale }}
+          style={prefersReducedMotion ? undefined : { opacity, scale }}
           initial="hidden" 
           animate="visible" 
           variants={STAGGER} 
@@ -375,7 +386,7 @@ export default function LandingPage({ featuredEvents = [] }: { featuredEvents?: 
         >
           <motion.h1 variants={FADE_UP} className="font-display text-5xl md:text-8xl tracking-[-0.035em] leading-[0.9] text-notion-ink">
             Discussion to <br />
-            <span className="italic text-notion-ink-faint">Execution.</span>
+            <span className="italic text-notion-ink-emphasis">Execution.</span>
           </motion.h1>
 
           <motion.p variants={FADE_UP} className="text-body-md md:text-xl text-notion-ink-muted max-w-2xl mx-auto leading-relaxed">
@@ -399,6 +410,7 @@ export default function LandingPage({ featuredEvents = [] }: { featuredEvents?: 
           whileInView={{ opacity: 1, y: 0, scale: 1 }}
           viewport={{ once: true }}
           transition={{ delay: 0.2, duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+          aria-hidden="true"
           className="mt-24 relative w-full max-w-7xl aspect-[16/10] mx-auto rounded-3xl border-[10px] border-notion-sunken bg-notion-surface shadow-notion-elevated overflow-hidden group flex"
         >
            {/* Sidebar Navigation */}
@@ -486,7 +498,7 @@ export default function LandingPage({ featuredEvents = [] }: { featuredEvents?: 
               {/* Sub Header / Breadcrumbs */}
               <div className="h-16 border-b border-border/30 flex items-center justify-between px-10 shrink-0 bg-background/20">
                  <div className="flex items-center gap-6">
-                    <h2 className="font-display text-title text-notion-ink">Dashboard</h2>
+                    <div className="font-display text-title text-notion-ink">Dashboard</div>
                     <div className="h-4 w-px bg-border/40" />
                     <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-primary/5 border border-primary/10">
                        <Sparkles className="w-3 h-3 text-notion-ink-secondary" />
@@ -494,9 +506,9 @@ export default function LandingPage({ featuredEvents = [] }: { featuredEvents?: 
                     </div>
                  </div>
                  <div className="flex items-center gap-3">
-                    <Button size="sm" variant="ghost" className="h-9 w-9 p-0 rounded-xl hover:bg-background/40 transition-colors"><Calendar className="w-4 h-4 text-muted-foreground" /></Button>
-                    <Button size="sm" variant="ghost" className="h-9 w-9 p-0 rounded-xl hover:bg-background/40 transition-colors"><Users className="w-4 h-4 text-muted-foreground" /></Button>
-                    <Button size="sm" variant="secondary" className="h-9">Share Intel</Button>
+                    <Button size="sm" variant="ghost" tabIndex={-1} className="h-9 w-9 p-0 rounded-xl hover:bg-background/40 transition-colors"><Calendar className="w-4 h-4 text-muted-foreground" /></Button>
+                    <Button size="sm" variant="ghost" tabIndex={-1} className="h-9 w-9 p-0 rounded-xl hover:bg-background/40 transition-colors"><Users className="w-4 h-4 text-muted-foreground" /></Button>
+                    <Button size="sm" variant="secondary" tabIndex={-1} className="h-9">Share Intel</Button>
                  </div>
               </div>
 
@@ -538,12 +550,12 @@ export default function LandingPage({ featuredEvents = [] }: { featuredEvents?: 
                  >
                     <div className="flex items-center justify-between relative z-10 shrink-0">
                        <div className="space-y-1.5">
-                          <h3 className="font-display text-h3 text-notion-ink">Growth Projection</h3>
+                          <div className="font-display text-h3 text-notion-ink">Growth Projection</div>
                           <p className="text-caption text-notion-ink-muted">Real-time attendance &amp; revenue tracking across nodes</p>
                        </div>
                        <div className="flex bg-notion-sunken p-1 rounded-full gap-1">
                           {['D', 'W', 'M'].map(t => (
-                            <button key={t} className={cn("w-10 h-10 rounded-xl text-[10px] font-semibold transition-all", t === 'W' ? 'bg-notion-primary text-notion-on-primary' : 'text-notion-ink-muted hover:text-notion-ink')}>{t}</button>
+                            <button key={t} tabIndex={-1} className={cn("w-10 h-10 rounded-xl text-[10px] font-semibold transition-all", t === 'W' ? 'bg-notion-primary text-notion-on-primary' : 'text-notion-ink-muted hover:text-notion-ink')}>{t}</button>
                           ))}
                        </div>
                     </div>
@@ -713,7 +725,7 @@ export default function LandingPage({ featuredEvents = [] }: { featuredEvents?: 
                      onMouseEnter={() => setActiveAIIndex(i)}
                      onFocus={() => setActiveAIIndex(i)}
                      onClick={() => setActiveAIIndex(i)}
-                     className={`group relative h-10 w-10 flex items-center justify-center`}
+                     className={`group relative h-10 w-10 flex items-center justify-center after:absolute after:content-[''] after:inset-[-2px]`}
                    >
                       <span className={`text-body-sm font-mono transition-colors ${activeAIIndex === i ? 'text-notion-ink' : 'text-notion-ink-faint'}`}>0{i+1}</span>
                       {activeAIIndex === i && (
@@ -770,7 +782,7 @@ export default function LandingPage({ featuredEvents = [] }: { featuredEvents?: 
                 Connected Infrastructure
               </Badge>
               <h2 className="font-display text-4xl md:text-6xl tracking-[-0.035em] text-notion-ink leading-[1.05]">
-                 Integrated <span className="italic text-notion-ink-faint">Platform.</span>
+                 Integrated <span className="italic text-notion-ink-emphasis">Platform.</span>
               </h2>
               <p className="text-body-md md:text-lg text-notion-ink-muted leading-relaxed">
                 Eventra seamlessly unites your identity, database, AI intelligence, notifications, and payments into a unified, reliable event operations pipeline.
@@ -811,12 +823,12 @@ export default function LandingPage({ featuredEvents = [] }: { featuredEvents?: 
                           strokeDasharray="24 120"
                           initial={{ strokeDashoffset: 144 }}
                           animate={{ strokeDashoffset: -144 }}
-                          transition={{ 
-                            duration: 2.8, 
-                            repeat: Infinity, 
+                          transition={loop({
+                            duration: 2.8,
+                            repeat: Infinity,
                             ease: "linear",
                             delay: i * 0.35
-                          }}
+                          })}
                         />
                       </g>
                     ))}
@@ -837,12 +849,12 @@ export default function LandingPage({ featuredEvents = [] }: { featuredEvents?: 
                           strokeDasharray="24 120"
                           initial={{ strokeDashoffset: 144 }}
                           animate={{ strokeDashoffset: -144 }}
-                          transition={{ 
-                            duration: 2.8, 
-                            repeat: Infinity, 
+                          transition={loop({
+                            duration: 2.8,
+                            repeat: Infinity,
                             ease: "linear",
                             delay: i * 0.35 + 0.15
-                          }}
+                          })}
                         />
                       </g>
                     ))}
@@ -905,7 +917,7 @@ export default function LandingPage({ featuredEvents = [] }: { featuredEvents?: 
                                <tool.icon className="w-5 h-5" />
                             </div>
                             <div className="min-w-0">
-                               <h4 className="text-body-sm font-semibold text-notion-ink tracking-tight truncate">{tool.name}</h4>
+                               <h3 className="text-body-sm font-semibold text-notion-ink tracking-tight truncate">{tool.name}</h3>
                                <p className="text-[11px] text-notion-ink-muted truncate font-medium">{tool.role}</p>
                             </div>
                          </div>
@@ -929,12 +941,12 @@ export default function LandingPage({ featuredEvents = [] }: { featuredEvents?: 
                        {/* Animated Radial Pulse Rings */}
                        <motion.div 
                          animate={{ scale: [1, 1.08, 1], opacity: [0.35, 0.6, 0.35] }}
-                         transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                         transition={loop({ duration: 4, repeat: Infinity, ease: "easeInOut" })}
                          className="absolute -inset-10 rounded-full border border-primary/20 bg-primary/5 pointer-events-none"
                        />
                        <motion.div 
                          animate={{ scale: [1.05, 0.98, 1.05], opacity: [0.2, 0.45, 0.2] }}
-                         transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                         transition={loop({ duration: 6, repeat: Infinity, ease: "easeInOut" })}
                          className="absolute -inset-20 rounded-full border border-dashed border-primary/20 pointer-events-none hidden sm:block"
                        />
 
@@ -1027,7 +1039,7 @@ export default function LandingPage({ featuredEvents = [] }: { featuredEvents?: 
                                <tool.icon className="w-5 h-5" />
                             </div>
                             <div className="min-w-0">
-                               <h4 className="text-body-sm font-semibold text-notion-ink tracking-tight truncate">{tool.name}</h4>
+                               <h3 className="text-body-sm font-semibold text-notion-ink tracking-tight truncate">{tool.name}</h3>
                                <p className="text-[11px] text-notion-ink-muted truncate font-medium">{tool.role}</p>
                             </div>
                          </div>
@@ -1104,7 +1116,7 @@ export default function LandingPage({ featuredEvents = [] }: { featuredEvents?: 
                               x: ['-100%', '100%'],
                               width: ['20%', '40%', '20%']
                             }}
-                            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                            transition={loop({ duration: 4, repeat: Infinity, ease: "easeInOut" })}
                           />
                        </div>
                        <div className="h-2 w-2/3 bg-notion-sunken rounded-full" />
@@ -1139,7 +1151,7 @@ export default function LandingPage({ featuredEvents = [] }: { featuredEvents?: 
               <span className="text-eyebrow uppercase text-notion-ink-secondary">Public Beta v0.1_Operational</span>
            </motion.div>
            
-           <h2 className="font-display text-5xl md:text-7xl tracking-[-0.035em] leading-[0.95] text-notion-ink">Scale your next <br /> <span className="italic text-notion-ink-faint">experience.</span></h2>
+           <h2 className="font-display text-5xl md:text-7xl tracking-[-0.035em] leading-[0.95] text-notion-ink">Scale your next <br /> <span className="italic text-notion-ink-emphasis">experience.</span></h2>
            
            <div className="flex flex-col sm:flex-row items-center justify-center gap-5 pt-6">
               <Button size="xl" className="px-12" asChild>
@@ -1163,12 +1175,12 @@ export default function LandingPage({ featuredEvents = [] }: { featuredEvents?: 
               </div>
               {['Product', 'Company', 'Support'].map((cat) => (
                 <div key={cat} className="space-y-6">
-                   <h4 className="text-eyebrow uppercase text-notion-ink-muted">{cat}</h4>
+                   <h3 className="text-eyebrow uppercase text-notion-ink-muted">{cat}</h3>
                    <ul className="space-y-3 text-body-sm text-notion-ink-muted">
                       {FOOTER_LINKS.map((item) => (
                         <li key={item.label}>
                            {item.href
-                             ? <Link href={item.href} className="hover:text-notion-ink transition-colors">{item.label}</Link>
+                             ? <Link href={item.href} className="inline-block py-1.5 -my-1.5 hover:text-notion-ink transition-colors">{item.label}</Link>
                              : <span>{item.label}</span>}
                         </li>
                       ))}
