@@ -9,6 +9,13 @@ import { Badge } from '@/components/ui/badge';
 import { EventCard } from '@/features/events/event-card';
 import { EventraEvent } from '@/types';
 import { Logo } from '@/components/brand/logo';
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
 import { cn } from '@/core/utils/utils';
 import {
   ArrowRight,
@@ -35,6 +42,7 @@ import {
   ShieldCheck,
   Linkedin,
   Twitter,
+  Menu,
   Moon,
   Sun,
   Award,
@@ -223,11 +231,28 @@ const AI_FEATURES = [
   }
 ];
 
+// Single source of truth for the marketing nav, so the desktop bar and the
+// mobile drawer can never drift apart.
+const NAV_LINKS = [
+  { href: '#features', label: 'Features' },
+  { href: '#ecosystem', label: 'Ecosystem' },
+  { href: '#events', label: 'Explore' },
+];
+
+// Footer columns reuse the real in-page anchors. "Network" has no destination
+// in the app yet, so it renders as plain text rather than a link to nowhere.
+const FOOTER_LINKS: { label: string; href?: string }[] = [
+  { label: 'Features', href: '#features' },
+  { label: 'Ecosystem', href: '#ecosystem' },
+  { label: 'Network' },
+];
+
 export default function LandingPage({ featuredEvents = [] }: { featuredEvents?: EventraEvent[] }) {
   const [activeModule, setActiveModule] = useState(MODULES[0].id);
   const [activeAIIndex, setActiveAIIndex] = useState(0);
   const [hidden, setHidden] = useState(false);
-  const { theme, setTheme } = useTheme();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -276,24 +301,65 @@ export default function LandingPage({ featuredEvents = [] }: { featuredEvents?: 
              <Logo iconClassName="w-10 h-10" showText />
           </div>
           <div className="hidden md:flex items-center gap-10 text-body-sm text-notion-ink-muted">
-            <Link href="#features" className="hover:text-notion-ink transition-colors">Features</Link>
-            <Link href="#ecosystem" className="hover:text-notion-ink transition-colors">Ecosystem</Link>
-            <Link href="#events" className="hover:text-notion-ink transition-colors">Explore</Link>
+            {NAV_LINKS.map((link) => (
+              <Link key={link.href} href={link.href} className="hover:text-notion-ink transition-colors">{link.label}</Link>
+            ))}
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 sm:gap-4">
              {mounted && (
-               <button 
-                 onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+               <button
+                 onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
                  className="h-10 w-10 flex items-center justify-center rounded-full bg-notion-sunken transition-all text-notion-ink-muted hover:text-notion-ink active:scale-95"
                  aria-label="Toggle Theme"
                >
-                 {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                 {resolvedTheme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
                </button>
              )}
-             <Link href="/login" className="text-body-sm text-notion-ink-muted hover:text-notion-ink transition-all hidden sm:block">Login</Link>
+             <Link href="/login" className="text-body-sm text-notion-ink-muted hover:text-notion-ink transition-all">Login</Link>
              <Button size="sm" className="px-6 h-10" asChild>
                 <Link href="/register">Get Started</Link>
              </Button>
+
+             {/* Mobile menu — carries the same destinations the desktop bar hides below md. */}
+             <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+                <SheetTrigger asChild>
+                   <button
+                     className="md:hidden h-10 w-10 flex items-center justify-center rounded-full bg-notion-sunken transition-all text-notion-ink-muted hover:text-notion-ink active:scale-95"
+                     aria-label="Open navigation menu"
+                   >
+                      <Menu className="w-4 h-4" />
+                   </button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-[280px] bg-background border-border">
+                   <SheetTitle className="sr-only">Navigation menu</SheetTitle>
+                   <div className="mt-10 flex flex-col gap-1">
+                      {NAV_LINKS.map((link) => (
+                        <SheetClose asChild key={link.href}>
+                           <Link
+                             href={link.href}
+                             className="text-body-md text-notion-ink-muted hover:text-notion-ink hover:bg-accent transition-colors rounded-xl px-4 py-3"
+                           >
+                              {link.label}
+                           </Link>
+                        </SheetClose>
+                      ))}
+                      <div className="my-4 h-px bg-border" />
+                      <SheetClose asChild>
+                         <Link
+                           href="/login"
+                           className="text-body-md text-notion-ink-muted hover:text-notion-ink hover:bg-accent transition-colors rounded-xl px-4 py-3"
+                         >
+                            Login
+                         </Link>
+                      </SheetClose>
+                      <SheetClose asChild>
+                         <Button className="mt-2 h-12" asChild>
+                            <Link href="/register">Get Started</Link>
+                         </Button>
+                      </SheetClose>
+                   </div>
+                </SheetContent>
+             </Sheet>
           </div>
         </div>
       </motion.nav>
@@ -355,7 +421,7 @@ export default function LandingPage({ featuredEvents = [] }: { featuredEvents?: 
                  ].map((item, i) => (
                    <motion.div 
                      key={i} 
-                     whileHover={{ x: 4, backgroundColor: 'rgba(var(--primary), 0.05)' }}
+                     whileHover={{ x: 4, backgroundColor: 'hsl(var(--primary) / 0.05)' }}
                      className={cn(
                        "flex items-center gap-4 px-4 py-3 rounded-2xl transition-all cursor-pointer group/nav",
                        item.a ? "bg-primary text-primary-foreground " : "text-muted-foreground hover:text-foreground"
@@ -548,7 +614,11 @@ export default function LandingPage({ featuredEvents = [] }: { featuredEvents?: 
                {MODULES.map((module) => (
                  <button
                    key={module.id}
+                   type="button"
+                   aria-pressed={activeModule === module.id}
                    onMouseEnter={() => setActiveModule(module.id)}
+                   onFocus={() => setActiveModule(module.id)}
+                   onClick={() => setActiveModule(module.id)}
                    className={`w-full text-left p-6 rounded-2xl transition-all duration-300 flex flex-col gap-4 group relative ${
                      activeModule === module.id 
                        ? 'bg-notion-surface shadow-notion-elevated -translate-y-1' 
@@ -635,9 +705,14 @@ export default function LandingPage({ featuredEvents = [] }: { featuredEvents?: 
            <div className="relative">
               <div className="flex justify-center gap-6 mb-12">
                  {AI_FEATURES.map((_, i) => (
-                   <button 
+                   <button
                      key={i}
+                     type="button"
+                     aria-pressed={activeAIIndex === i}
+                     aria-label={`Show ${AI_FEATURES[i].title}`}
                      onMouseEnter={() => setActiveAIIndex(i)}
+                     onFocus={() => setActiveAIIndex(i)}
+                     onClick={() => setActiveAIIndex(i)}
                      className={`group relative h-10 w-10 flex items-center justify-center`}
                    >
                       <span className={`text-body-sm font-mono transition-colors ${activeAIIndex === i ? 'text-notion-ink' : 'text-notion-ink-faint'}`}>0{i+1}</span>
@@ -653,21 +728,25 @@ export default function LandingPage({ featuredEvents = [] }: { featuredEvents?: 
 
               <div className="grid md:grid-cols-4 gap-6">
                  {AI_FEATURES.map((feature, i) => (
-                   <motion.div
+                   <motion.button
                      key={i}
+                     type="button"
+                     aria-pressed={activeAIIndex === i}
                      initial={false}
-                     animate={{ 
+                     animate={{
                        opacity: activeAIIndex === i ? 1 : 0.4,
                        y: activeAIIndex === i ? 0 : 20,
                        scale: activeAIIndex === i ? 1 : 0.95,
                      }}
                      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                     className={`p-8 rounded-2xl transition-all cursor-pointer ${
-                        activeAIIndex === i 
-                          ? 'bg-notion-surface shadow-notion-elevated' 
+                     className={`w-full h-full text-left p-8 rounded-2xl transition-all cursor-pointer ${
+                        activeAIIndex === i
+                          ? 'bg-notion-surface shadow-notion-elevated'
                           : 'bg-notion-surface/60 shadow-notion-soft'
                      }`}
                      onMouseEnter={() => setActiveAIIndex(i)}
+                     onFocus={() => setActiveAIIndex(i)}
+                     onClick={() => setActiveAIIndex(i)}
                    >
                       <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-6 transition-all duration-300 ${
                          activeAIIndex === i ? 'bg-notion-primary text-notion-on-primary' : 'bg-notion-sunken text-notion-ink-muted'
@@ -676,7 +755,7 @@ export default function LandingPage({ featuredEvents = [] }: { featuredEvents?: 
                       </div>
                       <h3 className="font-display text-h3 mb-3 text-notion-ink">{feature.title}</h3>
                       <p className="text-body-sm text-notion-ink-muted leading-relaxed">{feature.description}</p>
-                   </motion.div>
+                   </motion.button>
                  ))}
               </div>
            </div>
@@ -862,7 +941,7 @@ export default function LandingPage({ featuredEvents = [] }: { featuredEvents?: 
                        {/* Central Platform Console */}
                        <div className="relative w-64 h-64 sm:w-72 sm:h-72 rounded-[2.75rem] bg-gradient-to-b from-notion-surface via-notion-surface to-notion-sunken p-6 border-2 border-border/80 shadow-notion-elevated flex flex-col items-center justify-between text-center overflow-hidden group">
                           {/* Inner Lighting Glow */}
-                          <div className="absolute inset-0 bg-radial from-primary/10 via-transparent to-transparent pointer-events-none" />
+                          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,hsl(var(--primary)/0.1)_0%,transparent_70%)] pointer-events-none" />
                           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary to-transparent" />
                           
                           {/* Top Status */}
@@ -1010,7 +1089,7 @@ export default function LandingPage({ featuredEvents = [] }: { featuredEvents?: 
                ].map((node, i) => (
                  <div key={i} className="rounded-2xl bg-notion-surface p-8 flex flex-col gap-8 group relative overflow-hidden transition-all hover:-translate-y-1 shadow-notion-soft hover:shadow-notion-elevated">
                     <div className="flex justify-between items-start">
-                       <div className="w-13 h-13 p-3.5 rounded-xl bg-notion-sunken flex items-center justify-center transition-all duration-300">
+                       <div className="w-[52px] h-[52px] p-3.5 rounded-xl bg-notion-sunken flex items-center justify-center transition-all duration-300">
                           <Server className="w-6 h-6 text-notion-ink-muted group-hover:text-notion-ink transition-colors" />
                        </div>
                        <div className="px-3 py-1 rounded-full bg-data-positive-soft text-caption font-medium text-data-positive">
@@ -1086,8 +1165,12 @@ export default function LandingPage({ featuredEvents = [] }: { featuredEvents?: 
                 <div key={cat} className="space-y-6">
                    <h4 className="text-eyebrow uppercase text-notion-ink-muted">{cat}</h4>
                    <ul className="space-y-3 text-body-sm text-notion-ink-muted">
-                      {['Features', 'Ecosystem', 'Network'].map((item) => (
-                        <li key={item}><Link href="#" className="hover:text-notion-ink transition-colors">{item}</Link></li>
+                      {FOOTER_LINKS.map((item) => (
+                        <li key={item.label}>
+                           {item.href
+                             ? <Link href={item.href} className="hover:text-notion-ink transition-colors">{item.label}</Link>
+                             : <span>{item.label}</span>}
+                        </li>
                       ))}
                    </ul>
                 </div>
