@@ -22,22 +22,17 @@ import {
   Globe,
   Network,
   LayoutDashboard,
-  LayoutGrid,
   Sparkles,
   BarChart3,
   DollarSign,
   TrendingUp,
   Calendar,
   Users,
-  Hash,
   MessageSquare,
   Bot,
   FileText,
-  BookOpen,
-  NotebookText,
   Workflow,
   ListChecks,
-  ListTodo,
   Server,
   ShieldCheck,
   Linkedin,
@@ -46,8 +41,7 @@ import {
   Moon,
   Sun,
   Award,
-  CheckCircle2,
-  Zap
+  CheckCircle2
 } from 'lucide-react';
 import {
   GoogleCalendarLogo,
@@ -57,8 +51,7 @@ import {
   ResendLogo,
   TwilioLogo,
   DodoLogo,
-  QrCodeLogo,
-  GitHubLogo
+  QrCodeLogo
 } from '@/components/brand/integration-logos';
 
 const FADE_UP: Variants = {
@@ -307,7 +300,7 @@ export default function LandingPage({ featuredEvents = [] }: { featuredEvents?: 
         transition={{ duration: 0.35, ease: "easeInOut" }}
         className="fixed top-0 w-full z-50 border-b border-border/40 bg-background/60 backdrop-blur-xl"
       >
-        <div className="container mx-auto px-10 h-20 flex items-center justify-between">
+        <div className="container mx-auto px-6 md:px-10 h-20 flex items-center justify-between">
           <div className="flex items-center gap-4 group cursor-pointer transition-transform active:scale-95">
              <Logo iconClassName="w-10 h-10" showText />
           </div>
@@ -384,7 +377,7 @@ export default function LandingPage({ featuredEvents = [] }: { featuredEvents?: 
           variants={STAGGER} 
           className="relative z-10 w-full max-w-6xl space-y-12 flex flex-col items-center"
         >
-          <motion.h1 variants={FADE_UP} className="font-display text-5xl md:text-8xl tracking-[-0.035em] leading-[0.9] text-notion-ink">
+          <motion.h1 variants={FADE_UP} className="font-display text-display-2 md:text-display-1 text-notion-ink">
             Discussion to <br />
             <span className="italic text-notion-ink-emphasis">Execution.</span>
           </motion.h1>
@@ -587,7 +580,7 @@ export default function LandingPage({ featuredEvents = [] }: { featuredEvents?: 
 
       {/* TECHNICAL EXCELLENCE BANNER */}
       <section className="py-14 border-y border-border bg-notion-sunken">
-        <div className="container mx-auto px-10">
+        <div className="container mx-auto px-6 md:px-10">
            <div className="flex flex-col md:flex-row items-center justify-around gap-12 md:gap-24">
               <div className="flex flex-col items-center md:items-start">
                  <span className="text-eyebrow uppercase text-notion-ink-muted mb-2">Latency</span>
@@ -614,7 +607,7 @@ export default function LandingPage({ featuredEvents = [] }: { featuredEvents?: 
         <div className="container mx-auto px-6 md:px-10">
           <div className="max-w-3xl mb-12">
              <Badge variant="outline" className="mb-5">Integrated Ecosystem</Badge>
-             <h2 className="font-display text-4xl md:text-6xl tracking-[-0.03em] mb-5 text-notion-ink leading-[1.05]">Built for scale.</h2>
+             <h2 className="font-display text-h2 md:text-h1 mb-5 text-notion-ink">Built for scale.</h2>
              <p className="text-lg text-muted-foreground leading-relaxed font-medium opacity-90 max-w-2xl">
                Hover through our core modules to see how Eventra orchestrates every layer of your experience with surgical precision.
              </p>
@@ -705,10 +698,10 @@ export default function LandingPage({ featuredEvents = [] }: { featuredEvents?: 
 
       {/* SMART TOOLS CAROUSEL */}
       <section id="features" className="py-28 bg-notion-sunken overflow-hidden">
-        <div className="container mx-auto px-10">
+        <div className="container mx-auto px-6 md:px-10">
            <div className="flex flex-col items-center text-center max-w-4xl mx-auto mb-20">
               <Badge variant="outline" className="mb-5">Neural Augmentation</Badge>
-              <h2 className="font-display text-4xl md:text-6xl tracking-[-0.03em] mb-5 text-notion-ink leading-[1.05]">Smart Tools for <br /> Smarter Events.</h2>
+              <h2 className="font-display text-h2 md:text-h1 mb-5 text-notion-ink">Smart Tools for <br /> Smarter Events.</h2>
               <p className="text-base text-muted-foreground leading-loose font-medium opacity-90 max-w-3xl">
                 Our neural layer automates the heavy lifting, extracting actionable insights from every interaction.
               </p>
@@ -781,7 +774,7 @@ export default function LandingPage({ featuredEvents = [] }: { featuredEvents?: 
               <Badge variant="outline" className="px-3.5 py-1 text-xs font-semibold tracking-wide uppercase bg-background/80 backdrop-blur-sm">
                 Connected Infrastructure
               </Badge>
-              <h2 className="font-display text-4xl md:text-6xl tracking-[-0.035em] text-notion-ink leading-[1.05]">
+              <h2 className="font-display text-h1 md:text-display-2 text-notion-ink">
                  Integrated <span className="italic text-notion-ink-emphasis">Platform.</span>
               </h2>
               <p className="text-body-md md:text-lg text-notion-ink-muted leading-relaxed">
@@ -1076,11 +1069,11 @@ export default function LandingPage({ featuredEvents = [] }: { featuredEvents?: 
 
       {/* LIVE INFRASTRUCTURE STATUS */}
       <section id="events" className="py-24">
-        <div className="container mx-auto px-10">
+        <div className="container mx-auto px-6 md:px-10">
            <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-8">
               <div className="max-w-2xl text-left">
                  <Badge variant="outline" className="mb-5">Infrastructure Pulse</Badge>
-                 <h2 className="font-display text-4xl md:text-6xl tracking-[-0.03em] text-notion-ink leading-[1.05]">Edge Nodes.</h2>
+                 <h2 className="font-display text-h2 md:text-h1 text-notion-ink">Edge Nodes.</h2>
                  <p className="mt-4 text-body-md text-notion-ink-muted leading-relaxed">
                    Real-time synchronization status across our global high-availability network.
                  </p>
@@ -1138,7 +1131,7 @@ export default function LandingPage({ featuredEvents = [] }: { featuredEvents?: 
       {/* FINAL CTA */}
       <section className="py-28 relative overflow-hidden border-t border-border">
         
-        <div className="container mx-auto px-10 relative z-10 text-center space-y-12">
+        <div className="container mx-auto px-6 md:px-10 relative z-10 text-center space-y-12">
            <motion.div
              initial={{ opacity: 0, scale: 0.9 }}
              whileInView={{ opacity: 1, scale: 1 }}
@@ -1151,7 +1144,7 @@ export default function LandingPage({ featuredEvents = [] }: { featuredEvents?: 
               <span className="text-eyebrow uppercase text-notion-ink-secondary">Public Beta v0.1_Operational</span>
            </motion.div>
            
-           <h2 className="font-display text-5xl md:text-7xl tracking-[-0.035em] leading-[0.95] text-notion-ink">Scale your next <br /> <span className="italic text-notion-ink-emphasis">experience.</span></h2>
+           <h2 className="font-display text-h1 md:text-display-2 text-notion-ink">Scale your next <br /> <span className="italic text-notion-ink-emphasis">experience.</span></h2>
            
            <div className="flex flex-col sm:flex-row items-center justify-center gap-5 pt-6">
               <Button size="xl" className="px-12" asChild>
@@ -1165,7 +1158,7 @@ export default function LandingPage({ featuredEvents = [] }: { featuredEvents?: 
       </section>
 
       <footer className="border-t border-border pt-16 pb-10 relative z-10">
-        <div className="container mx-auto px-10">
+        <div className="container mx-auto px-6 md:px-10">
            <div className="grid grid-cols-2 md:grid-cols-4 gap-12 mb-14">
               <div className="col-span-2 md:col-span-1 space-y-6">
                  <Logo showText />
