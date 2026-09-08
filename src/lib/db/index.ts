@@ -9,8 +9,16 @@ import * as schema from './schema';
 const poolerUrl = process.env.DATABASE_POOLER_URL;
 const databaseUrl = process.env.DATABASE_URL;
 
+// `next build` also runs with NODE_ENV=production while it statically
+// collects page data — which imports this module for any route that
+// touches `db` at module scope, with no real environment configured yet.
+// NEXT_PHASE distinguishes that build-time evaluation ('phase-production-build')
+// from an actual running server ('phase-production-server'), so the fail-fast
+// below only fires when the app is really about to serve traffic.
+const isProductionRuntime = process.env.NODE_ENV === 'production' && process.env.NEXT_PHASE !== 'phase-production-build';
+
 if (!databaseUrl && !poolerUrl) {
-  if (process.env.NODE_ENV === 'production') {
+  if (isProductionRuntime) {
     // Fail fast at boot instead of every DB-backed request hitting a
     // confusing connection error deep inside postgres-js against the
     // placeholder connection string below.
