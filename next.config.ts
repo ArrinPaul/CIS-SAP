@@ -79,17 +79,23 @@ const nextConfig: NextConfig = {
     const cspEnforce = process.env.CSP_ENFORCE === 'false' ? false : (process.env.CSP_ENFORCE === 'true' || isProduction);
 
     return [
-      {
-        source: '/api/:path*',
-        headers: allowedOrigins
-          ? [
-              { key: 'Access-Control-Allow-Credentials', value: 'true' },
-              { key: 'Access-Control-Allow-Origin', value: allowedOrigins },
-              { key: 'Access-Control-Allow-Methods', value: 'GET,DELETE,PATCH,POST,PUT,OPTIONS' },
-              { key: 'Access-Control-Allow-Headers', value: 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization' },
-            ]
-          : [],
-      },
+      // Next.js rejects a route entry whose `headers` array is empty, so
+      // only include the CORS entry at all when an origin is configured —
+      // omitting the headers, not emptying them, is how "not configured"
+      // gets expressed here.
+      ...(allowedOrigins
+        ? [
+            {
+              source: '/api/:path*',
+              headers: [
+                { key: 'Access-Control-Allow-Credentials', value: 'true' },
+                { key: 'Access-Control-Allow-Origin', value: allowedOrigins },
+                { key: 'Access-Control-Allow-Methods', value: 'GET,DELETE,PATCH,POST,PUT,OPTIONS' },
+                { key: 'Access-Control-Allow-Headers', value: 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization' },
+              ],
+            },
+          ]
+        : []),
       {
         source: '/(.*)',
         headers: [
