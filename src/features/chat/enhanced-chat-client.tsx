@@ -189,7 +189,7 @@ export default function EnhancedChatClient({ initialRoomId }: { initialRoomId?: 
 
     setIsUploading(true);
     try {
-      const url = await uploadFile(file);
+      const url = await uploadFile(file, 'eventra-uploads', 'any');
       setPendingFile({ url, type: file.type, name: file.name });
     } catch (e) {
       toast({ title: 'Upload failed', variant: 'destructive' });
