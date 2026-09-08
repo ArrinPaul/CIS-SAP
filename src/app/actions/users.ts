@@ -2,13 +2,16 @@
 
 import { db } from '@/lib/db';
 import { users } from '@/lib/db/schema';
-import { eq, desc, not, inArray } from 'drizzle-orm';
+import { eq, desc, not, inArray, ilike, or } from 'drizzle-orm';
 import { auth, clerkClient } from '@clerk/nextjs/server';
 import { z } from 'zod';
 import { logger } from '@/lib/logger';
 
 
 export async function getUserById(id: string) {
+  const { userId } = await auth();
+  if (!userId) return null;
+
   try {
     const user = await db.query.users.findFirst({
       where: eq(users.id, id)
@@ -21,14 +24,27 @@ export async function getUserById(id: string) {
 }
 
 export async function searchUsers(query: string) {
+  const { userId } = await auth();
+  if (!userId) return [];
+  if (!query || query.trim().length < 2) return [];
+
   try {
-    const results = await db.query.users.findMany({
-      where: (users, { ilike, or }) => or(
+    // Only directory-safe columns: this is reachable by any signed-in user.
+    const results = await db
+      .select({
+        id: users.id,
+        name: users.name,
+        image: users.image,
+        role: users.role,
+        bio: users.bio,
+        interests: users.interests,
+      })
+      .from(users)
+      .where(or(
         ilike(users.name, `%${query}%`),
         ilike(users.email, `%${query}%`)
-      ),
-      limit: 10
-    });
+      ))
+      .limit(10);
     return results;
   } catch (error) {
     logger.error('searchUsers Error', error);
@@ -135,12 +151,26 @@ export async function updateUserDetails(id: string, data: any) {
 }
 
 export async function getLeaderboard(limit = 50) {
+  const { userId } = await auth();
+  if (!userId) return [];
+
+  const take = Math.min(Math.max(1, limit), 100);
+
   try {
-    const results = await db.query.users.findMany({
-      where: (users, { and }) => not(inArray(users.role, ['admin', 'organizer'])),
-      orderBy: [desc(users.points)],
-      limit,
-    });
+    const results = await db
+      .select({
+        id: users.id,
+        name: users.name,
+        image: users.image,
+        role: users.role,
+        points: users.points,
+        level: users.level,
+        xp: users.xp,
+      })
+      .from(users)
+      .where(not(inArray(users.role, ['admin', 'organizer'])))
+      .orderBy(desc(users.points))
+      .limit(take);
     return results;
   } catch (error) {
     logger.error('getLeaderboard Error', error);

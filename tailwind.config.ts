@@ -57,6 +57,7 @@ export default {
           'ink-secondary': 'hsl(var(--notion-ink-secondary))',
           'ink-muted': 'hsl(var(--notion-ink-muted))',
           'ink-faint': 'hsl(var(--notion-ink-faint))',
+          'ink-emphasis': 'hsl(var(--notion-ink-emphasis))',
           hairline: 'hsl(var(--notion-hairline))',
           accent: {
             sky: 'hsl(var(--notion-accent-sky))',

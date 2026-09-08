@@ -18,7 +18,23 @@ export default clerkMiddleware(async (auth, request) => {
   if (!isPublicRoute(request)) {
     // In Clerk v7, protect() lives on the auth function itself.
     // It checks authentication AND returns the signed-in auth object.
-    const authObj = await auth.protect();
+    //
+    // `unauthenticatedUrl` is required here, not optional. Without it,
+    // protect() only redirects when it can positively identify a *document*
+    // request. A server action POST fails that sniff and falls through to
+    // either unauthorized() (401) or, when the `next-url` header is absent,
+    // notFound() (404). Either way the Next client gets an HTML error page
+    // where it expected an RSC flight payload, and fetchServerAction throws
+    // "An unexpected response was received from the server". Passing the URL
+    // takes protect()'s first branch, so an expired session redirects cleanly
+    // for every request type instead of depending on header detection.
+    const signInUrl = new URL('/login', request.url);
+    signInUrl.searchParams.set(
+      'redirect_url',
+      `${request.nextUrl.pathname}${request.nextUrl.search}`,
+    );
+
+    const authObj = await auth.protect({ unauthenticatedUrl: signInUrl.toString() });
 
     // Role-based protection for admin routes
     if (isAdminRoute(request)) {

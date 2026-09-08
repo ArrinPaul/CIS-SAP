@@ -3,12 +3,12 @@
 import { db } from '@/lib/db';
 import { tickets, events, waitlist, ticketTiers, notifications, users } from '@/lib/db/schema';
 import { auth } from '@clerk/nextjs/server';
-import { eq, and, desc, sql } from 'drizzle-orm';
+import { eq, and, desc, lt, or, sql } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { validateRole, validateEventOwnership } from '@/lib/auth-utils';
 import { enforceRateLimit } from '@/lib/rate-limit';
 
-import { logActivity } from './feed';
+import { logActivity } from '@/lib/activity-log';
 import { awardXP } from '@/lib/gamification/awards';
 import { generateQrPayload, generateEntryCode } from '@/core/utils/crypto';
 import { sendEmail, constructConfirmationEmail } from '@/core/services/email';
@@ -109,12 +109,21 @@ export async function registerForEvent(eventId: string, data?: { tierId?: string
         expiresAt,
       });
 
-      // Update registration counts
+      // Update registration counts. The capacity guard is re-checked here, in
+      // the same statement that increments, so two concurrent registrations
+      // cannot both slip past the pre-check above and oversell the event.
       const [updatedEvent] = await tx
         .update(events)
         .set({ registeredCount: sql`${events.registeredCount} + 1` })
-        .where(eq(events.id, eventId))
+        .where(and(
+          eq(events.id, eventId),
+          or(eq(events.capacity, -1), lt(events.registeredCount, events.capacity))
+        ))
         .returning();
+
+      if (!updatedEvent) {
+        throw new Error('Event is full');
+      }
 
       // Milestone Logic (skip for unlimited capacity events)
       if (updatedEvent.capacity > 0) {

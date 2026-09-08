@@ -1,45 +1,17 @@
 'use server';
 
 import { db } from '@/lib/db';
-import { activityFeed, users, events, posts } from '@/lib/db/schema';
+import { activityFeed, users } from '@/lib/db/schema';
 import { auth } from '@clerk/nextjs/server';
-import { eq, desc, and, or, sql, inArray } from 'drizzle-orm';
-import { revalidatePath } from 'next/cache';
-
-export type ActivityType = 'registration' | 'post' | 'comment' | 'event_created' | 'event_checkin' | 'badge_awarded' | 'community_joined';
-
-/**
- * Log a new activity to the feed
- */
-export async function logActivity(data: {
-  userId: string;
-  type: ActivityType;
-  actorId?: string;
-  targetId?: string;
-  content?: string;
-  metadata?: any;
-}) {
-  try {
-    const newActivity = await db.insert(activityFeed).values({
-      userId: data.userId,
-      type: data.type,
-      actorId: data.actorId || data.userId,
-      targetId: data.targetId,
-      content: data.content,
-      metadata: data.metadata,
-    }).returning();
-
-    return newActivity[0];
-  } catch (error) {
-    console.error('Failed to log activity:', error);
-    return null;
-  }
-}
+import { eq, desc, sql, inArray } from 'drizzle-orm';
 
 /**
  * Get the global or user-specific activity feed
  */
 export async function getActivityFeed(options?: { userId?: string, limit?: number }) {
+  const { userId } = await auth();
+  if (!userId) return [];
+
   try {
     let query = db
       .select({

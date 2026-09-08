@@ -20,6 +20,19 @@ export interface CreatePromoCodeInput {
 }
 
 /**
+ * A promo code belongs either to an event (its organisers may manage it) or to
+ * the platform (its creator, or an admin).
+ */
+async function authorizePromoCode(promo: { eventId: string | null; createdBy: string | null }, userId: string) {
+  if (promo.eventId) {
+    await validateEventOwnership(promo.eventId);
+    return;
+  }
+  if (promo.createdBy === userId) return;
+  await validateRole(['admin']);
+}
+
+/**
  * Create a new Promo Code (Organizers & Admins)
  */
 export async function createPromoCode(input: CreatePromoCodeInput) {
@@ -77,6 +90,7 @@ export async function getEventPromoCodes(eventId?: string) {
     const user = await requireAuth();
 
     if (eventId) {
+      await validateEventOwnership(eventId);
       const list = await db.query.promoCodes.findMany({
         where: eq(promoCodes.eventId, eventId as any),
         orderBy: [desc(promoCodes.createdAt)],
@@ -167,7 +181,12 @@ export async function validateAndApplyPromoCode(
  */
 export async function togglePromoCodeStatus(promoCodeId: string, isActive: boolean) {
   try {
-    await requireAuth();
+    const user = await requireAuth();
+    const existing = await db.query.promoCodes.findFirst({
+      where: eq(promoCodes.id, promoCodeId as any),
+    });
+    if (!existing) return { success: false, error: 'Promo code not found' };
+    await authorizePromoCode(existing, user.id);
 
     await db.update(promoCodes).set({
       isActive,
@@ -185,7 +204,12 @@ export async function togglePromoCodeStatus(promoCodeId: string, isActive: boole
  */
 export async function deletePromoCode(promoCodeId: string) {
   try {
-    await requireAuth();
+    const user = await requireAuth();
+    const existing = await db.query.promoCodes.findFirst({
+      where: eq(promoCodes.id, promoCodeId as any),
+    });
+    if (!existing) return { success: false, error: 'Promo code not found' };
+    await authorizePromoCode(existing, user.id);
 
     await db.delete(promoCodes).where(eq(promoCodes.id, promoCodeId as any));
     return { success: true };

@@ -1,7 +1,7 @@
 import MyTicketsClient from '@/features/ticketing/my-tickets-client';
 import { Metadata } from 'next';
 import { getUserRegistrations } from '@/app/actions/registrations';
-import { refreshTicketStatuses } from '@/app/actions/tickets';
+import { refreshExpiredTicketStatuses } from '@/lib/ticket-status';
 
 export const metadata: Metadata = {
   title: 'My Tickets | Eventra',
@@ -12,7 +12,7 @@ export default async function TicketsPage() {
   // Refresh statuses before showing to ensure 'expired' is accurate
   // Gracefully handle if DB is unavailable (e.g., during build)
   try {
-    await refreshTicketStatuses(undefined, false);
+    await refreshExpiredTicketStatuses();
   } catch (error) {
     console.warn('Could not refresh ticket statuses (DB may be unavailable):', error);
   }

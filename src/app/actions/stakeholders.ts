@@ -5,7 +5,7 @@ import { stakeholders, events, users } from '@/lib/db/schema';
 import { eq, and, sql, desc } from 'drizzle-orm';
 import { auth } from '@clerk/nextjs/server';
 import { revalidatePath } from 'next/cache';
-import { validateRole } from '@/lib/auth-utils';
+import { validateEventOwnership, validateRole } from '@/lib/auth-utils';
 import { logger } from '@/lib/logger';
 
 export async function createStakeholder(data: {
@@ -14,7 +14,7 @@ export async function createStakeholder(data: {
   email: string;
   role: string;
 }) {
-  const user = await validateRole(['organizer', 'admin']);
+  const user = await validateEventOwnership(data.eventId);
   if (!user) return { success: false, error: 'Unauthorized' };
 
   try {
@@ -54,6 +54,9 @@ export async function getEventStakeholders(eventId: string, filters?: {
   role?: string;
   search?: string;
 }) {
+  // Rows carry names and email addresses, so this is organiser-only.
+  await validateEventOwnership(eventId);
+
   try {
     const conditions = [eq(stakeholders.eventId, eventId)];
 
@@ -81,6 +84,8 @@ export async function getEventStakeholders(eventId: string, filters?: {
 }
 
 export async function getStakeholderStats(eventId: string) {
+  await validateEventOwnership(eventId);
+
   try {
     const [total] = await db
       .select({ count: sql<number>`count(*)` })
@@ -115,7 +120,13 @@ export async function getStakeholderStats(eventId: string) {
 }
 
 export async function deleteStakeholder(stakeholderId: string) {
-  const user = await validateRole(['organizer', 'admin']);
+  const existing = await db.query.stakeholders.findFirst({
+    where: eq(stakeholders.id, stakeholderId),
+    columns: { eventId: true },
+  });
+  if (!existing) return { success: false, error: 'Stakeholder not found' };
+
+  const user = await validateEventOwnership(existing.eventId);
   if (!user) return { success: false, error: 'Unauthorized' };
 
   try {

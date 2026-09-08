@@ -13,7 +13,7 @@ import { db } from '@/lib/db';
 import { users, notifications, badges, userBadges, tickets, posts } from '@/lib/db/schema';
 import { eq, and, sql, desc, count } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
-import { logActivity } from '@/app/actions/feed';
+import { logActivity } from '@/lib/activity-log';
 
 /**
  * Award a badge to a user

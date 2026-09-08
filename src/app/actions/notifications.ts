@@ -86,29 +86,3 @@ export async function deleteNotification(id: string) {
     throw new Error('Failed to delete notification');
   }
 }
-
-/**
- * Create a notification (Internal helper for server actions)
- */
-export async function createNotification(data: {
-  userId: string;
-  title: string;
-  message: string;
-  type: 'info' | 'success' | 'warning' | 'error';
-  link?: string;
-}) {
-  try {
-    const result = await db.insert(notifications).values({
-      userId: data.userId,
-      title: data.title,
-      message: data.message,
-      type: data.type,
-      link: data.link,
-    }).returning();
-    
-    return result[0];
-  } catch (error) {
-    console.error('Failed to create notification:', error);
-    return null;
-  }
-}

@@ -21,9 +21,24 @@ export async function upsertFeedbackTemplate(data: {
   isDefault?: boolean;
 }) {
   const user = await validateRole(['organizer', 'admin']);
-  
+
   if (data.eventId) {
     await validateEventOwnership(data.eventId);
+  }
+
+  if (data.id) {
+    // Authorise against the template's own event, not the supplied eventId.
+    const existing = await db.query.feedbackTemplates.findFirst({
+      where: eq(feedbackTemplates.id, data.id),
+    });
+    if (!existing) throw new Error('Feedback template not found');
+    if (existing.eventId) {
+      await validateEventOwnership(existing.eventId);
+    } else {
+      await validateRole(['admin']);
+    }
+  } else if (!data.eventId) {
+    await validateRole(['admin']);
   }
 
   try {
@@ -72,6 +87,9 @@ export async function upsertFeedbackTemplate(data: {
  * Get feedback templates
  */
 export async function getFeedbackTemplates(eventId?: string) {
+  const { userId } = await auth();
+  if (!userId) return [];
+
   try {
     const conditions = [];
     if (eventId) {
@@ -104,19 +122,18 @@ export async function submitEventFeedback(data: {
   const { userId } = await auth();
   if (!userId) throw new Error('Authentication required');
 
-  // Verify the user actually attended/checked-in (skip for anonymous)
-  if (!data.isAnonymous) {
-    const ticket = await db.query.tickets.findFirst({
-      where: and(
-        eq(tickets.eventId, data.eventId),
-        eq(tickets.userId, userId),
-        eq(tickets.status, 'checked-in')
-      )
-    });
+  // Attendance is required regardless of `isAnonymous`: anonymity affects how
+  // the response is displayed, it is not a way around the eligibility check.
+  const ticket = await db.query.tickets.findFirst({
+    where: and(
+      eq(tickets.eventId, data.eventId),
+      eq(tickets.userId, userId),
+      eq(tickets.status, 'checked-in')
+    )
+  });
 
-    if (!ticket) {
-      throw new Error('You can only leave feedback for events you have attended.');
-    }
+  if (!ticket) {
+    throw new Error('You can only leave feedback for events you have attended.');
   }
 
   // Verify the user hasn't already submitted feedback

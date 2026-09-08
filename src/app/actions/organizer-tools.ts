@@ -19,7 +19,7 @@ export type AnnouncementItem = {
 };
 
 export async function listAnnouncements(eventId: string): Promise<AnnouncementItem[]> {
-  await validateRole(['organizer', 'admin']);
+  await validateEventOwnership(eventId);
 
   try {
     const rows = await db
