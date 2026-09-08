@@ -63,26 +63,53 @@ const nextConfig: NextConfig = {
     ],
   },
   async headers() {
-    const allowedOrigins = process.env.ALLOWED_ORIGINS || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9002';
+    // Only advertise a permissive CORS origin when one is actually
+    // configured. Falling back to localhost:9002 with credentials allowed
+    // is meaningless (and misleading) once deployed, and hides a missing
+    // ALLOWED_ORIGINS/NEXT_PUBLIC_APP_URL config value instead of surfacing it.
+    // ALLOWED_ORIGINS is documented/used elsewhere (src/core/config/eventra-config.ts)
+    // as a comma-separated list. next.config.ts's headers() is evaluated once at
+    // build/boot, not per-request, so it can't echo back whichever origin a given
+    // request actually came from — putting the raw CSV string into a single
+    // Access-Control-Allow-Origin header would produce an invalid value browsers
+    // reject outright. Falling back to the first configured origin keeps the header
+    // valid; a deployment that truly needs multiple allowed origins with credentials
+    // needs per-request Origin echoing in middleware instead of this static config.
+    const rawAllowedOrigins = process.env.ALLOWED_ORIGINS || process.env.NEXT_PUBLIC_APP_URL;
+    const allowedOrigins = rawAllowedOrigins?.split(',')[0]?.trim() || undefined;
+    const isProduction = process.env.NODE_ENV === 'production';
+
+    // Enforce by default once an app URL is known to be configured for
+    // production; CSP_ENFORCE=false remains available to opt back into
+    // report-only for a staging rollout. 'unsafe-inline'/'unsafe-eval' stay
+    // in script-src (Next's bootstrap needs them until nonce plumbing is
+    // added), but enforcing still blocks script/connect/frame sources
+    // outside the explicit allowlist below.
+    const cspEnforce = process.env.CSP_ENFORCE === 'false' ? false : (process.env.CSP_ENFORCE === 'true' || isProduction);
+
     return [
-      {
-        source: '/api/:path*',
-        headers: [
-          { key: 'Access-Control-Allow-Credentials', value: 'true' },
-          { key: 'Access-Control-Allow-Origin', value: allowedOrigins },
-          { key: 'Access-Control-Allow-Methods', value: 'GET,DELETE,PATCH,POST,PUT,OPTIONS' },
-          { key: 'Access-Control-Allow-Headers', value: 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization' },
-        ],
-      },
+      // Next.js rejects a route entry whose `headers` array is empty, so
+      // only include the CORS entry at all when an origin is configured —
+      // omitting the headers, not emptying them, is how "not configured"
+      // gets expressed here.
+      ...(allowedOrigins
+        ? [
+            {
+              source: '/api/:path*',
+              headers: [
+                { key: 'Access-Control-Allow-Credentials', value: 'true' },
+                { key: 'Access-Control-Allow-Origin', value: allowedOrigins },
+                { key: 'Access-Control-Allow-Methods', value: 'GET,DELETE,PATCH,POST,PUT,OPTIONS' },
+                { key: 'Access-Control-Allow-Headers', value: 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization' },
+              ],
+            },
+          ]
+        : []),
       {
         source: '/(.*)',
         headers: [
-          // Report-only to start: Next injects inline bootstrap scripts and
-          // styled-jsx, so an enforcing policy needs nonce plumbing first.
-          // Watch the violation reports, then flip the key to
-          // 'Content-Security-Policy' once the directives are clean.
           {
-            key: process.env.CSP_ENFORCE === 'true' ? 'Content-Security-Policy' : 'Content-Security-Policy-Report-Only',
+            key: cspEnforce ? 'Content-Security-Policy' : 'Content-Security-Policy-Report-Only',
             value: [
               "default-src 'self'",
               // 'unsafe-inline'/'unsafe-eval' are what Next's dev bootstrap and
@@ -99,7 +126,7 @@ const nextConfig: NextConfig = {
               "base-uri 'self'",
               "form-action 'self'",
               "frame-ancestors 'none'",
-              ...(process.env.CSP_ENFORCE === 'true' ? ['upgrade-insecure-requests'] : []),
+              ...(cspEnforce ? ['upgrade-insecure-requests'] : []),
             ].join('; '),
           },
           { key: 'X-Content-Type-Options', value: 'nosniff' },

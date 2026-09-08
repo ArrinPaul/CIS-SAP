@@ -11,14 +11,28 @@ export function AnnouncementBanner({ eventId }: { eventId: string }) {
   const [announcements, setAnnouncements] = useState<any[]>([]);
   
   useEffect(() => {
+    let cancelled = false;
+
     async function load() {
+      try {
         const data = await getActiveAnnouncements(eventId);
-        setAnnouncements(data);
+        if (!cancelled) setAnnouncements(data);
+      } catch (error) {
+        // A poll can fail for reasons that are not the user's problem: leaving
+        // the page with a request in flight, a dropped connection, a dev-server
+        // reload. Keep whatever is already on screen and retry on the next
+        // tick, rather than letting it surface as an unhandled rejection.
+        console.warn('Failed to load announcements:', error);
+      }
     }
+
     load();
     // In a real production app, we would use a subscription (Pusher/Supabase) here.
     const interval = setInterval(load, 30000);
-    return () => clearInterval(interval);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
   }, [eventId]);
 
   if (!announcements || announcements.length === 0) return null;

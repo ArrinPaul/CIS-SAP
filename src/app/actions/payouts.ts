@@ -6,9 +6,7 @@ import { eq, and, sql, desc, inArray } from 'drizzle-orm';
 import { auth } from '@clerk/nextjs/server';
 import { revalidatePath } from 'next/cache';
 import { logger } from '@/lib/logger';
-
-export const PLATFORM_FEE_RATE = 0.05; // 5% standard platform fee
-export const MIN_PAYOUT_AMOUNT = 100; // Minimum withdrawal amount
+import { PLATFORM_FEE_RATE, MIN_PAYOUT_AMOUNT, computePlatformFee } from '@/core/utils/payouts';
 
 export interface PayoutSummary {
   grossRevenue: number;
@@ -29,12 +27,6 @@ export interface PayoutSummary {
     transactionReference: string | null;
     createdAt: Date;
   }>;
-}
-
-export function computePlatformFee(gross: number, feeRate: number = PLATFORM_FEE_RATE) {
-  const fee = Math.round(gross * feeRate * 100) / 100;
-  const net = Math.round((gross - fee) * 100) / 100;
-  return { platformFee: fee, netAmount: Math.max(0, net) };
 }
 
 /**

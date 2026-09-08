@@ -177,6 +177,35 @@ export async function validateAndApplyPromoCode(
 }
 
 /**
+ * Atomically redeem a promo code, incrementing its usage counter only if the
+ * usage limit has not been reached. Must be called from inside the same
+ * transaction that finalizes the order/ticket the code applies to, at the
+ * point of redemption (not at validation time) so that two concurrent
+ * checkouts sharing the last remaining use cannot both succeed.
+ *
+ * Returns false (without throwing) if the code is missing, inactive,
+ * expired, or exhausted, so callers can treat it as "redemption failed" and
+ * abort the transaction.
+ */
+export async function redeemPromoCode(
+  promoCodeId: string,
+  tx: Pick<typeof db, 'update'> = db
+): Promise<boolean> {
+  const [updated] = await tx
+    .update(promoCodes)
+    .set({ usedCount: sql`${promoCodes.usedCount} + 1`, updatedAt: new Date() })
+    .where(and(
+      eq(promoCodes.id, promoCodeId),
+      eq(promoCodes.isActive, true),
+      sql`(${promoCodes.expiresAt} IS NULL OR ${promoCodes.expiresAt} > now())`,
+      sql`(${promoCodes.maxUses} IS NULL OR ${promoCodes.usedCount} < ${promoCodes.maxUses})`
+    ))
+    .returning();
+
+  return Boolean(updated);
+}
+
+/**
  * Toggle promo code active status
  */
 export async function togglePromoCodeStatus(promoCodeId: string, isActive: boolean) {

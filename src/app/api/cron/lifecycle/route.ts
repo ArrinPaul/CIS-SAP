@@ -12,6 +12,15 @@ export const maxDuration = 60; // 60 seconds maximum execution
 export async function GET(request: NextRequest) {
   try {
     const cronSecret = process.env.CRON_SECRET;
+    
+    if (!cronSecret && process.env.NODE_ENV === 'production') {
+      logger.error('[Cron:Lifecycle] CRON_SECRET is not configured in production environment');
+      return NextResponse.json(
+        { success: false, error: 'Internal Server Error' },
+        { status: 500 }
+      );
+    }
+
     const authHeader = request.headers.get('authorization');
     const xCronHeader = request.headers.get('x-cron-secret');
 
@@ -19,8 +28,8 @@ export async function GET(request: NextRequest) {
       ? authHeader.slice(7)
       : xCronHeader;
 
-    // If CRON_SECRET is configured in production, enforce strict authentication
-    if (cronSecret && cronSecret !== providedSecret) {
+    // If we are in production OR a secret is configured locally, enforce strict authentication
+    if ((process.env.NODE_ENV === 'production' || cronSecret) && cronSecret !== providedSecret) {
       logger.warn('[Cron:Lifecycle] Unauthorized attempt to invoke lifecycle cron');
       return NextResponse.json(
         { success: false, error: 'Unauthorized: Invalid cron secret' },

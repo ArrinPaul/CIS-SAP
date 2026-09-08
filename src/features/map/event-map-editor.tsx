@@ -75,16 +75,22 @@ export function EventMapEditor({ eventId, existingMap }: EventMapEditorProps) {
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const url = await uploadFile(file);
-    const img = new Image();
-    img.onload = () => {
-      setImageWidth(img.naturalWidth);
-      setImageHeight(img.naturalHeight);
-      setImageUrl(url);
-      setNodes([]);
-      setEdges([]);
-    };
-    img.src = url;
+    try {
+      const url = await uploadFile(file);
+      const img = new Image();
+      img.onload = () => {
+        setImageWidth(img.naturalWidth);
+        setImageHeight(img.naturalHeight);
+        setImageUrl(url);
+        setNodes([]);
+        setEdges([]);
+      };
+      img.src = url;
+    } catch (err) {
+      console.error('Map image upload failed:', err);
+    } finally {
+      e.target.value = '';
+    }
   };
 
   const handleSvgClick = useCallback((e: React.MouseEvent<SVGSVGElement>) => {

@@ -8,14 +8,27 @@ export function Providers({ children }: { children: React.ReactNode }) {
   const { toast } = useToast();
 
   useEffect(() => {
+    // A network-level fetch failure is worded differently by each engine:
+    // Chromium says "Failed to fetch", WebKit "Load failed", Firefox
+    // "NetworkError when attempting to fetch resource.". Matching only the
+    // Chromium wording left this handler dead on the other two.
+    const networkFailureMessages = [
+      'Failed to fetch',
+      'Load failed',
+      'NetworkError when attempting to fetch resource',
+    ];
+
     const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
-      if (event.reason?.message === 'Failed to fetch' || event.reason === 'Failed to fetch') {
-        toast({
-          title: "System Synchronization Error",
-          description: "Neural link to the database failed. Please verify your connection protocols.",
-          variant: "destructive",
-        });
-      }
+      const reason = event.reason;
+      const message = typeof reason === 'string' ? reason : reason?.message;
+      if (typeof message !== 'string') return;
+      if (!networkFailureMessages.some((candidate) => message.includes(candidate))) return;
+
+      toast({
+        title: "System Synchronization Error",
+        description: "Neural link to the database failed. Please verify your connection protocols.",
+        variant: "destructive",
+      });
     };
 
     window.addEventListener('unhandledrejection', handleUnhandledRejection);

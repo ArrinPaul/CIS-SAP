@@ -88,8 +88,28 @@ export default function EnhancedChatClient({ initialRoomId }: { initialRoomId?: 
     loadMessages();
 
     // 3. Real-time Subscription with Reconnection Logic
+    let cancelled = false;
+    let retryTimeout: ReturnType<typeof setTimeout> | null = null;
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+
     const subscribeToRoom = () => {
-      const channel = supabase
+      if (cancelled) return;
+
+      // supabase.channel() dedupes by topic: if a channel for this room's
+      // topic already exists (e.g. an abandoned instance from a prior
+      // effect run — React 18 dev mode double-invokes this effect, and
+      // removeChannel() below is async, so it may not have finished
+      // detaching the old one yet), it returns that same already-subscribed
+      // channel instead of a fresh one. Calling `.on()` on an
+      // already-subscribed channel throws, so make sure none is left over
+      // before creating a new one.
+      const topic = `realtime:room:${selectedRoomId}`;
+      const stale = supabase.getChannels().find((c) => c.topic === topic);
+      if (stale) {
+        supabase.removeChannel(stale);
+      }
+
+      channel = supabase
         .channel(`room:${selectedRoomId}`, {
           config: {
             presence: { key: user?.id },
@@ -141,6 +161,7 @@ export default function EnhancedChatClient({ initialRoomId }: { initialRoomId?: 
           }
         )
         .subscribe(async (status) => {
+          if (cancelled) return;
           if (status === 'SUBSCRIBED') {
             if (process.env.NODE_ENV === 'development') {
               console.log(`Subscribed to room:${selectedRoomId}`);
@@ -148,17 +169,21 @@ export default function EnhancedChatClient({ initialRoomId }: { initialRoomId?: 
           }
           if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
             console.warn(`Connection ${status} for room:${selectedRoomId}, retrying...`);
-            setTimeout(subscribeToRoom, 3000);
+            // The subscribe callback can fire CLOSED/CHANNEL_ERROR more than
+            // once for the same channel; clear any retry already scheduled
+            // so repeated errors don't stack up multiple pending resubscribes.
+            if (retryTimeout) clearTimeout(retryTimeout);
+            retryTimeout = setTimeout(subscribeToRoom, 3000);
           }
         });
-
-      return channel;
     };
 
-    const channel = subscribeToRoom();
+    subscribeToRoom();
 
     return () => {
-      supabase.removeChannel(channel);
+      cancelled = true;
+      if (retryTimeout) clearTimeout(retryTimeout);
+      if (channel) supabase.removeChannel(channel);
     };
   }, [selectedRoomId, user?.id]);
 
@@ -168,7 +193,7 @@ export default function EnhancedChatClient({ initialRoomId }: { initialRoomId?: 
 
     setIsUploading(true);
     try {
-      const url = await uploadFile(file);
+      const url = await uploadFile(file, 'eventra-uploads', 'any');
       setPendingFile({ url, type: file.type, name: file.name });
     } catch (e) {
       toast({ title: 'Upload failed', variant: 'destructive' });
@@ -194,19 +219,50 @@ export default function EnhancedChatClient({ initialRoomId }: { initialRoomId?: 
   };
 
   const handleSendMessage = async () => {
-    if ((!newMessage.trim() && !pendingFile) || !selectedRoomId) return;
+    if ((!newMessage.trim() && !pendingFile) || !selectedRoomId || !user) return;
     const content = newMessage.trim();
     const file = pendingFile;
-    
+
     setNewMessage('');
     setPendingFile(null);
-    
+
     try {
-      await sendMessage({ 
-        roomId: selectedRoomId, 
+      const result = await sendMessage({
+        roomId: selectedRoomId,
         content: content || (file ? `Shared a ${file.type.startsWith('image/') ? 'photo' : 'file'}` : ''),
         imageUrl: file?.url,
       });
+
+      if (!result.success || !result.message) {
+        throw new Error(result.error || 'Failed to send');
+      }
+
+      // Render immediately instead of waiting on the realtime round-trip —
+      // that subscription can lag or drop, and the sender should always see
+      // their own message land. The realtime INSERT handler dedupes by
+      // message id, so this won't double up when it also arrives that way.
+      const sent = result.message;
+      userCacheRef.current[user.id] = { id: user.id, name: user.name ?? null, image: user.image ?? null };
+      setMessages((prev) => {
+        if (prev.some((m) => m.message.id === sent.id)) return prev;
+        return [
+          ...prev,
+          {
+            message: {
+              id: sent.id,
+              content: sent.content,
+              imageUrl: sent.imageUrl,
+              senderId: sent.senderId,
+              createdAt: sent.createdAt,
+            },
+            sender: userCacheRef.current[user.id],
+          },
+        ];
+      });
+
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
     } catch (e) {
       toast({ title: 'Failed to send', variant: 'destructive' });
       setNewMessage(content);

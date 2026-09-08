@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { computePlatformFee, PLATFORM_FEE_RATE } from './payouts';
+import { computePlatformFee, PLATFORM_FEE_RATE } from '@/core/utils/payouts';
 
 describe('Organizer Payouts & Ledger Engine', () => {
   it('correctly calculates standard 5% platform fee and net revenue', () => {

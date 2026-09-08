@@ -2,7 +2,10 @@ import { createHmac, timingSafeEqual, randomInt } from 'crypto';
 
 function getEffectiveSecret(): string {
   const secret = process.env.QR_SECRET;
-  if (!secret && process.env.NODE_ENV === 'production') {
+  if (!secret) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('QR_SECRET is not configured in environment. It is required in production.');
+    }
     console.warn('[crypto] QR_SECRET is not configured in environment, using fallback.');
   }
   return secret || 'eventra-dev-only-not-for-production';
