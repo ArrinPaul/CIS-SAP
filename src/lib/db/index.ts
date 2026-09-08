@@ -8,11 +8,18 @@ import * as schema from './schema';
  */
 const poolerUrl = process.env.DATABASE_POOLER_URL;
 const databaseUrl = process.env.DATABASE_URL;
-const connectionString = poolerUrl ?? databaseUrl ?? 'postgresql://invalid:invalid@localhost:5432/eventra';
 
 if (!databaseUrl && !poolerUrl) {
+  if (process.env.NODE_ENV === 'production') {
+    // Fail fast at boot instead of every DB-backed request hitting a
+    // confusing connection error deep inside postgres-js against the
+    // placeholder connection string below.
+    throw new Error('DATABASE_URL (or DATABASE_POOLER_URL) is not set. It is required in production.');
+  }
   console.warn('DATABASE_URL is not set. DB-backed routes may be unavailable.');
 }
+
+const connectionString = poolerUrl ?? databaseUrl ?? 'postgresql://invalid:invalid@localhost:5432/eventra';
 
 if (poolerUrl && !poolerUrl.includes(':6543')) {
   console.warn('DATABASE_POOLER_URL should use Supabase transaction pooler port 6543.');
