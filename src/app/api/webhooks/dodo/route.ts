@@ -14,8 +14,12 @@ export async function POST(request: NextRequest) {
     let body;
 
     if (!WEBHOOK_SECRET) {
-      if (process.env.NODE_ENV === 'production') {
-        logger.error('DODO_PAYMENTS_WEBHOOK_SECRET is not configured in production');
+      // Fail closed everywhere except an explicit local "development" run —
+      // any other NODE_ENV value (staging, preview, test, unset) must not
+      // silently trust an unverified payload just because it isn't the
+      // literal string "production".
+      if (process.env.NODE_ENV !== 'development') {
+        logger.error('DODO_PAYMENTS_WEBHOOK_SECRET is not configured');
         return NextResponse.json({ error: 'Webhook secret not configured' }, { status: 500 });
       }
       logger.warn('DODO_PAYMENTS_WEBHOOK_SECRET is not configured, skipping signature verification in development');

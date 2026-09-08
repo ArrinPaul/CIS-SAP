@@ -20,6 +20,12 @@ export const serverEnvSchema = publicEnvSchema.extend({
   AUTH_SECRET: z.string().min(16).optional(),
   SESSION_SECRET: z.string().min(16).optional(),
   QR_SECRET: process.env.NODE_ENV === 'production' ? z.string().min(16) : z.string().min(16).optional(),
+  // Authenticate inbound Clerk (user sync) and Dodo (payment) webhooks.
+  // Required in production so a missing secret fails app boot instead of
+  // silently degrading to "signature verification skipped" per-request.
+  CLERK_WEBHOOK_SECRET: process.env.NODE_ENV === 'production' ? z.string().min(1) : z.string().min(1).optional(),
+  DODO_PAYMENTS_WEBHOOK_SECRET: process.env.NODE_ENV === 'production' ? z.string().min(1) : z.string().min(1).optional(),
+  ALLOWED_ORIGINS: z.string().min(1).optional(),
 });
 
 let cachedServerEnv: z.infer<typeof serverEnvSchema> | null = null;
