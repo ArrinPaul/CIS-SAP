@@ -149,10 +149,22 @@ export async function registerForEvent(eventId: string, data?: { tierId?: string
       }
 
       if (data?.tierId) {
-        await tx
+        // Same atomic re-check pattern as the event-level update above: the
+        // capacity guard is re-verified in the same statement that
+        // increments, so two concurrent registrations for the same tier
+        // cannot both slip past the pre-check and oversell the tier.
+        const [updatedTier] = await tx
           .update(ticketTiers)
           .set({ registeredCount: sql`${ticketTiers.registeredCount} + 1` })
-          .where(eq(ticketTiers.id, data.tierId));
+          .where(and(
+            eq(ticketTiers.id, data.tierId),
+            or(eq(ticketTiers.capacity, -1), lt(ticketTiers.registeredCount, ticketTiers.capacity))
+          ))
+          .returning();
+
+        if (!updatedTier) {
+          throw new Error('This ticket tier is sold out');
+        }
       }
 
       // Create notification
