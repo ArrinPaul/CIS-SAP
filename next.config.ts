@@ -67,7 +67,16 @@ const nextConfig: NextConfig = {
     // configured. Falling back to localhost:9002 with credentials allowed
     // is meaningless (and misleading) once deployed, and hides a missing
     // ALLOWED_ORIGINS/NEXT_PUBLIC_APP_URL config value instead of surfacing it.
-    const allowedOrigins = process.env.ALLOWED_ORIGINS || process.env.NEXT_PUBLIC_APP_URL;
+    // ALLOWED_ORIGINS is documented/used elsewhere (src/core/config/eventra-config.ts)
+    // as a comma-separated list. next.config.ts's headers() is evaluated once at
+    // build/boot, not per-request, so it can't echo back whichever origin a given
+    // request actually came from — putting the raw CSV string into a single
+    // Access-Control-Allow-Origin header would produce an invalid value browsers
+    // reject outright. Falling back to the first configured origin keeps the header
+    // valid; a deployment that truly needs multiple allowed origins with credentials
+    // needs per-request Origin echoing in middleware instead of this static config.
+    const rawAllowedOrigins = process.env.ALLOWED_ORIGINS || process.env.NEXT_PUBLIC_APP_URL;
+    const allowedOrigins = rawAllowedOrigins?.split(',')[0]?.trim() || undefined;
     const isProduction = process.env.NODE_ENV === 'production';
 
     // Enforce by default once an app URL is known to be configured for

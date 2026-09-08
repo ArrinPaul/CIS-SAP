@@ -169,6 +169,10 @@ export default function EnhancedChatClient({ initialRoomId }: { initialRoomId?: 
           }
           if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
             console.warn(`Connection ${status} for room:${selectedRoomId}, retrying...`);
+            // The subscribe callback can fire CLOSED/CHANNEL_ERROR more than
+            // once for the same channel; clear any retry already scheduled
+            // so repeated errors don't stack up multiple pending resubscribes.
+            if (retryTimeout) clearTimeout(retryTimeout);
             retryTimeout = setTimeout(subscribeToRoom, 3000);
           }
         });

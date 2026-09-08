@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { useStorage } from '@/lib/storage';
 import { useAuth } from '@/hooks/use-auth';
+import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
 import { ImagePlus, Loader2, X } from 'lucide-react';
 import type { EventraEvent } from '@/types';
@@ -53,6 +54,7 @@ import { Badge } from '@/components/ui/badge';
 export function EventForm({ onSave, event }: EventFormProps) {
   const { user } = useAuth();
   const { uploadFile } = useStorage();
+  const { toast } = useToast();
   const [imageUrl, setImageUrl] = useState<string | null>(event?.imageUrl || null);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -60,16 +62,20 @@ export function EventForm({ onSave, event }: EventFormProps) {
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
-    
+
     setUploading(true);
     try {
       const url = await uploadFile(file);
       setImageUrl(url);
     } catch (err) {
       console.error('Upload failed:', err);
-      setImageUrl(URL.createObjectURL(file));
+      // Don't fall back to a blob: URL here — it only resolves in this tab,
+      // so if the form gets saved with it as the event's imageUrl, every
+      // other viewer (and this tab after reload) sees a broken image.
+      toast({ title: 'Image upload failed', description: 'Please try a different image.', variant: 'destructive' });
     } finally {
       setUploading(false);
+      e.target.value = '';
     }
   };
 

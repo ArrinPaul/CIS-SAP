@@ -1,12 +1,14 @@
 import { supabase } from './supabase/client';
 
+// SVGs are deliberately excluded: they can carry <script>/external references,
+// and are a common stored-XSS vector if ever rendered inline without
+// sanitization, which nothing downstream of this upload does today.
 const IMAGE_MIME_TYPES = new Set([
   'image/png',
   'image/jpeg',
   'image/jpg',
   'image/webp',
   'image/gif',
-  'image/svg+xml',
 ]);
 
 // Chat attachments (and any future generic upload) additionally allow common
@@ -47,10 +49,13 @@ export function useStorage() {
       throw new Error(`File is too large (max ${MAX_FILE_SIZE_BYTES / (1024 * 1024)}MB)`);
     }
 
-    // Create a unique file path
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
-    const filePath = `${fileName}`;
+    // Create a unique file path. file.name may have no extension (or end in
+    // a bare dot), so don't assume split('.').pop() gives a real one — that
+    // produced paths like "..._169.undefined".
+    const lastDot = file.name.lastIndexOf('.');
+    const fileExt = lastDot > 0 ? file.name.slice(lastDot + 1).toLowerCase() : '';
+    const fileBase = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}`;
+    const filePath = fileExt ? `${fileBase}.${fileExt}` : fileBase;
 
     // Upload to Supabase Storage
     const { data, error } = await supabase.storage
