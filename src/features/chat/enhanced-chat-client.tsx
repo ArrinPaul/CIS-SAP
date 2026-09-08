@@ -88,8 +88,28 @@ export default function EnhancedChatClient({ initialRoomId }: { initialRoomId?: 
     loadMessages();
 
     // 3. Real-time Subscription with Reconnection Logic
+    let cancelled = false;
+    let retryTimeout: ReturnType<typeof setTimeout> | null = null;
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+
     const subscribeToRoom = () => {
-      const channel = supabase
+      if (cancelled) return;
+
+      // supabase.channel() dedupes by topic: if a channel for this room's
+      // topic already exists (e.g. an abandoned instance from a prior
+      // effect run — React 18 dev mode double-invokes this effect, and
+      // removeChannel() below is async, so it may not have finished
+      // detaching the old one yet), it returns that same already-subscribed
+      // channel instead of a fresh one. Calling `.on()` on an
+      // already-subscribed channel throws, so make sure none is left over
+      // before creating a new one.
+      const topic = `realtime:room:${selectedRoomId}`;
+      const stale = supabase.getChannels().find((c) => c.topic === topic);
+      if (stale) {
+        supabase.removeChannel(stale);
+      }
+
+      channel = supabase
         .channel(`room:${selectedRoomId}`, {
           config: {
             presence: { key: user?.id },
@@ -141,6 +161,7 @@ export default function EnhancedChatClient({ initialRoomId }: { initialRoomId?: 
           }
         )
         .subscribe(async (status) => {
+          if (cancelled) return;
           if (status === 'SUBSCRIBED') {
             if (process.env.NODE_ENV === 'development') {
               console.log(`Subscribed to room:${selectedRoomId}`);
@@ -148,17 +169,17 @@ export default function EnhancedChatClient({ initialRoomId }: { initialRoomId?: 
           }
           if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
             console.warn(`Connection ${status} for room:${selectedRoomId}, retrying...`);
-            setTimeout(subscribeToRoom, 3000);
+            retryTimeout = setTimeout(subscribeToRoom, 3000);
           }
         });
-
-      return channel;
     };
 
-    const channel = subscribeToRoom();
+    subscribeToRoom();
 
     return () => {
-      supabase.removeChannel(channel);
+      cancelled = true;
+      if (retryTimeout) clearTimeout(retryTimeout);
+      if (channel) supabase.removeChannel(channel);
     };
   }, [selectedRoomId, user?.id]);
 
