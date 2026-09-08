@@ -215,19 +215,50 @@ export default function EnhancedChatClient({ initialRoomId }: { initialRoomId?: 
   };
 
   const handleSendMessage = async () => {
-    if ((!newMessage.trim() && !pendingFile) || !selectedRoomId) return;
+    if ((!newMessage.trim() && !pendingFile) || !selectedRoomId || !user) return;
     const content = newMessage.trim();
     const file = pendingFile;
-    
+
     setNewMessage('');
     setPendingFile(null);
-    
+
     try {
-      await sendMessage({ 
-        roomId: selectedRoomId, 
+      const result = await sendMessage({
+        roomId: selectedRoomId,
         content: content || (file ? `Shared a ${file.type.startsWith('image/') ? 'photo' : 'file'}` : ''),
         imageUrl: file?.url,
       });
+
+      if (!result.success || !result.message) {
+        throw new Error(result.error || 'Failed to send');
+      }
+
+      // Render immediately instead of waiting on the realtime round-trip —
+      // that subscription can lag or drop, and the sender should always see
+      // their own message land. The realtime INSERT handler dedupes by
+      // message id, so this won't double up when it also arrives that way.
+      const sent = result.message;
+      userCacheRef.current[user.id] = { id: user.id, name: user.name ?? null, image: user.image ?? null };
+      setMessages((prev) => {
+        if (prev.some((m) => m.message.id === sent.id)) return prev;
+        return [
+          ...prev,
+          {
+            message: {
+              id: sent.id,
+              content: sent.content,
+              imageUrl: sent.imageUrl,
+              senderId: sent.senderId,
+              createdAt: sent.createdAt,
+            },
+            sender: userCacheRef.current[user.id],
+          },
+        ];
+      });
+
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
     } catch (e) {
       toast({ title: 'Failed to send', variant: 'destructive' });
       setNewMessage(content);
