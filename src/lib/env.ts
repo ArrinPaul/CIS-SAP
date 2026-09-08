@@ -15,11 +15,11 @@ export const serverEnvSchema = publicEnvSchema.extend({
   TWILIO_FROM_NUMBER: z.string().min(1).optional(),
   GOOGLE_API_KEY: z.string().min(1).optional(),
   DODO_PAYMENTS_API_KEY: z.string().min(1).optional(),
-  CRON_SECRET: z.string().min(1).optional(),
+  CRON_SECRET: process.env.NODE_ENV === 'production' ? z.string().min(1) : z.string().min(1).optional(),
   JWT_SECRET: z.string().min(16).optional(),
   AUTH_SECRET: z.string().min(16).optional(),
   SESSION_SECRET: z.string().min(16).optional(),
-  QR_SECRET: z.string().min(16).optional(),
+  QR_SECRET: process.env.NODE_ENV === 'production' ? z.string().min(16) : z.string().min(16).optional(),
 });
 
 let cachedServerEnv: z.infer<typeof serverEnvSchema> | null = null;
