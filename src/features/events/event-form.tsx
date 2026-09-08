@@ -63,8 +63,8 @@ export function EventForm({ onSave, event }: EventFormProps) {
     
     setUploading(true);
     try {
-      const storageId = await uploadFile(file);
-      setImageUrl(`/api/storage/${storageId}`);
+      const url = await uploadFile(file);
+      setImageUrl(url);
     } catch (err) {
       console.error('Upload failed:', err);
       setImageUrl(URL.createObjectURL(file));
